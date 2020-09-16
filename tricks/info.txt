@@ -1,0 +1,27 @@
+128.178.69.58
+Felipe\ Figueredo\ Rocha
+128.178.69.12
+felipe
+
+ssh with screen
+Xpra
+local_client> xpra start ssh/username@hostname/100 --start=xterm
+NoMachine
+
+vpn.epfl.ch
+gaspar@epfl.ch
+
+1 578 022 688
+fs539z
+
+Clusters epfl
+deneb1.epfl.ch
+deneb2.epfl.ch
+fidis.epfl.ch
+helvetios.epfl.ch
+
+MyAccout: figuered
+ssh -X figuered@somecluster.epfl.ch
+
+SCITAS wiki
+https://scitas-data.epfl.ch/confluence/display/DOC/First+steps+on+the+clusters
