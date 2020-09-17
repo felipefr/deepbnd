@@ -30,7 +30,7 @@ radFile = folder + "RVE_POD_{0}.{1}"
 opModel = 'periodic'
 createMesh = True
 
-seed = 5
+seed = 1
 
 contrast = 10.0
 E2 = 1.0
@@ -60,7 +60,7 @@ x0L = y0L = maxOffset*Lx/Nx
 LxL = LyL = NxL*(x0L/maxOffset)
 r0 = 0.2*LxL/NxL
 r1 = 0.4*LxL/NxL
-lcar = 0.1*LxL/NxL
+lcar = 0.05*LxL/NxL
 NpLx = int(Lx/lcar) + 1
 NpLxL = int(LxL/lcar) + 1
 Vfrac = 0.282743
