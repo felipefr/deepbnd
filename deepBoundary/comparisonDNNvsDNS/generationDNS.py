@@ -3,7 +3,7 @@ from numpy import isclose
 from dolfin import *
 # import matplotlib.pyplot as plt
 from multiphenics import *
-sys.path.insert(0, '../utils/')
+sys.path.insert(0, '../../utils/')
 
 import fenicsWrapperElasticity as fela
 import matplotlib.pyplot as plt
@@ -22,17 +22,15 @@ import fenicsUtils as feut
 import matplotlib.pyplot as plt
 
 
-folder = "/Users/felipefr/EPFL/newDLPDES/DATA/deepBoundary/comparisonDNNvsDNS/seed2/"
+folder = "/Users/felipefr/EPFL/newDLPDES/DATA/deepBoundary/comparisonDNNvsDNS/"
 #folder = "/home/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/data2/"
 
 radFile = folder + "RVE_POD_{0}.{1}"
 
 opModel = 'periodic'
+createMesh = True
 
-seed = 2
-np.random.seed(seed)
-
-
+seed = 5
 
 contrast = 10.0
 E2 = 1.0
@@ -50,93 +48,93 @@ eps[0,0] = 0.1
 
 param = np.array([[lamb1, mu1], [lamb2,mu2],[lamb1, mu1], [lamb2,mu2]])
 
-maxOffset = 6
-noutPerOffset = 5
+maxOffset = 8
 
-for offset in range(1,maxOffset):
-    Lx = Ly = 1.0
-    ifPeriodic = False 
-    NxL = NyL = 2
-    NL = NxL*NyL
-    x0L = y0L = offset*Lx/(NxL+2*offset)
-    if(offset == 0 ):
-        LxL = LyL = Lx 
+Lx = Ly = 1.0
+ifPeriodic = False 
+NxL = NyL = 2
+Nx = (NxL+2*maxOffset)
+Ny = (NyL+2*maxOffset)
+NL = NxL*NyL
+x0L = y0L = maxOffset*Lx/Nx
+LxL = LyL = NxL*(x0L/maxOffset)
+r0 = 0.2*LxL/NxL
+r1 = 0.4*LxL/NxL
+lcar = 0.1*LxL/NxL
+NpLx = int(Lx/lcar) + 1
+NpLxL = int(LxL/lcar) + 1
+Vfrac = 0.282743
+
+H = Lx/Nx
+
+g = gmts.displacementGeneratorBoundary(x0L,y0L,LxL, LyL, NpLxL)
+
+
+np.random.seed(seed)
+ellipseData = geni.circularRegular2Regions(r0, r1, NxL, NyL, Lx, Ly, maxOffset, ordered = True)
+
+# enforcing volume frac
+for i in range(maxOffset):
+    ni =  (Nx - 2*(i+1))*(Ny - 2*(i+1))
+    nout = (Nx - 2*i)*(Ny - 2*i)
+    
+    alphaFrac = np.sqrt(((nout-ni)*H**2 - LxL*LyL)*Vfrac/(np.pi*np.sum(ellipseData[ni:nout,2]*ellipseData[ni:nout,2])))
+    ellipseData[ni:nout,2] = alphaFrac*ellipseData[ni:nout,2]
+
+for offset in range(maxOffset+1):
+                 
+    # np.savetxt(folder + 'ellipseData_offset{0}_{1}.txt'.format(offset,nOut), ellipseData)
+    Nt = (NxL + 2*offset)**2
+    Lxt = Lyt =  H*np.sqrt(Nt)
+    NpLxt = int(Lxt/lcar) + 1
+        
+    meshGMSHred = gmsh.ellipseMesh2(ellipseData[:NL], x0L, y0L, LxL, LyL , lcar, ifPeriodic)
+    meshGMSHred.setTransfiniteBoundary(NpLxL)
+    meshRed = feut.getMesh(meshGMSHred, 'reduced_offset{0}_{1}'.format(offset,seed), radFile, createMesh)
+    
+    x0 = x0L - offset*H; y0 = y0L - offset*H
+    
+    if(offset == 0):
+        meshGMSH = meshGMSHred
+        mesh = meshRed
     else:
-        LxL = LyL = NxL*(x0L/offset)
-    
-    r0 = 0.2*LxL/NxL
-    r1 = 0.4*LxL/NxL
-    times = 1
-    lcar = 0.1*LxL/NxL
-    NpLx = int(Lx/lcar) + 1
-    NpLxL = int(LxL/lcar) + 1
-    Vfrac = 0.282743
-    
-    g = gmts.displacementGeneratorBoundary(x0L,y0L,LxL, LyL, NpLxL)
-    
-    
-    print("nodes per side",  NpLx)
-    print("nodes per internal side",  NpLxL )
-    
-    np.random.seed(seed)
-    
-    print('snapshot offset ', offset)
-    ellipseDataCentral = geni.circularRegular2Regions(r0, r1, NxL, NyL, Lx, Ly, offset, ordered = True)[:NL,:]
-    alphaFrac = np.sqrt((LxL*LyL)*Vfrac/(np.pi*np.sum(ellipseDataCentral[:,2]*ellipseDataCentral[:,2])))
-    ellipseDataCentral[:,2] = alphaFrac*ellipseDataCentral[:,2]
-
-    for nOut in range(noutPerOffset):
-        ellipseDataOuter = geni.circularRegular2Regions(r0, r1, NxL, NyL, Lx, Ly, offset, ordered = True)[NL:,:]
-        betaFrac = np.sqrt((1.0 - LxL*LyL)*Vfrac/(np.pi*np.sum(ellipseDataOuter[:,2]*ellipseDataOuter[:,2])))
-        ellipseDataOuter[:,2] = betaFrac*ellipseDataOuter[:,2]
-                     
-        ellipseData = np.concatenate((ellipseDataCentral,ellipseDataOuter),axis = 0)
-        
-        np.savetxt(folder + 'ellipseData_offset{0}_{1}.txt'.format(offset,nOut), ellipseData)
-        
-        meshGMSH = gmsh.ellipseMesh2Domains(x0L, y0L, LxL, LyL, NL, ellipseData, Lx, Ly , lcar, ifPeriodic)
-        meshGMSH.setTransfiniteBoundary(NpLx)
+        meshGMSH = gmsh.ellipseMesh2Domains(x0L, y0L, LxL, LyL, NL, ellipseData[:Nt], Lxt, Lyt, lcar, x0 = x0, y0 = y0)
+        meshGMSH.setTransfiniteBoundary(NpLxt)
         meshGMSH.setTransfiniteInternalBoundary(NpLxL)
-        
-        meshGMSHred = gmsh.ellipseMesh2(ellipseDataCentral, x0L, y0L, LxL, LyL , lcar, ifPeriodic)
-        meshGMSHred.setTransfiniteBoundary(NpLxL)
-        
-        mesh = feut.getMesh(meshGMSH, 'offset{0}_{1}'.format(offset,nOut), radFile)
-        meshRed = feut.getMesh(meshGMSHred, 'reduced_offset{0}_{1}'.format(offset,nOut), radFile)
+        mesh = feut.getMesh(meshGMSH, 'offset{0}_{1}'.format(offset,seed), radFile, createMesh)
 
-        BM = fmts.getBMrestriction(g, mesh)        
 
-        sigma, sigmaEps = fmts.getSigma_SigmaEps(param,mesh,eps)
-        
-        # Solving with Multiphenics
-        U = mpms.solveMultiscale(param, mesh, eps, op = opModel)
-        T, a, B = feut.getAffineTransformationLocal(U[0],mesh,[0,1])
-        Eps = - B.flatten()
+    BM = fmts.getBMrestriction(g, mesh)        
 
-        Utranslated = U[0] + T
+    sigma, sigmaEps = fmts.getSigma_SigmaEps(param,mesh,eps)
+    
+    # Solving with Multiphenics
+    U = mpms.solveMultiscale(param, mesh, eps, op = opModel, others = [x0, x0 + Lxt, y0, y0 + Lyt])
+    T, a, B = feut.getAffineTransformationLocal(U[0],mesh,[0,1])
+    Eps = - B.flatten()
 
-        sigma_Total = fmts.homogenisation(U[0], mesh, sigma, [0,1,2,3], sigmaEps).flatten()
-        sigma_MR = fmts.homogenisation(U[0], mesh, sigma, [0,1], sigmaEps).flatten()
-                
-        epsRed = -B + eps
-        
-        sigmaRed, sigmaEpsRed = fmts.getSigma_SigmaEps(param[0:2,:],meshRed,epsRed)
-        Ured = mpms.solveMultiscale(param[0:2,:], meshRed, epsRed, op = 'BCdirich_lag', others = [Utranslated])
-        sigma_red_MR = fmts.homogenisation(Ured[0], meshRed, sigmaRed, [0,1], sigmaEpsRed).flatten()
-        
-        print('sigma_MR:', sigma_MR)
-        print('sigma_red_MR:', sigma_red_MR)
-        print('sigma_MR - sigma_red_MR:', sigma_MR - sigma_red_MR)
-        
-        os.system("rm " + radFile.format('solution_red_offset{0}_{1}'.format(offset,nOut),'h5'))
-        
-        with HDF5File(MPI.comm_world, radFile.format('solution_red_offset{0}_{1}'.format(offset,nOut),'h5'), 'w') as f:
-            f.write(Ured[0], 'basic')
-                
-        
-        np.savetxt(folder + 'EpsList_offset{0}_{1}.txt'.format(offset,nOut), Eps)
-        np.savetxt(folder + 'sigma_offset{0}_{1}.txt'.format(offset,nOut), sigma_MR)
-        np.savetxt(folder + 'sigmaRed_offset{0}_{1}.txt'.format(offset,nOut), sigma_red_MR)
-        np.savetxt(folder + 'sigmaTotal_offset{0}_{1}.txt'.format(offset,nOut), sigma_Total)
+    Utranslated = U[0] + T
+
+    sigma_T = fmts.homogenisation(U[0], mesh, sigma, [0,1,2,3], sigmaEps).flatten()
+    sigma_L = fmts.homogenisation(U[0], mesh, sigma, [0,1], sigmaEps).flatten()
+            
+    epsRed = -B + eps
+    
+    sigmaRed, sigmaEpsRed = fmts.getSigma_SigmaEps(param[0:2,:],meshRed,epsRed)
+    Ured = mpms.solveMultiscale(param[0:2,:], meshRed, epsRed, op = 'BCdirich_lag', others = [Utranslated])
+    # sigma_red_MR = fmts.homogenisation(Ured[0], meshRed, sigmaRed, [0,1], sigmaEpsRed).flatten()
+    
+    print('sigma_L:', sigma_L)
+    
+    os.system("rm " + radFile.format('solRed_{0}_offset{1}_{2}'.format(opModel,offset,seed),'h5'))
+    
+    with HDF5File(MPI.comm_world, radFile.format('solRed_{0}_offset{1}_{2}'.format(opModel,offset,seed),'h5'), 'w') as f:
+        f.write(Ured[0], 'basic')
+            
+    iofe.postProcessing_complete(U[0], folder + 'sol_mesh_{0}_offset{1}_{2}.xdmf'.format(opModel,offset,seed), ['u','lame','vonMises'], param)
+    
+    np.savetxt(folder + 'EpsList_{0}_offset{1}_{2}.txt'.format(opModel,offset,seed), Eps)
+    np.savetxt(folder + 'sigmaL_{0}_offset{1}_{2}.txt'.format(opModel,offset,seed), sigma_L)
+    np.savetxt(folder + 'sigmaT_{0}_offset{1}_{2}.txt'.format(opModel,offset,seed), sigma_T)
         
                     

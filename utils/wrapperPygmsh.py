@@ -64,7 +64,9 @@ class ellipseMesh(myGmsh):
                 
 
 class ellipseMesh2Domains(ellipseMesh):
-    def __init__(self, x0L, y0L, LxL, LyL, NL, ellipseData, Lx, Ly , lcar, ifPeriodic):        
+    def __init__(self, x0L, y0L, LxL, LyL, NL, ellipseData, Lx, Ly , lcar, ifPeriodic = True, x0 = 0., y0 = 0. ):        
+        self.x0 = x0
+        self.y0 = y0
         self.x0L = x0L
         self.y0L = y0L
         self.LxL = LxL
@@ -74,7 +76,7 @@ class ellipseMesh2Domains(ellipseMesh):
         
     def createSurfaces(self):        
         self.recL = self.add_rectangle(self.x0L, self.x0L + self.LxL, self.y0L , self.y0L + self.LyL, 0.0, lcar=self.lcar, holes = self.eList[:self.NL])                 
-        self.rec = self.add_rectangle(0.0,self.Lx,0.0,self.Ly, 0.0, lcar=self.lcar, holes = self.eList[self.NL:] + [self.recL])
+        self.rec = self.add_rectangle(self.x0,self.x0 + self.Lx, self.y0, self.y0 + self.Ly, 0.0, lcar=self.lcar, holes = self.eList[self.NL:] + [self.recL])
     
     def physicalNaming(self):
         # self.add_physical(self.recL.surface, 'volL')

@@ -18,7 +18,19 @@ def solveMultiscale(param, M, eps, op, others = [[4]]):
     if(op == 'MR'):
         a,f,bcs,W = formulationMultiscaleMR(M, sigma, sigmaEps)
     elif(op == 'periodic'):
-        a,f,bcs,W = formulationMultiscale_periodic(M, sigma, sigmaEps)
+        if(len(others) == 4):
+            x0 = others[0]
+            x1 = others[1]
+            y0 = others[2]
+            y1 = others[3]
+        else:
+            x0 = 0.
+            x1 = 1.
+            y0 = 0.
+            y1 = 1.
+            
+        a,f,bcs,W = formulationMultiscale_periodic(M, sigma, sigmaEps, x0, x1, y0, y1)
+        
     elif(op == 'POD'):
         bbasis = others[0] 
         alpha = others[1] 
@@ -154,9 +166,9 @@ def formulationMultiscaleBCdirich_lag_zeroMean(M, sigma, sigmaEps, uD):
     
     return aa, ff, [], W
 
-def formulationMultiscale_periodic(M, sigma, sigmaEps):
+def formulationMultiscale_periodic(M, sigma, sigmaEps, x0 = 0., x1 = 1., y0 = 0., y1 = 1.):
 
-    V = df.VectorFunctionSpace(M,"CG", 1, constrained_domain = PeriodicBoundary())
+    V = df.VectorFunctionSpace(M,"CG", 1, constrained_domain = PeriodicBoundary(x0,x1,y0,y1))
     R = df.VectorFunctionSpace(M, "Real", 0)
     
     W = mp.BlockFunctionSpace([V,R])   

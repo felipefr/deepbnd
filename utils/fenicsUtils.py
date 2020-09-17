@@ -28,19 +28,19 @@ def Integral(u,dx,shape):
     
     return I
     
-def getMesh(meshGMSH, label, radFile):
-    meshGeoFile = radFile.format(label,'geo')
+def getMesh(meshGMSH, label, radFile, create = False):
+
     meshXmlFile = radFile.format(label,'xml')
-    meshMshFile = radFile.format(label,'msh')
     
-    meshGMSH.write(meshGeoFile,'geo')
-    os.system('gmsh -2 -algo del2d -format msh2 ' + meshGeoFile)
-    
-    os.system('dolfin-convert {0} {1}'.format(meshMshFile, meshXmlFile))
-    
-    mesh = fela.EnrichedMesh(meshXmlFile)
-    
-    return mesh
+    if(create):
+        meshGeoFile = radFile.format(label,'geo')
+        meshMshFile = radFile.format(label,'msh')
+        meshGMSH.write(meshGeoFile,'geo')
+        os.system('gmsh -2 -algo del2d -format msh2 ' + meshGeoFile)
+        
+        os.system('dolfin-convert {0} {1}'.format(meshMshFile, meshXmlFile))
+        
+    return fela.EnrichedMesh(meshXmlFile)
 
 
 def affineTransformationExpession(a,B, mesh):
