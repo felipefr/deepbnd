@@ -22,11 +22,11 @@ import fenicsUtils as feut
 import matplotlib.pyplot as plt
 import copy
 
-folder = ["/Users", "/home"][1] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/comparisonDNNvsDNS/fineMR/"
+folder = ["/Users", "/home"][0] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/comparisonDNNvsDNS/CoarseP1_Lin/"
 
 radFile = folder + "RVE_POD_{0}.{1}"
 
-opModel = 'MR'
+opModel = 'Lin'
 createMesh = True
 
 contrast = 10.0
@@ -57,7 +57,7 @@ x0L = y0L = maxOffset*Lx/Nx
 LxL = LyL = NxL*(x0L/maxOffset)
 r0 = 0.2*LxL/NxL
 r1 = 0.4*LxL/NxL
-lcar = 0.05*LxL/NxL
+lcar = 0.1*LxL/NxL
 NpLx = int(Lx/lcar) + 1
 NpLxL = int(LxL/lcar) + 1
 Vfrac = 0.282743
@@ -77,7 +77,7 @@ for seed in range(0,5):
         alphaFrac = np.sqrt(((nout-ni)*H**2)*Vfrac/(np.pi*np.sum(ellipseData[ni:nout,2]**2)))
         ellipseData[ni:nout,2] = alphaFrac*ellipseData[ni:nout,2]
         
-    np.savetxt(folder + 'ellipseData_{0}.txt'.format(seed), ellipseData)
+    # np.savetxt(folder + 'ellipseData_{0}.txt'.format(seed), ellipseData)
 
     x0L_ref = 1.0/3.0
     y0L_ref = 1.0/3.0
@@ -86,6 +86,8 @@ for seed in range(0,5):
     LyL_ref = 1.0/3.0
     
     fac = LxL_ref/LxL
+    # print(fac)
+    # input()
     
     ellipseData_ref = copy.deepcopy(ellipseData[:NL])
     
@@ -102,7 +104,7 @@ for seed in range(0,5):
     meshGMSHred.setTransfiniteBoundary(NpLxL)
     meshRed = feut.getMesh(meshGMSHred, 'reduced_{0}'.format(seed), radFile, createMesh)    
     
-    for offset in range(maxOffset+1):
+    for offset in range(1):
                      
         Nt = (NxL + 2*offset)**2
         Lxt = Lyt =  H*np.sqrt(Nt)

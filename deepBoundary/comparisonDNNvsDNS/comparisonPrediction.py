@@ -41,6 +41,9 @@ EpsDirection = 0
 DATAfolder = "/Users/felipefr/EPFL/newDLPDES/DATA/"
 base_offline_folder = DATAfolder + "deepBoundary/data{0}/".format(simul_id)
 folderDNS = DATAfolder + "deepBoundary/comparisonDNNvsDNS/coarseP1/"
+folderDNS_Lin = DATAfolder + "deepBoundary/comparisonDNNvsDNS/coarseP1_Lin/"
+folderDNS_MR = DATAfolder + "deepBoundary/comparisonDNNvsDNS/coarseP1_MR/"
+
 
 
 seedI = 0
@@ -51,33 +54,30 @@ stressDNS = np.zeros((ntest,maxOffset  + 1 ,3))
 stressRad = folderDNS + 'sigmaL_{0}_offset{1}_{2}.txt'
 radiusRad = folderDNS + 'ellipseData_{0}.txt'
 
+stressRad_Lin = folderDNS_Lin + 'sigmaL_{0}_offset{1}_{2}.txt'
+stressRad_MR = folderDNS_MR + 'sigmaL_{0}_offset{1}_{2}.txt'
+
 modelDNS = 'periodic'
 radiusDNS = np.zeros((ntest,(2+2*maxOffset)**2))
 
-for i in range(nt):
+
+for i in range(ntest):
     radiusDNS[i,:] = np.loadtxt(radiusRad.format(i))[:,2]
     for j in range(maxOffset + 1 ):
         stressDNS[i,j,:] = np.loadtxt(stressRad.format(modelDNS,j,i))[[0,3,1]]
 
+modelDNS_Lin = 'Lin'
+stressDNS_Lin = np.zeros((ntest,maxOffset  + 1 ,3))
+for i in range(ntest):
+    for j in range(maxOffset + 1 ):
+        stressDNS_Lin[i,j,:] = np.loadtxt(stressRad_Lin.format(modelDNS_Lin,j,i))[[0,3,1]]
         
-# fig , ax = plt.subplots()
-# for i in range(nt):
-#     plt.plot(stressDNS[i,:,0])
-# plt.xlabel('size')
-
-# plt.grid()
-# Nlist = [5*i for i in range(8)]
-# ax1 = ax.twinx()
-# # ax1.plot(Nlist , np.mean(stressDNS[:,:,0],axis=0),'--')
-# # ax1.plot(Nlist , np.mean(stressDNS[:,:,0],axis=0) + np.std(stressDNS[:,:,0],axis=0),'--')
-# # ax1.plot(Nlist , np.mean(stressDNS[:,:,0],axis=0) - np.std(stressDNS[:,:,0],axis=0),'--')
-# for i in range(nt):
-#     ax1.plot(np.abs(stressDNS[i,:-1,0] - stressDNS[i,-1,0])/stressDNS[i,-1,0],'--')
-
-# # ax1.plot(np.mean(np.abs(stressDNS[:,:-1,0] - stressDNS[:,-1,0])/stressDNS[:,-1,0]),'k', '..')
-# ax1.set_ylabel('Error')
-# ax1.set_yscale('log')
-# plt.show()
+modelDNS_MR = 'MR'
+stressDNS_MR = np.zeros((ntest,maxOffset  + 1 ,3))
+for i in range(ntest):
+    for j in range(maxOffset + 1 ):
+        stressDNS_MR[i,j,:] = np.loadtxt(stressRad_MR.format(modelDNS_MR,j,i))[[0,3,1]]
+        
 
 arch_id = 1
 
@@ -104,8 +104,8 @@ fnames['prefix_in_X'] = base_offline_folder + "ellipseData_{0}.txt"
 ## fnames['prefix_in_Y'] = "./definitiveBasis/Y_L2bnd_original_{0}_{1}.hd5".format(simul_id, EpsDirection)
 fnames['prefix_in_Y'] = DATAfolder + 'deepBoundary/training3Nets/definitiveBasis/Y_H10_lite2_correction_{0}_{1}.hd5'.format(simul_id, EpsDirection)
 
-ns = 1000
-nsTrain = int(ns)
+
+nsTrain = 1000
 
 # nYlist = np.array([2,5,10,20,50,80,110,150]).astype('int')
 nYlist = np.array([2,5,8,12,16,20,25,30,35,40]).astype('int')
@@ -147,25 +147,19 @@ dsRef = Measure('ds', meshRef)
 nameInterpolation = DATAfolder + 'deepBoundary/training3Nets/definitiveBasis/interpolatedSolutions_lite2_{0}_{1}.hd5'
 Isol = myloadfile(nameInterpolation.format(simul_id,EpsDirection),'Isol')
 
-nameWbasis = 'deepBoundary/training3Nets/definitiveBasis/Wbasis_{0}{1}_{2}.hd5'
-nameYlist = 'deepBoundary/training3Nets/definitiveBasis/Y_{0}{1}_{2}.hd5' ### need to generate
-nameStress = base_offline_folder + 'sigmaList{0}.txt'
-nameTau = 'deepBoundary/training3Nets/definitiveBasis/tau_H10_lite2_correction_3_0.hd5'  ### need to generate
+nameWbasis = DATAfolder + 'deepBoundary/training3Nets/definitiveBasis/Wbasis_{0}{1}_{2}.hd5'
+# nameYlist = 'deepBoundary/training3Nets/definitiveBasis/Y_{0}{1}_{2}.hd5' ### need to generate = just if I want to comparare
+nameStress = folderDNS + 'sigmaList{0}.txt'
+nameTau = 'tau_H10_lite2_correction_3_0.hd5'  ### need to generate
 ## nameTau = './definitiveBasis/tau_L2bnd_original_solvePDE_complete_3_0.hd5'
 
 Nmax = np.max(nYlist) # 150 
 Wbasis = myloadfile(nameWbasis.format('H10_lite2_correction_', simul_id,EpsDirection),'Wbasis')[:Nmax,:]
-Ylist = myloadfile(nameYlist.format('H10_lite2_correction_', simul_id,EpsDirection),'Ylist')
+# Ylist =  myloadfile(nameYlist.format('H10_lite2_correction_', simul_id,EpsDirection),'Ylist')
 
 tau, tau0 = myhd.loadhd5(nameTau,['tau','tau_0'])
-sigmaList = np.loadtxt(nameStress.format(EpsDirection))[:ntest,[0,3,1]] # flatten to voigt notation
+# sigmaList = np.loadtxt(nameStress.format(EpsDirection))[:ntest,[0,3,1]] # flatten to voigt notation
         
-# mseErrors = {}
-# mseErrors['POD_norm_stress'] = gdb.getMSEstresses(nYlist,Ylist[:ntest,:],tau,tau0,sigmaList)
-# mseErrors['POD_norm_L2bnd'] = gdb.getMSE(nYlist,Ylist[:ntest,:],Wbasis, Isol[:ntest,:], Vref, dsRef, dotProductL2bnd)
-# mseErrors['POD_norm_H10'] = gdb.getMSE(nYlist,Ylist[:ntest,:],Wbasis, Isol[:ntest,:], Vref, dxRef, dotProductH10)
-# mseErrors['POD_norm_L2'] = gdb.getMSE(nYlist,Ylist[:ntest,:],Wbasis, Isol[:ntest,:], Vref, dxRef, dotProductL2)
-
 
 # errors = {}
 # errors['L2bnd'] = []
@@ -173,63 +167,43 @@ sigmaList = np.loadtxt(nameStress.format(EpsDirection))[:ntest,[0,3,1]] # flatte
 # errors['L2'] = []
 # errors['stress'] = []
 
+run = 1
+Nmax = np.max(nYlist)
+stressDNN = np.zeros((len(nYlist)+1,ntest,3)) # zero case tested
 # run = 0
-# for i, nY in enumerate(nYlist):
-#     Yp_bar = models[i][run].predict(X[0][:ntest])
-#     Yp = scalerY[0].inverse_transform(np.concatenate((Yp_bar, np.zeros((ntest,Nmax-nY))),axis = 1))[:,:nY]
-#     errors['stress'].append(gdb.getMSEstresses([nY],Yp,tau,tau0,sigmaList)[0])
-#     errors['L2bnd'].append(gdb.getMSE([nY],Yp,Wbasis, Isol[:ntest,:], Vref, dsRef, dotProductL2bnd)[0])
-#     errors['H10'].append(gdb.getMSE([nY],Yp,Wbasis, Isol[:ntest,:], Vref, dxRef, dotProductH10)[0])
-#     errors['L2'].append(gdb.getMSE([nY],Yp,Wbasis, Isol[:ntest,:], Vref, dxRef, dotProductL2)[0])
+fac = 3.0
+X = radiusDNS[:,:4]*fac
+Xbar = scalerXj.transform(X)
+fac2 = 0.1
+
+stressDNN[0,:,:] = tau0[:ntest]
+for i, nY in enumerate(nYlist):
+    Yp_bar = models[i][run].predict(X[:ntest]) # this should be changed 
+    Yp = scalerY[0].inverse_transform(np.concatenate((Yp_bar, np.zeros((ntest,Nmax-nY))),axis = 1))[:,:nY]
     
+    stressDNN[i+1,:,:] = fac2*np.einsum('ijk,ij->ik',tau[:ntest,:nY,:],Yp[:ntest,:nY]) + tau0[:ntest]
     
-# mseErrors['model_norm_L2bnd'] = np.array(errors['L2bnd']) 
-# mseErrors['model_norm_H10'] = np.array(errors['H10']) 
-# mseErrors['model_norm_L2'] = np.array(errors['L2']) 
-# mseErrors['model_norm_stress'] = np.array(errors['stress']) 
+for i in range(ntest):
+    fig , ax = plt.subplots()
+    plt.plot(4 + 2*np.arange(9), stressDNS[i,:,0], label = 'periodic')
+    plt.plot(4 + 2*np.arange(9), stressDNS_Lin[i,:,0], label = 'linear bnd')
+    plt.plot(4 + 2*np.arange(9), stressDNS_MR[i,:,0], label = 'Minim. Rest.')
+    plt.xlabel('size offset')
+    plt.legend(loc = 1)
+    plt.grid()
+    ax1 = ax.twiny()
+    plt.plot([0] + list(nYlist), stressDNN[:,i,0], '--', label = 'DNN H10 1' )
+    ax1.set_xlabel('N RB')
+    
+    plt.legend(loc = 2)
+    plt.savefig("comparison_H10_1_ntest{0}.png".format(i))
+    plt.show()
+    
+ 
 
 
-# plt.figure(3, (9,7))
-# plt.suptitle("Average errors 100 snapshots (H10-based RB), Arch 1, Seed {0}".format(run+1))
-# plt.subplot('221')
-# plt.title('$L^2(\partial \Omega_{\mu})$')
-# plt.plot(nYlist,mseErrors['POD_norm_L2bnd'], '-o')
-# plt.plot(nYlist,mseErrors['model_norm_L2bnd'], '-o')
-# plt.xlabel('N')
-# plt.ylabel('error sqrt(mse)')
-# plt.yscale('log')
-# plt.grid()
-# plt.legend(['POD', 'DNN'])
-# plt.subplot('222')
-# plt.title('$L^2(\Omega_{\mu})$')
-# plt.plot(nYlist,mseErrors['POD_norm_L2'], '-o')
-# plt.plot(nYlist,mseErrors['model_norm_L2'], '-o')
-# plt.xlabel('N')
-# plt.ylabel('error sqrt(mse)')
-# plt.yscale('log')
-# plt.grid()
-# plt.legend(['POD', 'DNN'])
-# plt.subplot('223')
-# plt.title('$H^1_0(\Omega_{\mu})$')
-# plt.plot(nYlist,mseErrors['POD_norm_H10'], '-o')
-# plt.plot(nYlist,mseErrors['model_norm_H10'], '-o')
-# plt.xlabel('N')
-# plt.ylabel('error sqrt(mse)')
-# plt.yscale('log')
-# plt.grid()
-# plt.legend(['POD', 'DNN'])
-# plt.subplot('224')
-# plt.title('Homogenised Stress')
-# plt.plot(nYlist,mseErrors['POD_norm_stress'], '-o')
-# plt.plot(nYlist,mseErrors['model_norm_stress'], '-o')
-# plt.xlabel('N')
-# plt.ylabel('error sqrt(mse)')
-# plt.yscale('log')
-# plt.grid()
-# plt.legend(['POD', 'DNN']) 
-# plt.tight_layout(rect=[0, 0.03, 1, 0.97])
-
-
-# plt.savefig("comparisonPODMSE/norms_POD_DNN_H10_corrected_arch1_seed{0}.png".format(run+1))
-# plt.show()
-
+# ax1.plot(Nlist , np.mean(stressDNS[:,:,0],axis=0),'--')
+# ax1.plot(Nlist , np.mean(stressDNS[:,:,0],axis=0) + np.std(stressDNS[:,:,0],axis=0),'--')
+# ax1.plot(Nlist , np.mean(stressDNS[:,:,0],axis=0) - np.std(stressDNS[:,:,0],axis=0),'--')
+# for i in range(nt):
+#     ax1.plot(np.abs(stressDNS[i,:-1,0] - stressDNS[i,-1,0])/stressDNS[i,-1,0],'--')

@@ -56,4 +56,4 @@ def circularRegular2Regions(r0, r1, NxL, NyL, Lx = 1.0, Ly=1.0, offset = 0, orde
         # return paramExport[orderedIndexesBox(Nx,Ny,offset)]
         return paramExport[orderedIndexesTotal(Nx,Ny,NxL)]        
     else:
-        return paramExport
+        return paramExport, orderedIndexesTotal(Nx,Ny,NxL), orderedIndexesBox(Nx,Ny,offset)

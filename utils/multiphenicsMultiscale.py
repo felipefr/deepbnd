@@ -58,6 +58,9 @@ def solveMultiscale(param, M, eps, op, others = [[4]]):
 
         a,f,bcs,W = formulationMultiscaleBCdirich_lag_zeroMean(M, sigma, sigmaEps, uD)
         
+    elif(op == 'Lin'):
+        a,f,bcs,W = formulationMultiscaleBClinear(M, sigma, sigmaEps)
+        
     start = timer()
     A = mp.block_assemble(a)
     F = mp.block_assemble(f)
@@ -83,7 +86,7 @@ def solveMultiscale(param, M, eps, op, others = [[4]]):
 
 def formulationMultiscaleMR(M, sigma, sigmaEps):
 
-    V = df.VectorFunctionSpace(M,"CG", 2)
+    V = df.VectorFunctionSpace(M,"CG", 1)
     R1 = df.VectorFunctionSpace(M, "Real", 0)
     R2 = df.TensorFunctionSpace(M, "Real", 0)
     
@@ -116,6 +119,9 @@ def formulationMultiscaleBCdirich_zeroMean(M, sigma, sigmaEps, linBdr, uD):
     
     W = mp.BlockFunctionSpace([V,R])   
     
+    uD = df.Function(V)
+    uD.vector().set_local(np.zeros(V.dim()))
+    
     bc1 = mp.DirichletBC(W.sub(0), uD , M.boundaries, linBdr[0]) 
                 
     uu = mp.BlockTrialFunction(W)
@@ -132,13 +138,39 @@ def formulationMultiscaleBCdirich_zeroMean(M, sigma, sigmaEps, linBdr, uD):
     return aa, ff, bcs, W
 
 
+
+def formulationMultiscaleBClinear(M, sigma, sigmaEps):
+
+    V = df.VectorFunctionSpace(M,"CG", 1)
+    R = df.VectorFunctionSpace(M, "Real", 0)
+    
+    W = mp.BlockFunctionSpace([V,R])   
+    
+    zero = df.Function(V)
+    zero.vector().set_local(np.zeros(V.dim()))
+    
+    bc1 = mp.DirichletBC(W.sub(0), zero , M.boundaries, np.max(M.boundaries.array())) 
+                
+    uu = mp.BlockTrialFunction(W)
+    vv = mp.BlockTestFunction(W)
+    (u, p) = mp.block_split(uu)
+    (v, q) = mp.block_split(vv)
+
+    aa = [[df.inner(sigma(u),fela.epsilon(v))*M.dx , df.inner(p,v)*M.dx], [df.inner(q,u)*M.dx , 0]]
+    ff = [-df.inner(sigmaEps, fela.epsilon(v))*M.dx, 0]    
+ 
+    
+    bcs = mp.BlockDirichletBC([bc1])
+    
+    return aa, ff, bcs, W
+
 def formulationMultiscaleBCdirich_lag_zeroMean(M, sigma, sigmaEps, uD):
 
     if('u' in M.V.keys()):
         print("using  ", M.V['u'])
         V = M.V['u']
     else:
-        V = df.VectorFunctionSpace(M,"CG", 2)
+        V = df.VectorFunctionSpace(M,"CG", 1)
     
     R = df.VectorFunctionSpace(M, "Real", 0)
     
@@ -168,7 +200,7 @@ def formulationMultiscaleBCdirich_lag_zeroMean(M, sigma, sigmaEps, uD):
 
 def formulationMultiscale_periodic(M, sigma, sigmaEps, x0 = 0., x1 = 1., y0 = 0., y1 = 1.):
 
-    V = df.VectorFunctionSpace(M,"CG", 2, constrained_domain = PeriodicBoundary(x0,x1,y0,y1))
+    V = df.VectorFunctionSpace(M,"CG", 1, constrained_domain = PeriodicBoundary(x0,x1,y0,y1))
     R = df.VectorFunctionSpace(M, "Real", 0)
     
     W = mp.BlockFunctionSpace([V,R])   

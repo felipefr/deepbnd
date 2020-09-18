@@ -55,12 +55,9 @@ def loadSimulations(ib,ie, radFile, radSolution):
         
     return S
 
-def interpolationSolutions(Isol,Vref,Nmax,radFile, radSolution, N0 = 0):
-
-    ns = Nmax-N0
-    # Isol = np.zeros((ns, Vref.dim())) 
+def interpolationSolutions(Isol,Vref,ns,radFile, radSolution, N0 = 0):
         
-    for i,ii in enumerate(range(N0,Nmax)):
+    for i,ii in enumerate(range(N0,ns)):
         ui = loadSimulation(ii,radFile, radSolution)
         Isol[i,:] = interpolate(ui,Vref).vector()[:]
 
@@ -206,7 +203,10 @@ def getStressBasis(tau, Wbasis, ns, Nmax, EpsFlucPrefix, nameMeshPrefix, Vref, p
     
     EpsUnits = np.array([[1.,0.,0.,0.], [0.,0.,0.,1.],[0.,0.5,0.5,0.]])[EpsDirection,:]
     
-    EpsFluc = np.loadtxt(EpsFlucPrefix.format(EpsDirection))
+    if(len(EpsFlucPrefix)> 0):
+        EpsFluc = np.loadtxt(EpsFlucPrefix.format(EpsDirection))
+    else:
+        EpsFluc = np.zeros((ns,4))
     
     basis = Function(Vref)
     
@@ -256,7 +256,10 @@ def getStressBasis_Vrefbased(tau, Wbasis, ns, Nmax, EpsFlucPrefix, nameMeshPrefi
        
     EpsUnits = np.array([[1.,0.,0.,0.], [0.,0.,0.,1.],[0.,0.5,0.5,0.]])[EpsDirection,:]
     
-    EpsFluc = np.loadtxt(EpsFlucPrefix.format(EpsDirection))
+    if(len(EpsFlucPrefix)> 0):
+        EpsFluc = np.loadtxt(EpsFlucPrefix.format(EpsDirection))
+    else:
+        EpsFluc = np.zeros((ns,4))
     
     basis = Function(Vref)
     VSref = FunctionSpace(Vref.mesh(), 'CG', 4)
