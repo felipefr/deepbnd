@@ -83,7 +83,7 @@ def solveMultiscale(param, M, eps, op, others = [[4]]):
 
 def formulationMultiscaleMR(M, sigma, sigmaEps):
 
-    V = df.VectorFunctionSpace(M,"CG", 1)
+    V = df.VectorFunctionSpace(M,"CG", 2)
     R1 = df.VectorFunctionSpace(M, "Real", 0)
     R2 = df.TensorFunctionSpace(M, "Real", 0)
     
@@ -138,7 +138,7 @@ def formulationMultiscaleBCdirich_lag_zeroMean(M, sigma, sigmaEps, uD):
         print("using  ", M.V['u'])
         V = M.V['u']
     else:
-        V = df.VectorFunctionSpace(M,"CG", 1)
+        V = df.VectorFunctionSpace(M,"CG", 2)
     
     R = df.VectorFunctionSpace(M, "Real", 0)
     
@@ -168,7 +168,7 @@ def formulationMultiscaleBCdirich_lag_zeroMean(M, sigma, sigmaEps, uD):
 
 def formulationMultiscale_periodic(M, sigma, sigmaEps, x0 = 0., x1 = 1., y0 = 0., y1 = 1.):
 
-    V = df.VectorFunctionSpace(M,"CG", 1, constrained_domain = PeriodicBoundary(x0,x1,y0,y1))
+    V = df.VectorFunctionSpace(M,"CG", 2, constrained_domain = PeriodicBoundary(x0,x1,y0,y1))
     R = df.VectorFunctionSpace(M, "Real", 0)
     
     W = mp.BlockFunctionSpace([V,R])   
