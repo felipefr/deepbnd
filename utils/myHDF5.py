@@ -1,5 +1,6 @@
 import h5py
 import numpy as np
+from functools import partial
 # import sys; sys.__stdout__ = sys.__stderr__ # workaround
 
 # defaultCompression = {'dtype' : 'f8',  'compression' : "gzip", 
@@ -63,6 +64,10 @@ def txt2hd5(filenameIn, filenameOut, label, reshapeLast = [False,0], mode = 'w-'
                 defaultCompression['chunks'] = toChunk(data.shape)
                 f.create_dataset(l, data = data, **defaultCompression)
        
+        
+def addDataset(f,X, label):
+    defaultCompression['chunks'] = toChunk(X.shape)
+    f.create_dataset(label, data = X , **defaultCompression)
 
 def savehd5(filename, X,label, mode):
     with h5py.File(filename, mode) as f:
@@ -97,3 +102,13 @@ def loadhd5_openFile(filename, label, mode = 'r'):
             X.append(f[l])
 
     return X, f
+
+def getLoadfunc(namefile, label):
+       
+    loadfunc = np.loadtxt
+    if(namefile[-3:]=='hd5'):
+        loadfunc = partial(loadhd5, label = label)
+            
+    return loadfunc
+
+genericLoadfile = lambda x, y : getLoadfunc(x,y)(x)

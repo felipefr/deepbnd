@@ -28,7 +28,7 @@ def Integral(u,dx,shape):
     
     return I
     
-def getMesh(meshGMSH, label, radFile, create = False):
+def getMesh(meshGMSH, label, radFile, create = True):
 
     meshXmlFile = radFile.format(label,'xml')
     
@@ -60,3 +60,94 @@ def getAffineTransformationLocal(U,mesh, domains_id = []):
     B = -epsFlucL
 
     return affineTransformationExpession(a,B, mesh) , a, B
+
+class myfog(df.UserExpression): # fog f,g : R2 -> R2, generalise 
+    def __init__(self, f, g, **kwargs):
+        self.f = f 
+        self.g = g
+        f.set_allow_extrapolation(True)
+        super().__init__(**kwargs)
+
+    def eval(self, values, x):
+        values[:2] = self.f(self.g(x))
+        
+    def value_shape(self):
+        return (2,)
+
+# code = '''
+# #include <pybind11/pybind11.h>
+# #include <pybind11/eigen.h>
+# #include <dolfin/function/Expression.h>
+
+# class MyFunc : public dolfin::Expression
+# {
+# public:
+#   boost::shared_ptr<dolfin::Expression> f;
+#   boost::shared_ptr<dolfin::Expression> g;
+
+#   MyFunc() : Expression() { }
+
+#   void eval(Array<double>& values, const Array<double>& x,
+#             const ufc::cell& c) const
+#   {
+#       Array<double> val(2);
+#       g->eval(val, x, c);
+#       f->eval(values, val, c);
+#   }
+# };
+    
+# PYBIND11_MODULE(SIGNATURE, m) {
+#     pybind11::class_<MyFunc, std::shared_ptr<MyFunc>, dolfin::Expression>
+#     (m, "MyFunc")
+#     .def("__call__", &MyFunc::eval)
+# }
+# '''
+
+
+# code = """
+# #include <pybind11/pybind11.h>
+# #include <pybind11/eigen.h>
+# #include <dolfin/function/Expression.h>
+
+# typedef Eigen::Ref<Eigen::VectorXd> npArray;
+# typedef Eigen::Ref<Eigen::VectorXi> npArrayInt;
+
+# class myCoeff : public dolfin::Expression {
+#   public:
+    
+#     npArray coeffs; // dynamic double vector
+#     npArrayInt materials; // dynamic integer vector
+    
+#     myCoeff(npArray c, npArrayInt mat) : dolfin::Expression(), coeffs(c), materials(mat) { }
+
+#     void eval(Eigen::Ref<Eigen::VectorXd> values,
+#                       Eigen::Ref<const Eigen::VectorXd> x,
+#                       const ufc::cell& cell) const {
+        
+#         values[0] = coeffs[materials[cell.index]];
+#     }
+    
+#    void updateCoeffs(Eigen::VectorXd c, int n){ 
+#        for(int i = 0; i<n; i++){
+#           coeffs[i]= c[i];
+#        }
+#    }
+                      
+                    
+# };
+
+# PYBIND11_MODULE(SIGNATURE, m) {
+#     pybind11::class_<myCoeff, std::shared_ptr<myCoeff>, dolfin::Expression>
+#     (m, "myCoeff")
+#     .def(pybind11::init<npArray,npArrayInt>())
+#     .def("__call__", &myCoeff::eval)
+#     .def("updateCoeffs", &myCoeff::updateCoeffs);
+# }
+# """
+
+# def my_fog(f,g): # f(g(x))
+#     compiledCode = df.compile_cpp_code(code)
+#     fg = df.CompiledExpression(compiledCode, degree = 1)
+#     fg.f = f
+#     fg.g = g
+#     return fg

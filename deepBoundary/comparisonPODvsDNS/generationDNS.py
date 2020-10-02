@@ -23,13 +23,13 @@ import matplotlib.pyplot as plt
 import copy
 import myHDF5 as myhd
 
-folder = ["/Users", "/home"][0] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/comparisonPODvsDNS/MR/"
-folderMesh = ["/Users", "/home"][0] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/comparisonPODvsDNS/Per/"
+folder = ["/Users", "/home"][0] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/comparisonPODvsDNS/Lin/"
+folderMesh = ["/Users", "/home"][0] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/comparisonPODvsDNS/meshes/"
 
 radFile = folder + "RVE_POD_{0}.{1}"
 radFileMesh = folderMesh + "RVE_POD_{0}.{1}"
 
-opModel = 'MR'
+opModel = 'Lin'
 createMesh = False
 
 contrast = 10.0
@@ -82,7 +82,7 @@ ns = 20
 
 os.system('rm ' + folder + 'EpsList_{0}.hd5'.format(opModel))
 os.system('rm ' + folder + 'sigmaL_{0}.hd5'.format(opModel))
-os.system('rm ' + folder + 'sigmaL_{0}.hd5'.format(opModel))
+os.system('rm ' + folder + 'sigmaT_{0}.hd5'.format(opModel))
 
 EpsList, fEps = myhd.zeros_openFile(folder + 'EpsList_{0}.hd5'.format(opModel), (ns,maxOffset + 1,4)  , 'EpsList', mode = 'w')
 SigmaL_list, fsigL = myhd.zeros_openFile(folder + 'sigmaL_{0}.hd5'.format(opModel), (ns,maxOffset + 1,4) , 'SigmaL',  mode = 'w')
@@ -95,8 +95,8 @@ for seed in range(ns):
     ellipseData[permBox[4:],2] = outerRadius
     ellipseData = ellipseData[permTotal]
     
-    
-    for i in range(maxOffset+1):
+    # reescaling (but taking the outer as it is)
+    for i in range(1): # should be maxOffset
         ni =  (NxL + 2*(i-1))*(NxL + 2*(i-1))
         nout = (NxL + 2*i)*(NxL + 2*i) 
         alphaFrac = np.sqrt(((nout-ni)*H**2)*Vfrac/(np.pi*np.sum(ellipseData[ni:nout,2]**2)))

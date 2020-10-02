@@ -8,6 +8,7 @@ import myCoeffClass as coef
 import numpy as np
 import fenicsUtils as feut
 import generatorMultiscale as gmts
+import fenicsUtils as feut
 from PointExpression import *
 
 def getBMrestriction(g,M):
@@ -453,6 +454,34 @@ class PeriodicBoundary(df.SubDomain):
         y[0] = x[0] + self.x0 - (self.x1 if right else self.x0)
         y[1] = x[1] + self.y0 - (self.y1 if top else self.y0)
 
+class PeriodicBoundaryInverse(df.SubDomain):
+    # Left boundary is "target domain" G
+    def __init__(self,x0 = 0.0,x1 = 1.0,y0 = 0.0 ,y1 = 1.0, **kwargs):
+        self.x0 = x0
+        self.x1 = x1
+        self.y0 = y0
+        self.y1 = y1
+        
+        super().__init__(**kwargs)
+    
+    def inside(self, x, on_boundary):
+        # return True if on left or bottom boundary AND NOT on one of the two corners (0, 1) and (1, 0)
+        if(on_boundary):
+            left, bottom, right, top = self.checkPosition(x)
+            return (right and not bottom) or (top and not left)
+        
+        return False
+     
+    def checkPosition(self,x):
+        return df.near(x[0], self.x0), df.near(x[1],self.y0), df.near(x[0], self.x1), df.near(x[1], self.y1)
+    
+    def map(self, x, y):
+        left, bottom, right, top = self.checkPosition(x)
+        
+        y[0] = x[0] + (self.x1 - self.x0 if left else 0.0)
+        y[1] = x[1] + (self.y1 - self.y0 if bottom else 0.0)
+    
+
 def getSigmaEps(param,M,eps):
     materials = M.subdomains.array().astype('int32')
     materials = materials - np.min(materials)
@@ -474,3 +503,11 @@ def getSigma(param,M):
         return lame[0]*nabla_div(u)*df.Identity(2) + 2*lame[1]*fela.epsilon(u)
     
     return sigma
+
+
+def getAntiperiodic(f, r = df.Expression(('2.*x0 - x[0]','2.*y0 - x[1]'), x0 = 0.5,  y0 = 0.5, degree = 1) ):
+    fr = df.interpolate(feut.myfog(f,r), f.function_space())
+    fr.vector().set_local( 0.5*(f.vector()[:] - fr.vector()[:]))
+    return fr
+
+

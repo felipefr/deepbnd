@@ -22,7 +22,7 @@ import fenicsUtils as feut
 import matplotlib.pyplot as plt
 
 
-folder = "/Users/felipefr/EPFL/newDLPDES/DATA/deepBoundary/data5/"
+folder = "/Users/felipefr/EPFL/newDLPDES/DATA/deepBoundary/data3_justToCheck/"
 #folder = "/home/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/data2/"
 
 radFile = folder + "RVE_POD_{0}.{1}"
@@ -58,7 +58,7 @@ lamb1 = elut.eng2lambPlane(nu1,E1)
 mu2 = elut.eng2mu(nu2,E2)
 lamb2 = elut.eng2lambPlane(nu2,E2)
 
-Neps = 3
+Neps = 1
 epsList = [np.zeros((2,2)),np.zeros((2,2)),np.zeros((2,2))]
 epsList[0][0,0] = 1.0
 epsList[1][1,1] = 1.0
@@ -68,13 +68,13 @@ epsList[2][0,1] = 0.5
 param = np.array([[lamb1, mu1], [lamb2,mu2],[lamb1, mu1], [lamb2,mu2]])
 
 ns1 = 1
-ns2 = 1000
+ns2 = 10
 
 ns = ns1*ns2
 
 g = gmts.displacementGeneratorBoundary(x0L,y0L,LxL, LyL, NpLxL)
 
-seed = 5
+seed = 3
 np.random.seed(seed)
     
 Eps = np.zeros((ns,Neps,4))
@@ -140,6 +140,8 @@ for n1 in range(ns1):
             
             with HDF5File(MPI.comm_world, radFile.format('solution_red_' + str(n) + "_" + str(n3),'h5'), 'w') as f:
                 f.write(Ured[0], 'basic')
+                    
+            iofe.postProcessing_complete(U[0], folder + 'sol_mesh_{0}_{1}.xdmf'.format(n,n3), ['u','lame','vonMises'], param)
                     
                        
             sigmaList[n,n3,:] = sigma_red_MR

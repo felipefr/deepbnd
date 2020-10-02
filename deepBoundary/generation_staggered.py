@@ -21,8 +21,8 @@ import fenicsUtils as feut
 
 import matplotlib.pyplot as plt
 
-# folder = "/Users/felipefr/EPFL/newDLPDES/DATA/deepBoundary/data1/"
-folder = "~/EPFL/newDLPDEs/DATA/deepBoundary/data1/"
+folder = "/Users/felipefr/EPFL/newDLPDES/DATA/deepBoundary/data1/"
+# folder = "~/EPFL/newDLPDEs/DATA/deepBoundary/data1/"
 
 radFile = folder + "RVE_POD_{0}.{1}"
 

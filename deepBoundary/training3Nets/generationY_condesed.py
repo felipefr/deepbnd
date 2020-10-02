@@ -12,7 +12,7 @@ import myHDF5 as myhd
 # EpsDirection = int(sys.argv[2])
 
 simul_id = 3
-EpsDirection = 2
+EpsDirection = 0
 
 print("starting with", simul_id, EpsDirection)
 folderBasis = "./definitiveBasis/"
@@ -32,7 +32,7 @@ nameInterpolation = folderBasis + 'interpolatedSolutions_{0}_{1}.hd5'
 nameTau = folderBasis + 'tau_{0}_{1}_{2}.hd5'
 EpsFlucPrefix = folder + 'EpsList_{0}.txt'
 
-dotProduct = lambda u,v, dx : assemble(inner(u,v)*dx)
+dotProduct = lambda u,v, dx : assemble(inner(u,v)*ds)
 # dotProduct = lambda u,v, m : assemble(inner(grad(u),grad(v))*m.dx)
 # dotProduct = lambda u,v, dx : assemble(inner(grad(u),grad(v))*dx)
 # dotProduct = lambda u,v, dx : assemble(inner(u,v)*dx) + assemble(inner(grad(u),grad(v))*dx) 
@@ -52,8 +52,8 @@ Vref = VectorFunctionSpace(meshRef,"CG", 1)
 # W0S = FunctionSpace(mesh0, 'CG', 4)
 # Vref = VectorFunctionSpace(meshRef,"CG", 2)
 
-dxRef = Measure('dx', meshRef) 
-# dsRef = Measure('ds', meshRef) 
+# dxRef = Measure('dx', meshRef) 
+dsRef = Measure('ds', meshRef) 
 
 
 # Exporting interpolation matrix to ease other calculations
@@ -70,13 +70,13 @@ dxRef = Measure('dx', meshRef)
 # fIsol.close()
 
 # Computing basis 
-# C, fC = myhd.loadhd5_openFile(nameC.format(formulationLabel3,simul_id,EpsDirection),'C')
-# Isol, fIsol = myhd.loadhd5_openFile(nameInterpolation.format(simul_id,EpsDirection),'Isol')
-# Wbasis, f = myhd.zeros_openFile(nameWbasis.format(formulationLabel2,simul_id,EpsDirection), (Nmax,Isol.shape[1]), 'Wbasis')
-# gdb.computingBasis(Wbasis,C,Isol,Nmax,radFile, nameSol)
-# f.close()
-# fC.close()
-# fIsol.close()
+C, fC = myhd.loadhd5_openFile(nameC.format(formulationLabel3,simul_id,EpsDirection),'C')
+Isol, fIsol = myhd.loadhd5_openFile(nameInterpolation.format(simul_id,EpsDirection),'Isol')
+Wbasis, f = myhd.zeros_openFile(nameWbasis.format(formulationLabel2,simul_id,EpsDirection), (Nmax,Isol.shape[1]), 'Wbasis')
+gdb.computingBasis(Wbasis,C,Isol,Nmax,radFile, nameSol)
+f.close()
+fC.close()
+fIsol.close()
 
 
 # #  ================  Extracting Alphas ============================================
@@ -89,17 +89,17 @@ dxRef = Measure('dx', meshRef)
 # fw.close()
 
 # Computing basis for stress
-E1 = 10.0
-nu = 0.3
-contrast = 0.1 #inverse then in generation
-ns = 100
-Nmax = 156
-Wbasis, fw = myhd.loadhd5_openFile(nameWbasis.format(formulationLabel3,simul_id,EpsDirection), 'Wbasis')
-tau, f = myhd.zeros_openFile(nameTau.format(formulationLabel2, simul_id, EpsDirection), [(ns,Nmax,3),(ns,3)]  , ['tau', 'tau_0'])
-# gdb.getStressBasis_Vrefbased(tau,Wbasis, ns, Nmax, EpsFlucPrefix, nameMeshPrefix, Vref, [E1,nu, contrast], EpsDirection)
-gdb.getStressBasis(tau,Wbasis, ns, Nmax, EpsFlucPrefix, nameMeshPrefix, Vref, [E1,nu, contrast], EpsDirection,"solvePDE_BC")
-fw.close()
-f.close()
+# E1 = 10.0
+# nu = 0.3
+# contrast = 0.1 #inverse then in generation
+# ns = 100
+# Nmax = 156
+# Wbasis, fw = myhd.loadhd5_openFile(nameWbasis.format(formulationLabel3,simul_id,EpsDirection), 'Wbasis')
+# tau, f = myhd.zeros_openFile(nameTau.format(formulationLabel2, simul_id, EpsDirection), [(ns,Nmax,3),(ns,3)]  , ['tau', 'tau_0'])
+# # gdb.getStressBasis_Vrefbased(tau,Wbasis, ns, Nmax, EpsFlucPrefix, nameMeshPrefix, Vref, [E1,nu, contrast], EpsDirection)
+# gdb.getStressBasis(tau,Wbasis, ns, Nmax, EpsFlucPrefix, nameMeshPrefix, Vref, [E1,nu, contrast], EpsDirection,"solvePDE_BC")
+# fw.close()
+# f.close()
 
 
 # scaling
