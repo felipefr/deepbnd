@@ -1,7 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plotMeanAndStd(x, y, a, l, linetypes = ['-o','--','--']):
-    plt.plot(x, np.mean(y, axis = a), linetypes[0], label = l)
-    plt.plot(x, np.mean(y, axis = a) + np.std(y, axis = a) , linetypes[1], label = l + ' + std')
-    plt.plot(x, np.mean(y, axis = a) - np.std(y, axis = a) , linetypes[2], label = l + ' - std')
+plt.rc("text", usetex = True)
+plt.rc("font", family = 'serif')
+
+def plotMeanAndStd(x, y, l='', linetypes = ['-o','--','--'], axis = 0):
+    plt.plot(x, np.mean(y, axis = axis), linetypes[0], label = l)
+    plt.plot(x, np.mean(y, axis = axis) + np.std(y, axis = axis) , linetypes[1], label = l + ' + std')
+    plt.plot(x, np.mean(y, axis = axis) - np.std(y, axis = axis) , linetypes[2], label = l + ' - std')
+    
+def plotMeanAndStd_noStdLegend(x, y, l='', linetypes = ['-o','--','--'], axis = 0):
+    plt.plot(x, np.mean(y, axis = axis), linetypes[0], label = l)
+    plt.plot(x, np.mean(y, axis = axis) + np.std(y, axis = axis) , linetypes[1])
+    plt.plot(x, np.mean(y, axis = axis) - np.std(y, axis = axis) , linetypes[2])
