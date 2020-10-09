@@ -49,40 +49,126 @@ class EnrichedMesh(df.Mesh):
     def nameRegion(self, name, regionMarker):
         self.dxR[name] = reduce(lambda x,y: x+y, [self.dx(r) for r in regionMarker] )
         
-        
-
-def getMesh(meshGMSH,  meshXmlFile, create = True):
-    
-    radFile = meshXmlFile[:-4] + '.{0}'
-    
-    if(create):
-        meshGeoFile = radFile.format('geo')
-        meshMshFile = radFile.format('msh')
-        meshGMSH.write(meshGeoFile,'geo')
-        os.system('gmsh -2 -algo del2d -format msh2 ' + meshGeoFile)
-        
-        os.system('dolfin-convert {0} {1}'.format(meshMshFile, meshXmlFile))
-        
-    return EnrichedMesh(meshXmlFile)
-
-
+      
 class myGmsh(pygmsh.built_in.Geometry):
     def __init__(self):
         super().__init__()    
         self.mesh = None
+        self.radFileMesh = 'defaultMesh.{0}'
+        self.format = 'xdmf'
         
-    def write(self,savefile, opt = 'meshio'):
+    def writeGeo(self, savefile = ''):
+        if(len(savefile) == 0):
+            savefile = self.radFileMesh.format('geo')
+            
+        f = open(savefile,'w')
+        f.write(self.get_code())
+        f.close()
+
+    def writeXML(self, savefile = ''):
+        if(len(savefile) == 0):
+            savefile = self.radFileMesh.format('xml')
+        else:
+            self.radFileMesh = savefile[:-4] + '.{0}'
+         
+        meshGeoFile = self.radFileMesh.format('geo')
+        meshMshFile = self.radFileMesh.format('msh')
+        self.writeGeo(meshGeoFile)
+        os.system('gmsh -2 -algo del2d -format msh2 ' + meshGeoFile)
+        os.system('dolfin-convert {0} {1}'.format(meshMshFile, savefile))    
+    
+    def write(self,savefile = '', opt = 'meshio'):
+        if(type(self.mesh) == type(None)):
+            self.generate(gmsh_opt=['-algo','del2d'])
+        
+        if(len(savefile) == 0):
+            savefile = self.radFileMesh.format('xdmf')
+        
         if(opt == 'meshio'):
             meshio.write(savefile, self.mesh)
         elif(opt == 'fenics'):
             iofe.exportMeshHDF5_fromGMSH(self.mesh, savefile)
-        elif(opt == 'geo'):
-            f = open(savefile,'w')
-            f.write(self.get_code())
-            f.close()
+
             
     def generate(self , gmsh_opt = ['']):
-        self.mesh = pygmsh.generate_mesh(self, extra_gmsh_arguments = gmsh_opt )
+        self.mesh = pygmsh.generate_mesh(self, extra_gmsh_arguments = gmsh_opt, dim = 2,mesh_file_type = 'msh2')
+    
+    def getEnrichedMesh(self, savefile = ''):
+        
+        if(len(savefile) == 0):
+            savefile = self.radFileMesh.format(self.format)
+        
+        if(savefile[-3:] == 'xml'):
+            self.writeXML(savefile)
+            
+        elif(savefile[-4:] == 'xdmf'):
+            print("exporting to fenics")
+            self.write(savefile, 'fenics')
+        
+        return EnrichedMesh(savefile)
+    
+    def setNameMesh(self,nameMesh):
+        self.radFileMesh , self.format = nameMesh.split('.')
+        self.radFileMesh += ".{0}"
+        
+
+
+class rectangleMesh(myGmsh):
+    def __init__(self, x0, y0, Lx, Ly , lcar):
+        super().__init__()
+        
+        self.x0 = x0
+        self.y0 = y0
+        self.Lx = Lx
+        self.Ly = Ly
+        self.lcar = lcar    
+        self.createSurfaces()
+        self.physicalNaming()
+
+    def createSurfaces(self):
+        self.rec = self.add_rectangle(self.x0,self.x0 + self.Lx,self.y0,self.y0 + self.Ly, 0.0, lcar=self.lcar)
+    
+    def physicalNaming(self):
+        self.add_physical(self.rec.surface, 'vol')
+        [self.add_physical(e,'side' + str(i)) for i, e in enumerate(self.rec.lines)]
+    
+    def setTransfiniteBoundary(self,n):
+        self.set_transfinite_lines(self.rec.lines, n)
+        
+class degeneratedBoundaryRectangleMesh(myGmsh): # Used for implementation of L2bnd
+    def __init__(self, x0, y0, Lx, Ly, Nb): 
+        super().__init__()
+        
+        self.x0 = x0
+        self.y0 = y0
+        self.Lx = Lx
+        self.Ly = Ly
+        self.lcar = 2*self.Lx    ## just a huge value
+        self.createSurfaces()
+        self.physicalNaming()
+        self.set_transfinite_lines(self.extLines, Nb)
+
+    def createSurfaces(self):
+        p1 = self.add_point([self.x0, self.y0, 0.0], lcar = self.lcar)
+        p2 = self.add_point([self.x0 + self.Lx, self.y0, 0.0], lcar = self.lcar)
+        p3 = self.add_point([self.x0 + self.Lx, self.y0 + self.Ly ,0.0], lcar = self.lcar)
+        p4 = self.add_point([self.x0 , self.y0 + self.Ly ,0.0], lcar = self.lcar)
+        p5 = self.add_point([self.x0 + 0.5*self.Lx, self.y0 + 0.5*self.Ly ,0.0], lcar = self.lcar)
+        
+        p = [p1,p2,p3,p4]
+        
+        self.extLines = [ self.add_line(p[i],p[(i+1)%4]) for i in range(4) ]
+        self.intLines = [ self.add_line(p[i],p5) for i in range(4) ]
+        
+        LineLoops = [ self.add_line_loop(lines = [-self.intLines[i], self.extLines[i] ,self.intLines[(i+1)%4]]) for i in range(4)]
+        self.Surfs = []
+        for ll in LineLoops:
+            self.Surfs.append(self.add_surface(ll))
+    
+    def physicalNaming(self):
+        self.add_physical(self.Surfs, 'vol')
+        [self.add_physical(e,'side' + str(i)) for i, e in enumerate(self.extLines)]
+    
 
 class ellipseMesh(myGmsh):
     def __init__(self, ellipseData, Lx, Ly , lcar):
@@ -150,32 +236,6 @@ class ellipseMesh2Domains(ellipseMesh):
     def setTransfiniteInternalBoundary(self,n):
         self.set_transfinite_lines(self.recL.lines, n)
 
-# class ellipseMesh2DomainsPhysicalMeaning(ellipseMesh2Domains):
-#     def physicalNaming(self):
-#         self.add_physical(self.rec.lines,1)
-#         self.add_physical(self.recL.lines,2)
-#         self.add_physical(self.recL.surface, 3)
-#         self.add_physical(self.eList[:self.NL],4)
-#         self.add_physical(self.rec.surface, 5)
-#         self.add_physical(self.eList[self.NL:],6)
-#         # self.add_physical(self.recL.lines,'boundaryL')
-
-
-
-# class ellipseMesh2DomainsPhysicalMeaning(ellipseMesh2Domains):
-#     def physicalNaming(self):
-#         self.add_physical(self.recL.surface, 0)
-#         self.add_physical(self.eList[:self.NL],1)
-#         self.add_physical(self.rec.surface, 2)
-#         self.add_physical(self.eList[self.NL:],3)
-#         self.add_physical(self.rec.lines[0],4)
-#         self.add_physical(self.rec.lines[1],5)
-#         self.add_physical(self.rec.lines[2],6)
-#         self.add_physical(self.rec.lines[3],7)
-#         self.add_physical(self.recL.lines,8)
-
-        # self.add_physical(self.recL.lines,'boundaryL')
-
 class ellipseMesh2DomainsPhysicalMeaning(ellipseMesh2Domains):
     def physicalNaming(self):
         self.add_physical(self.recL.surface, 0)
@@ -184,9 +244,6 @@ class ellipseMesh2DomainsPhysicalMeaning(ellipseMesh2Domains):
         self.add_physical(self.eList[self.NL:],3)
         self.add_physical(self.rec.lines,4)
         self.add_physical(self.recL.lines,5)
-
-
-
         
 class ellipseMeshRepetition(ellipseMesh):
     def __init__(self, times, ellipseData, Lx, Ly , lcar):
@@ -256,31 +313,3 @@ class ellipseMesh2(myGmsh):
     def setTransfiniteBoundary(self,n):
         self.set_transfinite_lines(self.rec.lines, n)
                 
-        
-# class ex3D(myGmsh):
-#     def __init__(self):
-#         super(myGmsh,self).__init__()
-        
-#         # Draw a cross.
-#         poly = self.add_polygon([
-#             [ 0.0,  0.5, 0.0],
-#             [-0.1,  0.1, 0.0],
-#             [-0.5,  0.0, 0.0],
-#             [-0.1, -0.1, 0.0],
-#             [ 0.0, -0.5, 0.0],
-#             [ 0.1, -0.1, 0.0],
-#             [ 0.5,  0.0, 0.0],
-#             [ 0.1,  0.1, 0.0]
-#             ],
-#             lcar=0.05
-#         )
-        
-#         axis = [0, 0, 1]
-        
-#         self.extrude(
-#             poly,
-#             translation_axis=axis,
-#             rotation_axis=axis,
-#             point_on_axis=[0, 0, 0],
-#             angle=2.0 / 6.0 * np.pi
-#         )
