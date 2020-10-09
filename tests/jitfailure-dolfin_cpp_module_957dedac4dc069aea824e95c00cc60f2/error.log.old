@@ -1,0 +1,103 @@
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmps7wo49tl/dolfin_cpp_module_957dedac4dc069aea824e95c00cc60f2.cpp:15:5: error: constructor for 'myCoeff' must explicitly initialize the member 'coeffs' which does not have a default constructor
+    myCoeff(npArray c, npArrayInt mat) : dolfin::Expression() 
+    ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmps7wo49tl/dolfin_cpp_module_957dedac4dc069aea824e95c00cc60f2.cpp:12:13: note: member is declared here
+    npArray coeffs; // dynamic double vector
+            ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/Ref.h:192:76: note: 'Eigen::Ref<Eigen::Matrix<double, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> >' declared here
+template<typename PlainObjectType, int Options, typename StrideType> class Ref
+                                                                           ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmps7wo49tl/dolfin_cpp_module_957dedac4dc069aea824e95c00cc60f2.cpp:15:5: error: constructor for 'myCoeff' must explicitly initialize the member 'materials' which does not have a default constructor
+    myCoeff(npArray c, npArrayInt mat) : dolfin::Expression() 
+    ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmps7wo49tl/dolfin_cpp_module_957dedac4dc069aea824e95c00cc60f2.cpp:13:16: note: member is declared here
+    npArrayInt materials; // dynamic integer vector
+               ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/Ref.h:192:76: note: 'Eigen::Ref<Eigen::Matrix<int, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> >' declared here
+template<typename PlainObjectType, int Options, typename StrideType> class Ref
+                                                                           ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmps7wo49tl/dolfin_cpp_module_957dedac4dc069aea824e95c00cc60f2.cpp:17:17: error: no viable overloaded '='
+         coeffs = &c; 
+         ~~~~~~ ^ ~~
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/MatrixBase.h:139:14: note: candidate function not viable: no known conversion from 'npArray *' (aka 'Ref<Matrix<double, Dynamic, 1> > *') to 'const Eigen::MatrixBase<Eigen::Ref<Eigen::Matrix<double, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> > >' for 1st argument; remove &
+    Derived& operator=(const MatrixBase& other);
+             ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/MapBase.h:288:14: note: candidate function not viable: no known conversion from 'npArray *' (aka 'Ref<Matrix<double, Dynamic, 1> > *') to 'const Eigen::MapBase<Eigen::Ref<Eigen::Matrix<double, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> >, 1>' for 1st argument; remove &
+    Derived& operator=(const MapBase& other)
+             ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/Ref.h:89:3: note: candidate function not viable: no known conversion from 'npArray *' (aka 'Ref<Matrix<double, Dynamic, 1> > *') to 'const Eigen::RefBase<Eigen::Ref<Eigen::Matrix<double, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> > >' for 1st argument; remove &
+  EIGEN_INHERIT_ASSIGNMENT_OPERATORS(RefBase)
+  ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/util/Macros.h:842:53: note: expanded from macro 'EIGEN_INHERIT_ASSIGNMENT_OPERATORS'
+#define EIGEN_INHERIT_ASSIGNMENT_OPERATORS(Derived) EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Derived)
+                                                    ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/util/Macros.h:824:52: note: expanded from macro 'EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR'
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Derived& operator=(const Derived& other) { Base::operator=(other); return *this; } \
+                                                   ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/Ref.h:229:5: note: candidate function not viable: no known conversion from 'npArray *' (aka 'Ref<Matrix<double, Dynamic, 1> > *') to 'const Eigen::Ref<Eigen::Matrix<double, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> >' for 1st argument; remove &
+    EIGEN_INHERIT_ASSIGNMENT_OPERATORS(Ref)
+    ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/util/Macros.h:842:53: note: expanded from macro 'EIGEN_INHERIT_ASSIGNMENT_OPERATORS'
+#define EIGEN_INHERIT_ASSIGNMENT_OPERATORS(Derived) EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Derived)
+                                                    ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/util/Macros.h:824:52: note: expanded from macro 'EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR'
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Derived& operator=(const Derived& other) { Base::operator=(other); return *this; } \
+                                                   ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/MatrixBase.h:150:14: note: candidate template ignored: could not match 'EigenBase<type-parameter-0-0>' against 'Eigen::Ref<Eigen::Matrix<double, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> > *'
+    Derived& operator=(const EigenBase<OtherDerived>& other);
+             ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/MatrixBase.h:154:14: note: candidate template ignored: could not match 'ReturnByValue<type-parameter-0-0>' against 'Eigen::Ref<Eigen::Matrix<double, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> > *'
+    Derived& operator=(const ReturnByValue<OtherDerived>& other);
+             ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/Ref.h:229:5: note: candidate template ignored: could not match 'DenseBase<type-parameter-0-0>' against 'Eigen::Ref<Eigen::Matrix<double, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> > *'
+    EIGEN_INHERIT_ASSIGNMENT_OPERATORS(Ref)
+    ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/util/Macros.h:842:53: note: expanded from macro 'EIGEN_INHERIT_ASSIGNMENT_OPERATORS'
+#define EIGEN_INHERIT_ASSIGNMENT_OPERATORS(Derived) EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Derived)
+                                                    ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/util/Macros.h:826:52: note: expanded from macro 'EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR'
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Derived& operator=(const DenseBase<OtherDerived>& other) { Base::operator=(other.derived()); return *this; }
+                                                   ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmps7wo49tl/dolfin_cpp_module_957dedac4dc069aea824e95c00cc60f2.cpp:18:20: error: no viable overloaded '='
+         materials = &mat;
+         ~~~~~~~~~ ^ ~~~~
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/MatrixBase.h:139:14: note: candidate function not viable: no known conversion from 'npArrayInt *' (aka 'Ref<Matrix<int, Dynamic, 1> > *') to 'const Eigen::MatrixBase<Eigen::Ref<Eigen::Matrix<int, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> > >' for 1st argument; remove &
+    Derived& operator=(const MatrixBase& other);
+             ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/MapBase.h:288:14: note: candidate function not viable: no known conversion from 'npArrayInt *' (aka 'Ref<Matrix<int, Dynamic, 1> > *') to 'const Eigen::MapBase<Eigen::Ref<Eigen::Matrix<int, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> >, 1>' for 1st argument; remove &
+    Derived& operator=(const MapBase& other)
+             ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/Ref.h:89:3: note: candidate function not viable: no known conversion from 'npArrayInt *' (aka 'Ref<Matrix<int, Dynamic, 1> > *') to 'const Eigen::RefBase<Eigen::Ref<Eigen::Matrix<int, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> > >' for 1st argument; remove &
+  EIGEN_INHERIT_ASSIGNMENT_OPERATORS(RefBase)
+  ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/util/Macros.h:842:53: note: expanded from macro 'EIGEN_INHERIT_ASSIGNMENT_OPERATORS'
+#define EIGEN_INHERIT_ASSIGNMENT_OPERATORS(Derived) EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Derived)
+                                                    ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/util/Macros.h:824:52: note: expanded from macro 'EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR'
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Derived& operator=(const Derived& other) { Base::operator=(other); return *this; } \
+                                                   ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/Ref.h:229:5: note: candidate function not viable: no known conversion from 'npArrayInt *' (aka 'Ref<Matrix<int, Dynamic, 1> > *') to 'const Eigen::Ref<Eigen::Matrix<int, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> >' for 1st argument; remove &
+    EIGEN_INHERIT_ASSIGNMENT_OPERATORS(Ref)
+    ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/util/Macros.h:842:53: note: expanded from macro 'EIGEN_INHERIT_ASSIGNMENT_OPERATORS'
+#define EIGEN_INHERIT_ASSIGNMENT_OPERATORS(Derived) EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Derived)
+                                                    ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/util/Macros.h:824:52: note: expanded from macro 'EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR'
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Derived& operator=(const Derived& other) { Base::operator=(other); return *this; } \
+                                                   ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/MatrixBase.h:150:14: note: candidate template ignored: could not match 'EigenBase<type-parameter-0-0>' against 'Eigen::Ref<Eigen::Matrix<int, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> > *'
+    Derived& operator=(const EigenBase<OtherDerived>& other);
+             ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/MatrixBase.h:154:14: note: candidate template ignored: could not match 'ReturnByValue<type-parameter-0-0>' against 'Eigen::Ref<Eigen::Matrix<int, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> > *'
+    Derived& operator=(const ReturnByValue<OtherDerived>& other);
+             ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/Ref.h:229:5: note: candidate template ignored: could not match 'DenseBase<type-parameter-0-0>' against 'Eigen::Ref<Eigen::Matrix<int, -1, 1, 0, -1, 1>, 0, Eigen::InnerStride<1> > *'
+    EIGEN_INHERIT_ASSIGNMENT_OPERATORS(Ref)
+    ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/util/Macros.h:842:53: note: expanded from macro 'EIGEN_INHERIT_ASSIGNMENT_OPERATORS'
+#define EIGEN_INHERIT_ASSIGNMENT_OPERATORS(Derived) EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Derived)
+                                                    ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/eigen3/Eigen/src/Core/util/Macros.h:826:52: note: expanded from macro 'EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR'
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Derived& operator=(const DenseBase<OtherDerived>& other) { Base::operator=(other.derived()); return *this; }
+                                                   ^
+4 errors generated.

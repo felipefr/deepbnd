@@ -1,0 +1,14 @@
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpkkkzu71v/dolfin_cpp_module_6498c7b9e5cc412046b0c793b56823c9.cpp:22:11: error: invalid preprocessing directive
+        # values[0] = coeffs[materials[cell.index]];
+          ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpkkkzu71v/dolfin_cpp_module_6498c7b9e5cc412046b0c793b56823c9.cpp:23:27: error: use of undeclared identifier 'ncoeffs'
+        for(int i = 0; i< ncoeffs; i++){
+                          ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpkkkzu71v/dolfin_cpp_module_6498c7b9e5cc412046b0c793b56823c9.cpp:24:36: error: use of undeclared identifier 'ncoeffs'; did you mean 'ncoeff'?
+                values[i] = coeffs[ncoeffs*materials[cell.index] + i];
+                                   ^~~~~~~
+                                   ncoeff
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpkkkzu71v/dolfin_cpp_module_6498c7b9e5cc412046b0c793b56823c9.cpp:14:9: note: 'ncoeff' declared here
+    int ncoeff;
+        ^
+3 errors generated.

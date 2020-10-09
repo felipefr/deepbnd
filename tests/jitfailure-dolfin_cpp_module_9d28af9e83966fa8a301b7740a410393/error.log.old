@@ -1,0 +1,23 @@
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpd16ojebe/dolfin_cpp_module_9d28af9e83966fa8a301b7740a410393.cpp:6:16: error: expected unqualified-id
+typedef Eigen::<Eigen::VectorXd> npArray;
+               ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpd16ojebe/dolfin_cpp_module_9d28af9e83966fa8a301b7740a410393.cpp:12:5: error: unknown type name 'npArray'
+    npArray coeffs; // dynamic double vector
+    ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpd16ojebe/dolfin_cpp_module_9d28af9e83966fa8a301b7740a410393.cpp:15:13: error: unknown type name 'npArray'
+    myCoeff(npArray c, npArrayInt mat) : dolfin::Expression(), coeffs(c), materials(mat) { }
+            ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpd16ojebe/dolfin_cpp_module_9d28af9e83966fa8a301b7740a410393.cpp:36:25: error: use of undeclared identifier 'npArray'
+    .def(pybind11::init<npArray,npArrayInt>())
+                        ^
+In file included from /var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpd16ojebe/dolfin_cpp_module_9d28af9e83966fa8a301b7740a410393.cpp:2:
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/pybind11/pybind11.h:1102:20: error: static_cast from 'pybind11::class_<myCoeff, std::__1::shared_ptr<myCoeff>, dolfin::Expression>::type *' (aka 'myCoeff *') to 'dolfin::Expression *', which are not related by inheritance, is not allowed
+            return static_cast<Base *>(reinterpret_cast<type *>(src));
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/pybind11/pybind11.h:1086:38: note: in instantiation of function template specialization 'pybind11::class_<myCoeff, std::__1::shared_ptr<myCoeff>, dolfin::Expression>::add_base<dolfin::Expression, 0>' requested here
+        PYBIND11_EXPAND_SIDE_EFFECTS(add_base<options>(record));
+                                     ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpd16ojebe/dolfin_cpp_module_9d28af9e83966fa8a301b7740a410393.cpp:34:5: note: in instantiation of function template specialization 'pybind11::class_<myCoeff, std::__1::shared_ptr<myCoeff>, dolfin::Expression>::class_<>' requested here
+    pybind11::class_<myCoeff, std::shared_ptr<myCoeff>, dolfin::Expression>
+    ^
+5 errors generated.

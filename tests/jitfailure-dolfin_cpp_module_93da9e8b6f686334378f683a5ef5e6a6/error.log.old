@@ -1,0 +1,22 @@
+In file included from /var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpclmtpxum/dolfin_cpp_module_93da9e8b6f686334378f683a5ef5e6a6.cpp:2:
+In file included from /Users/felipefr/opt/anaconda2/envs/tf115_env/include/pybind11/pybind11.h:47:
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/pybind11/detail/init.h:63:68: error: no matching constructor for initialization of 'myCoeff'
+inline Class *construct_or_initialize(Args &&...args) { return new Class{std::forward<Args>(args)...}; }
+                                                                   ^    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/pybind11/detail/init.h:174:31: note: in instantiation of function template specialization 'pybind11::detail::initimpl::construct_or_initialize<myCoeff, Eigen::Matrix<double, -1, 1, 0, -1, 1>, Eigen::Matrix<int, -1, 1, 0, -1, 1> , 0>' requested here
+            v_h.value_ptr() = construct_or_initialize<Cpp<Class>>(std::forward<Args>(args)...);
+                              ^
+/Users/felipefr/opt/anaconda2/envs/tf115_env/include/pybind11/pybind11.h:1141:14: note: in instantiation of function template specialization 'pybind11::detail::initimpl::constructor<Eigen::Matrix<double, -1, 1, 0, -1, 1>, Eigen::Matrix<int, -1, 1, 0, -1, 1> >::execute<pybind11::class_<myCoeff, std::__1::shared_ptr<myCoeff>, dolfin::Expression>, 0>' requested here
+        init.execute(*this, extra...);
+             ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpclmtpxum/dolfin_cpp_module_93da9e8b6f686334378f683a5ef5e6a6.cpp:37:6: note: in instantiation of function template specialization 'pybind11::class_<myCoeff, std::__1::shared_ptr<myCoeff>, dolfin::Expression>::def<Eigen::Matrix<double, -1, 1, 0, -1, 1>, Eigen::Matrix<int, -1, 1, 0, -1, 1> >' requested here
+    .def(pybind11::init<npArray,npArrayInt>())
+     ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpclmtpxum/dolfin_cpp_module_93da9e8b6f686334378f683a5ef5e6a6.cpp:9:7: note: candidate constructor (the implicit copy constructor) not viable: requires 1 argument, but 2 were provided
+class myCoeff : public dolfin::Expression {
+      ^
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpclmtpxum/dolfin_cpp_module_93da9e8b6f686334378f683a5ef5e6a6.cpp:9:7: note: candidate constructor (the implicit move constructor) not viable: requires 1 argument, but 2 were provided
+/var/folders/3w/49wmzfxd2tddq75jdq8905t40000gp/T/tmpclmtpxum/dolfin_cpp_module_93da9e8b6f686334378f683a5ef5e6a6.cpp:16:5: note: candidate constructor not viable: requires 3 arguments, but 2 were provided
+    myCoeff(npArray c, npArrayInt mat, int nc) : dolfin::Expression(nc), coeffs(c), materials(mat), nc(nc) { }
+    ^
+1 error generated.

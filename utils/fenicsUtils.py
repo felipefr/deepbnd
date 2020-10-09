@@ -1,7 +1,6 @@
 import dolfin as df
 import numpy as np
-import os
-import fenicsWrapperElasticity as fela
+import meshUtils as meut
 
 def Integral(u,dx,shape):
     
@@ -27,20 +26,8 @@ def Integral(u,dx,shape):
         
     
     return I
-    
-def getMesh(meshGMSH, label, radFile, create = True):
 
-    meshXmlFile = radFile.format(label,'xml')
-    
-    if(create):
-        meshGeoFile = radFile.format(label,'geo')
-        meshMshFile = radFile.format(label,'msh')
-        meshGMSH.write(meshGeoFile,'geo')
-        os.system('gmsh -2 -algo del2d -format msh2 ' + meshGeoFile)
-        
-        os.system('dolfin-convert {0} {1}'.format(meshMshFile, meshXmlFile))
-        
-    return fela.EnrichedMesh(meshXmlFile)
+getMesh = lambda a,b,c,d : meut.getMesh(meshGMSH = a, file = c + b + '.xml', create = d)
 
 
 def affineTransformationExpession(a,B, mesh):
