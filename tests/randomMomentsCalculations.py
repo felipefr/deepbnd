@@ -99,7 +99,7 @@ while count < ns:
 # np.savetxt("mean.txt",mean)
 # np.savetxt("std.txt",std)
 
-plt.scatter(ellipseData_accepted[0,:36,0],ellipseData_accepted[0,:36,1],s=50000*ellipseData_accepted[0,:36,2])
+plt.scatter(ellipseData_accepted[0,:36,0],ellipseData_accepted[0,:16,1],s=50000*ellipseData_accepted[0,:66,2])
 
 
 plt.figure(1)

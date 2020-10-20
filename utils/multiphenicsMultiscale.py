@@ -11,23 +11,17 @@ import generatorMultiscale as gmts
 import multiphenics as mp
 from fenicsMultiscale import getSigma_SigmaEps, homogenisedTangent, getTotalDisplacement, homogenisation, PointExpression, getSigmaEps, getSigma, PeriodicBoundary
 
-def solveMultiscale(param, M, eps, op, others = [[4]]):
+def solveMultiscale(param, M, eps, op, others = {}):
 
-    sigma, sigmaEps = getSigma_SigmaEps(param,M,eps)    
+    sigma, sigmaEps = getSigma_SigmaEps(param,M,eps, op = 'cpp')    
         
     if(op == 'MR'):
         a,f,bcs,W = formulationMultiscaleMR(M, sigma, sigmaEps)
     elif(op == 'periodic'):
-        if(len(others) == 4):
-            x0 = others[0]
-            x1 = others[1]
-            y0 = others[2]
-            y1 = others[3]
-        else:
-            x0 = 0.
-            x1 = 1.
-            y0 = 0.
-            y1 = 1.
+        x0 = others['per'][0]
+        x1 = others['per'][1]
+        y0 = others['per'][2]
+        y1 = others['per'][3]
             
         a,f,bcs,W = formulationMultiscale_periodic(M, sigma, sigmaEps, x0, x1, y0, y1)
         
@@ -59,7 +53,11 @@ def solveMultiscale(param, M, eps, op, others = [[4]]):
         a,f,bcs,W = formulationMultiscaleBCdirich_lag_zeroMean(M, sigma, sigmaEps, uD)
         
     elif(op == 'Lin'):
-        a,f,bcs,W = formulationMultiscaleBClinear(M, sigma, sigmaEps)
+        bdr = others['bdr']
+        a,f,bcs,W = formulationMultiscaleBClinear(M, sigma, sigmaEps, bdr = bdr)
+    
+    else:
+        print('option', op, 'havent been found')
         
     start = timer()
     A = mp.block_assemble(a)
@@ -139,17 +137,14 @@ def formulationMultiscaleBCdirich_zeroMean(M, sigma, sigmaEps, linBdr, uD):
 
 
 
-def formulationMultiscaleBClinear(M, sigma, sigmaEps):
+def formulationMultiscaleBClinear(M, sigma, sigmaEps, bdr):
 
     V = df.VectorFunctionSpace(M,"CG", 1)
     R = df.VectorFunctionSpace(M, "Real", 0)
     
     W = mp.BlockFunctionSpace([V,R])   
     
-    zero = df.Function(V)
-    zero.vector().set_local(np.zeros(V.dim()))
-    
-    bc1 = mp.DirichletBC(W.sub(0), zero , M.boundaries, np.max(M.boundaries.array())) 
+    bc1 = mp.DirichletBC(W.sub(0), df.Constant((0.,0.)) , M.boundaries, bdr) 
                 
     uu = mp.BlockTrialFunction(W)
     vv = mp.BlockTestFunction(W)
@@ -158,7 +153,6 @@ def formulationMultiscaleBClinear(M, sigma, sigmaEps):
 
     aa = [[df.inner(sigma(u),fela.epsilon(v))*M.dx , df.inner(p,v)*M.dx], [df.inner(q,u)*M.dx , 0]]
     ff = [-df.inner(sigmaEps, fela.epsilon(v))*M.dx, 0]    
- 
     
     bcs = mp.BlockDirichletBC([bc1])
     

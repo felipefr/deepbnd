@@ -151,12 +151,12 @@ def getMassMatrixBoundary(g, M):
     return Mh
         
         
-def getSigma_SigmaEps(param,M,eps):
+def getSigma_SigmaEps(param,M,eps,op):
     materials = M.subdomains.array().astype('int32')
     materials = materials - np.min(materials)
     print(materials.max(), materials.min())
     
-    lame = coef.getMyCoeff(materials, param, op = 'python')
+    lame = coef.getMyCoeff(materials, param, op = op)
     
     Eps = df.Constant(((eps[0,0], 0.5*(eps[0,1] + eps[1,0])), (0.5*(eps[0,1] + eps[1,0]), eps[1,1])))
     sigmaEps = lame[0]*df.tr(Eps)*df.Identity(2) + 2*lame[1]*Eps
