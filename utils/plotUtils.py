@@ -26,7 +26,7 @@ def plotFillBetweenStd(x, y, l='', linetypes = ['-o','--','--'], axis = 0):
     global palletteCounter, pallette
     
     elementWiseMax = lambda a,b : np.array([max(ai,b) for ai in a])
-    tol = 1.0e-5
+    tol = 1.0e-6
     mean = np.mean(y, axis = axis) 
     std = np.std(y, axis = axis)
     

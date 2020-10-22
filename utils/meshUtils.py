@@ -172,17 +172,22 @@ class degeneratedBoundaryRectangleMesh(myGmsh): # Used for implementation of L2b
 
 class ellipseMesh(myGmsh):
     def __init__(self, ellipseData, Lx, Ly , lcar):
-        super().__init__()    
+        super().__init__()  
+        
+        self.lcar = lcar   
 
+        if(type(self.lcar) is not type([])):
+            self.lcar = len(ellipseData)*[self.lcar]
+            
         self.Lx = Lx
         self.Ly = Ly
-        self.lcar = lcar    
-        self.eList = self.createEllipses(ellipseData,lcar)
+ 
+        self.eList = self.createEllipses(ellipseData,self.lcar)
         self.createSurfaces()
         self.physicalNaming()
 
     def createSurfaces(self):
-        self.rec = self.add_rectangle(0.0,self.Lx,0.0,self.Ly, 0.0, lcar=self.lcar, holes = self.eList)
+        self.rec = self.add_rectangle(0.0,self.Lx,0.0,self.Ly, 0.0, lcar=self.lcar[-1], holes = self.eList)
     
     def physicalNaming(self):
         self.add_physical(self.rec.surface, 'vol')
@@ -192,15 +197,17 @@ class ellipseMesh(myGmsh):
         
     def createEllipses(self, ellipseData, lcar):
         eList = []
-        
+            
+        ilcar_current = 0
         angles = [0.0, 0.5*np.pi, np.pi, 1.5*np.pi]
         for cx, cy, l, e, t in ellipseData: # center, major axis length, excentricity, theta
             lenghts = [l,e*l,l,e*l]
-            pc = self.add_point([cx,cy,0.0], lcar = lcar)
-            pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar) for li, ti in zip(lenghts,angles)]
+            pc = self.add_point([cx,cy,0.0], lcar = lcar[ilcar_current])
+            pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar[ilcar_current]) for li, ti in zip(lenghts,angles)]
             ai = [self.add_ellipse_arc(pi[i],pc,pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
             a = self.add_line_loop(lines = ai)
             eList.append(self.add_surface(a))
+            ilcar_current+=1
         
         return eList
     
@@ -217,11 +224,13 @@ class ellipseMesh2Domains(ellipseMesh):
         self.LxL = LxL
         self.LyL = LyL
         self.NL = NL
+
+            
         super().__init__(ellipseData, Lx, Ly , lcar)    
         
     def createSurfaces(self):        
-        self.recL = self.add_rectangle(self.x0L, self.x0L + self.LxL, self.y0L , self.y0L + self.LyL, 0.0, lcar=self.lcar, holes = self.eList[:self.NL])                 
-        self.rec = self.add_rectangle(self.x0,self.x0 + self.Lx, self.y0, self.y0 + self.Ly, 0.0, lcar=self.lcar, holes = self.eList[self.NL:] + [self.recL])
+        self.recL = self.add_rectangle(self.x0L, self.x0L + self.LxL, self.y0L , self.y0L + self.LyL, 0.0, lcar=self.lcar[0], holes = self.eList[:self.NL])                 
+        self.rec = self.add_rectangle(self.x0,self.x0 + self.Lx, self.y0, self.y0 + self.Ly, 0.0, lcar=self.lcar[-1], holes = self.eList[self.NL:] + [self.recL])
     
     def physicalNaming(self):
         # self.add_physical(self.recL.surface, 'volL')

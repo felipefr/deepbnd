@@ -13,26 +13,28 @@ from fenicsMultiscale import getSigma_SigmaEps, homogenisedTangent, getTotalDisp
 
 def solveMultiscale(param, M, eps, op, others = {}):
 
-    sigma, sigmaEps = getSigma_SigmaEps(param,M,eps, op = 'cpp')    
+    sigma, sigmaEps = getSigma_SigmaEps(param,M,eps, op = 'cpp')  
+    
+    polyorder = 1 if 'polyorder' not in others.keys() else others['polyorder']
         
     if(op == 'MR'):
-        a,f,bcs,W = formulationMultiscaleMR(M, sigma, sigmaEps)
+        a,f,bcs,W = formulationMultiscaleMR(M, sigma, sigmaEps, polyorder)
     elif(op == 'periodic'):
         x0 = others['per'][0]
         x1 = others['per'][1]
         y0 = others['per'][2]
         y1 = others['per'][3]
             
-        a,f,bcs,W = formulationMultiscale_periodic(M, sigma, sigmaEps, x0, x1, y0, y1)
+        a,f,bcs,W = formulationMultiscale_periodic(M, sigma, sigmaEps, polyorder,  x0, x1, y0, y1)
         
     elif(op == 'POD'):
         bbasis = others[0] 
         alpha = others[1] 
-        a,f,bcs,W = formulationMultiscale_POD(M, sigma, sigmaEps, bbasis, alpha)
+        a,f,bcs,W = formulationMultiscale_POD(M, sigma, sigmaEps, polyorder,  bbasis, alpha)
     elif(op == 'POD_noMR'):
         bbasis = others[0] 
         alpha = others[1] 
-        a,f,bcs,W = formulationMultiscale_POD_noMR(M, sigma, sigmaEps, bbasis, alpha)
+        a,f,bcs,W = formulationMultiscale_POD_noMR(M, sigma, sigmaEps, polyorder,  bbasis, alpha)
     elif(op == 'BCdirich'):
         linBdr = others[0]
         uD = others[1]
@@ -41,7 +43,7 @@ def solveMultiscale(param, M, eps, op, others = {}):
             g = gmts.displacementGeneratorBoundary(0.0,0.0,1.0,1.0, int((uD_.shape[0] + 8)/8) )
             uD = PointExpression(uD_, g)
 
-        a,f,bcs,W = formulationMultiscaleBCdirich_zeroMean(M, sigma, sigmaEps, linBdr, uD)
+        a,f,bcs,W = formulationMultiscaleBCdirich_zeroMean(M, sigma, sigmaEps, polyorder,  linBdr, uD)
                 
     elif(op == 'BCdirich_lag'):
         uD = others[0]
@@ -50,11 +52,11 @@ def solveMultiscale(param, M, eps, op, others = {}):
             g = gmts.displacementGeneratorBoundary(0.0,0.0,1.0,1.0, int((uD_.shape[0] + 8)/8) )
             uD = PointExpression(uD_, g)
 
-        a,f,bcs,W = formulationMultiscaleBCdirich_lag_zeroMean(M, sigma, sigmaEps, uD)
+        a,f,bcs,W = formulationMultiscaleBCdirich_lag_zeroMean(M, sigma, sigmaEps, polyorder,  uD)
         
     elif(op == 'Lin'):
         bdr = others['bdr']
-        a,f,bcs,W = formulationMultiscaleBClinear(M, sigma, sigmaEps, bdr = bdr)
+        a,f,bcs,W = formulationMultiscaleBClinear(M, sigma, sigmaEps, polyorder,  bdr = bdr)
     
     else:
         print('option', op, 'havent been found')
@@ -82,9 +84,9 @@ def solveMultiscale(param, M, eps, op, others = {}):
     # f.close()
     return sol
 
-def formulationMultiscaleMR(M, sigma, sigmaEps):
+def formulationMultiscaleMR(M, sigma, sigmaEps, polyorder):
 
-    V = df.VectorFunctionSpace(M,"CG", 1)
+    V = df.VectorFunctionSpace(M,"CG", polyorder)
     R1 = df.VectorFunctionSpace(M, "Real", 0)
     R2 = df.TensorFunctionSpace(M, "Real", 0)
     
@@ -110,9 +112,9 @@ def formulationMultiscaleMR(M, sigma, sigmaEps):
     return aa, ff, [], W 
 
 
-def formulationMultiscaleBCdirich_zeroMean(M, sigma, sigmaEps, linBdr, uD):
+def formulationMultiscaleBCdirich_zeroMean(M, sigma, sigmaEps, polyorder,  linBdr, uD):
 
-    V = df.VectorFunctionSpace(M,"CG", 1)
+    V = df.VectorFunctionSpace(M,"CG", polyorder)
     R = df.VectorFunctionSpace(M, "Real", 0)
     
     W = mp.BlockFunctionSpace([V,R])   
@@ -137,9 +139,9 @@ def formulationMultiscaleBCdirich_zeroMean(M, sigma, sigmaEps, linBdr, uD):
 
 
 
-def formulationMultiscaleBClinear(M, sigma, sigmaEps, bdr):
+def formulationMultiscaleBClinear(M, sigma, sigmaEps, polyorder,  bdr):
 
-    V = df.VectorFunctionSpace(M,"CG", 1)
+    V = df.VectorFunctionSpace(M,"CG", polyorder)
     R = df.VectorFunctionSpace(M, "Real", 0)
     
     W = mp.BlockFunctionSpace([V,R])   
@@ -158,13 +160,13 @@ def formulationMultiscaleBClinear(M, sigma, sigmaEps, bdr):
     
     return aa, ff, bcs, W
 
-def formulationMultiscaleBCdirich_lag_zeroMean(M, sigma, sigmaEps, uD):
+def formulationMultiscaleBCdirich_lag_zeroMean(M, sigma, sigmaEps, polyorder,  uD):
 
     if('u' in M.V.keys()):
         print("using  ", M.V['u'])
         V = M.V['u']
     else:
-        V = df.VectorFunctionSpace(M,"CG", 1)
+        V = df.VectorFunctionSpace(M,"CG", polyorder)
     
     R = df.VectorFunctionSpace(M, "Real", 0)
     
@@ -192,9 +194,9 @@ def formulationMultiscaleBCdirich_lag_zeroMean(M, sigma, sigmaEps, uD):
     
     return aa, ff, [], W
 
-def formulationMultiscale_periodic(M, sigma, sigmaEps, x0 = 0., x1 = 1., y0 = 0., y1 = 1.):
+def formulationMultiscale_periodic(M, sigma, sigmaEps, polyorder,  x0 = 0., x1 = 1., y0 = 0., y1 = 1.):
 
-    V = df.VectorFunctionSpace(M,"CG", 1, constrained_domain = PeriodicBoundary(x0,x1,y0,y1))
+    V = df.VectorFunctionSpace(M,"CG", polyorder, constrained_domain = PeriodicBoundary(x0,x1,y0,y1))
     R = df.VectorFunctionSpace(M, "Real", 0)
     
     W = mp.BlockFunctionSpace([V,R])   
@@ -209,10 +211,10 @@ def formulationMultiscale_periodic(M, sigma, sigmaEps, x0 = 0., x1 = 1., y0 = 0.
  
     return aa, ff, [], W
 
-def formulationMultiscale_POD(M, sigma, sigmaEps, bbasis, alpha):
+def formulationMultiscale_POD(M, sigma, sigmaEps, polyorder,  bbasis, alpha):
     m = len(bbasis)
     
-    V = df.VectorFunctionSpace(M,"CG", 1)    
+    V = df.VectorFunctionSpace(M,"CG", polyorder)    
     RV = df.VectorFunctionSpace(M, "Real", 0)
     RT = df.TensorFunctionSpace(M, "Real", 0)
     Rlag = df.VectorFunctionSpace(M, "Real", dim = m, degree = 0)
@@ -246,10 +248,10 @@ def formulationMultiscale_POD(M, sigma, sigmaEps, bbasis, alpha):
 
 
 
-def formulationMultiscale_POD_noMR(M, sigma, sigmaEps, bbasis, alpha):
+def formulationMultiscale_POD_noMR(M, sigma, sigmaEps, polyorder,  bbasis, alpha):
     m = len(bbasis)
     
-    V = df.VectorFunctionSpace(M,"CG", 1)    
+    V = df.VectorFunctionSpace(M,"CG", polyorder)    
     RV = df.VectorFunctionSpace(M, "Real", 0)
     Rlag = df.VectorFunctionSpace(M, "Real", dim = m, degree = 0)
     

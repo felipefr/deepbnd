@@ -23,15 +23,15 @@ import plotUtils as plut
 import matplotlib.pyplot as plt
 import copy
 
-folder = ["/Users", "/home"][0] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/convergenceStudy/"
+folder = ["/Users", "/home"][0] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/convergenceStudy/partialRandom/axial/"
 
 radFile = folder + "RVE_POD_{0}.{1}"
 
-loading = 'Shear'
-# loading = 'Tension'
+# loading = 'Shear-P1-partialRandom'
+loading = 'Tension-P1-partialRandom'
 
-if(loading == 'Shear'):
-    folder += 'shear/'
+# if(loading == 'Shear'):
+#     folder += 'shear/'
 
 Offset0 = 0
 maxOffset = 7
@@ -39,7 +39,7 @@ maxOffset = 7
 NxL = 2
 Lratio = 1.0 + 2*np.arange(maxOffset + 1)/NxL
 
-Nseed = 100
+Nseed = 20
 seed0 = 0
 
 BCs = ['periodic','MR','Lin']
@@ -83,16 +83,16 @@ modelLabel = {'periodic': r"\Large $V_{\mu}^{P,\Omega'_{\mu}}$" , 'MR': r"\Large
 plut.palletteCounter = 0
 plt.figure(1, (6,4))
 for model in BCs:
-    plut.plotFillBetweenStd( Lratio, sigma['L'][model][:,:,1] , l = modelLabel[model])
+    plut.plotFillBetweenStd( Lratio, sigma['L'][model][:,:,0] , l = modelLabel[model])
     
 plt.xlabel(r"\Large $L'_{\mu}/L_{\mu}$")
-plt.ylabel(r"\Large $\boldsymbol{\sigma}_{12}(L_{\mu}')$")
+plt.ylabel(r"\Large $\boldsymbol{\sigma}_{11}(L_{\mu}')$")
 plt.title(" \Large Stress Convergence ({0})".format(loading))
 
 
 plt.legend(loc = 'best')
 plt.grid()
-plt.savefig("stressConvergence_shear.pdf")
+plt.savefig("stressConvergence_{0}.pdf".format(loading))
 
 # plut.palletteCounter = 0
 # plt.figure(2, (8,6))
@@ -118,8 +118,8 @@ plt.yscale('log')
 plt.legend(loc = 'best')
 plt.grid()
 
-plt.plot(Lratio[:-1], 1.0e-4*np.ones(7), "m--")
+# plt.plot(Lratio[:-1], 1.0e-4*np.ones(7), "m--")
 
-plt.savefig("incrementalErrorRel_shear.pdf")
+plt.savefig("incrementalErrorRel_{0}.pdf".format(loading))
 
 plt.show()

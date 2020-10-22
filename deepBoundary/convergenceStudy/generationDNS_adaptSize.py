@@ -39,7 +39,7 @@ def enforceVfracPerOffset(radius, NxL, maxOffset, H, Vfrac): # radius should be 
     return radius
 
 
-folder = ["/Users", "/home"][0] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/convergenceStudy/partialRandom/"
+folder = ["/Users", "/home"][0] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/convergenceStudy/adaptSize/"
 
 radFile = folder + "RVE_POD_{0}.{1}"
 
@@ -82,17 +82,18 @@ LxL = LyL = NxL*(x0L/maxOffset)
 r0 = 0.2*LxL/NxL
 r1 = 0.4*LxL/NxL
 lcar = 0.1*LxL/NxL
-NpLx = int(Lx/lcar) + 1
+lcar2 = 2.*lcar
+NpLx = int(Lx/lcar2) + 1
 NpLxL = int(LxL/lcar) + 1
 Vfrac = 0.282743
 H = Lx/Nx
 rm = H*np.sqrt(Vfrac/np.pi)
 
-maxOffset = 7 # we use meshes build with 8 offset, but let us simulate until 7 (important for peridioc, since the BC is important)
+# maxOffset = 7 # we use meshes build with 8 offset, but let us simulate until 7 (important for peridioc, since the BC is important)
 
-for seed in range(0,20):
-    for offset in range(Offset0,maxOffset + 1):
-                     
+for offset in range(Offset0,maxOffset + 1):
+    for seed in range(0,20):
+
         Nt = (NxL + 2*offset)**2
         Lxt = Lyt =  H*np.sqrt(Nt)
         NpLxt = int(Lxt/lcar) + 1
@@ -108,7 +109,7 @@ for seed in range(0,20):
         for opModel in ['periodic','MR', 'Lin']:
             # Solving with Multiphenics
 
-            U = mpms.solveMultiscale(param, mesh, eps, op = opModel, others = {'polyorder' : 1, 'bdr' : bdr, 'per': [x0, x0 + Lxt, y0, y0 + Lyt]})
+            U = mpms.solveMultiscale(param, mesh, eps, op = opModel, others = {'polyorder' : 2, 'bdr' : bdr, 'per': [x0, x0 + Lxt, y0, y0 + Lyt]})
         
             sigma_T = fmts.homogenisation(U[0], mesh, sigma, [0,1,2,3], sigmaEps).flatten()
             sigma_L = fmts.homogenisation(U[0], mesh, sigma, [0,1], sigmaEps).flatten()              
@@ -124,16 +125,14 @@ for seed in range(0,20):
 #     ellipseData = ellipseData[PermTotal]
     
 #     ellipseData[:,2] = enforceVfracPerOffset(ellipseData[:,2], NxL, maxOffset, H, Vfrac)
-#     ellipseData[(NxL+2)**2:,2] = rm # enforcing same radius after the first after the 
-    
+#     ellipseData[NxL**2:,2] = rm
 #     np.savetxt(folder + 'ellipseData_{0}.txt'.format(seed), ellipseData)
     
-#     # for offset in range(Offset0,maxOffset + 1):
-#     for offset in range(Offset0,maxOffset): # just temporary to keep the same random pattern, but dont generate the last offset
+#     for offset in range(Offset0,maxOffset + 1):
                      
 #         Nt = (NxL + 2*offset)**2
 #         Lxt = Lyt =  H*np.sqrt(Nt)
-#         NpLxt = int(Lxt/lcar) + 1
+#         NpLxt = int(Lxt/lcar2) + 1
          
 #         x0 = x0L - offset*H; y0 = y0L - offset*H
                 
@@ -142,7 +141,7 @@ for seed in range(0,20):
 #             meshGMSH.setTransfiniteBoundary(NpLxL)
         
 #         else:
-#             meshGMSH = meut.ellipseMesh2Domains(x0L, y0L, LxL, LyL, NL, ellipseData[:Nt], Lxt, Lyt, lcar, x0 = x0, y0 = y0)
+#             meshGMSH = meut.ellipseMesh2Domains(x0L, y0L, LxL, LyL, NL, ellipseData[:Nt], Lxt, Lyt, 4*[lcar] + (Nt-4)*[lcar2], x0 = x0, y0 = y0)
 #             meshGMSH.setTransfiniteBoundary(NpLxt)
 #             meshGMSH.setTransfiniteInternalBoundary(NpLxL)   
 
