@@ -46,7 +46,7 @@ def solveMultiscale(param, M, eps, op, others = {}):
         a,f,bcs,W = formulationMultiscaleBCdirich_zeroMean(M, sigma, sigmaEps, polyorder,  linBdr, uD)
                 
     elif(op == 'BCdirich_lag'):
-        uD = others[0]
+        uD = others['uD']
 
         if(type(uD) == type(np.zeros(1))):
             g = gmts.displacementGeneratorBoundary(0.0,0.0,1.0,1.0, int((uD_.shape[0] + 8)/8) )

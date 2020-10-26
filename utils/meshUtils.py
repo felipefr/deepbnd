@@ -74,12 +74,12 @@ class myGmsh(pygmsh.built_in.Geometry):
         meshGeoFile = self.radFileMesh.format('geo')
         meshMshFile = self.radFileMesh.format('msh')
         self.writeGeo(meshGeoFile)
-        os.system('gmsh -2 -algo del2d -format msh2 ' + meshGeoFile)
+        os.system('gmsh -2 -format msh2 ' + meshGeoFile) # before with -algo del2d, but noticed mesh distortions
         os.system('dolfin-convert {0} {1}'.format(meshMshFile, savefile))    
     
     def write(self,savefile = '', opt = 'meshio'):
         if(type(self.mesh) == type(None)):
-            self.generate(gmsh_opt=['-algo','del2d'])
+            self.generate(gmsh_opt=['']) # before with -algo del2d, but noticed mesh distortions
         
         if(len(savefile) == 0):
             savefile = self.radFileMesh.format('xdmf')

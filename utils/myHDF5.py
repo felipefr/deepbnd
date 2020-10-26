@@ -16,9 +16,8 @@ def merge(filenameInputs, filenameOutputs, InputLabels, OutputLabels, axis = 0, 
     
 
     with h5py.File(filenameOutputs, mode) as ff:
-        d = []
-        
-        for li,lo in zip(InputLabels,OutputLabels):            
+        for li,lo in zip(InputLabels,OutputLabels):  
+            d = []
             for fn in filenameInputs:
                 with h5py.File(fn,'r') as f:
                     if('attrs' in li):

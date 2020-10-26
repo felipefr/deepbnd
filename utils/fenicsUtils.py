@@ -35,17 +35,18 @@ def affineTransformationExpession(a,B, mesh):
                B00=B[0,0], B01 = B[0,1], B10 = B[1,0], B11= B[1,1] ,degree = 1, domain = mesh)
 
     
-def getAffineTransformationLocal(U,mesh, domains_id = []):
+def getAffineTransformationLocal(U,mesh, domains_id = [], justTranslation = False):
     dxList = [mesh.dx(i) for i in domains_id]
     omegaL = sum([df.assemble(df.Constant(1.0)*dxi) for dxi in dxList])
     
     yG = Integral(df.Expression(('x[0]','x[1]'), degree = 1) , dxList, (2,))/omegaL
+
     uFlucL = Integral(U, dxList, (2,))/omegaL
     epsFlucL = Integral(df.grad(U), dxList, (2,2))/omegaL
     
     a = -uFlucL + epsFlucL@yG 
-    B = -epsFlucL
-
+    B = np.zeros((2,2)) if justTranslation else -epsFlucL
+    
     return affineTransformationExpession(a,B, mesh) , a, B
 
 class myfog(df.UserExpression): # fog f,g : R2 -> R2, generalise 
