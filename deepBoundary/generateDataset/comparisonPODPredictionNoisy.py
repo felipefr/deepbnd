@@ -37,21 +37,23 @@ dotProduct = lambda u,v, ds : assemble(inner(u,v)*ds)
 DATAfolder = "/Users/felipefr/EPFL/newDLPDES/DATA/"
 base_offline_folder = DATAfolder + "deepBoundary/generateDataset/"
 folderDNS = base_offline_folder + "axial/"
-nameYlist = folderDNS + 'Y.hd5' 
+nameYlist = folderDNS + 'Y.h5' 
 nameTau = folderDNS + 'tau2.h5' 
 nameWlist =  folderDNS + 'Wbasis.h5'
 
 
 maxOffset = 6
-ntest = 20
+ntest = 13
 
 nameSnapsDNS = folderDNS + 'snapshots.h5'
 
 stressDNS = myhd.loadhd5(nameSnapsDNS,'sigma')[:ntest,:]
 Ylist = myhd.loadhd5(nameYlist,'Ylist')[:ntest,:]
 tau, tau0 = myhd.loadhd5(nameTau,['tau','tau_0'])
+tau = tau[:ntest,:,:]
+tau0 = tau0[:ntest,:]
 
-nYlist = np.array([0,2,5,8,12,16,20,25,30,35,40,60,90,100]).astype('int')
+nYlist = np.array([0,2,5,8,12,16,20,25,30,35,40,60,90,100,200,300,399]).astype('int')
 Nmax = np.max(nYlist)
 
 stressPOD = np.zeros((len(nYlist),ntest,3)) 
@@ -98,7 +100,6 @@ errorPOD_pert_all.append( error_rel_all( np.transpose(np.mean(stressPOD_pert[2,:
 fig = plt.figure(1, (6,4))
 plt.title('POD error with noisy parameters')
 plt.xlabel('N')
-plt.yscale('log')
 plt.ylabel(r'relative error stress for $(\cdot)_{11}$')
 plt.ylim([1.0e-11,0.1])
 plt.grid()
@@ -109,6 +110,7 @@ plut.plotMeanAndStd_noStdLegend(nYlist, np.abs(errorPOD), '$\\bar{\mathrm{e}}_N$
 #     plut.plotMeanAndStd_noStdLegend(nYlist, np.abs(errorPOD_pert[i]) , label , lines, axis = 0)
 plt.legend(loc = 'best')
 plt.ylim(1.0e-5,1.0e-1)
+plt.yscale('log')
 plt.savefig("error_log_noisy.pdf")
 
 
@@ -124,7 +126,7 @@ plut.plotMeanAndStd_noStdLegend(nYlist, errorPOD_all , '$\\bar{\mathrm{e}}_N$', 
 #     lines = [ ['b', 'r', 'g'][i] + l for l in ['-o', '--', '--']  ]
 #     label = '$\\bar{\\bar{\mathrm{e}}}_{N,\delta = {%s}}$'%(['10^{-4}','10^{-3}','10^{-2}'][i])
 #     plut.plotMeanAndStd_noStdLegend(nYlist, errorPOD_pert_all[i], label, lines, axis = 0) 
-plt.legend(loc =8)
+plt.legend(loc=8)
 plt.savefig("error_log_allComponents_noisy.pdf")
 
 

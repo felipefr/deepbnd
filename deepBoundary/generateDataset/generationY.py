@@ -60,12 +60,12 @@ Nmax = 400
 # fIsol.close()
 
 # Computing Correlation Matrix 
-os.system('rm ' + nameC)
-C, fC = myhd.zeros_openFile(nameC, (ns, ns), 'C')
-Isol, fIsol = myhd.loadhd5_openFile(nameSnaps,'solutions_trans', mode = 'r')
-gdb.getCorrelation_fromInterpolation(C,ns, Isol, dotProduct, Vref, dsRef)
-fC.close()
-fIsol.close()
+# os.system('rm ' + nameC)
+# C, fC = myhd.zeros_openFile(nameC, (ns, ns), 'C')
+# Isol, fIsol = myhd.loadhd5_openFile(nameSnaps,'solutions_trans', mode = 'r')
+# gdb.getCorrelation_fromInterpolation(C,ns, Isol, dotProduct, Vref, dsRef)
+# fC.close()
+# fIsol.close()
 
 # Computing basis 
 # os.system('rm ' + nameWbasis)
@@ -78,7 +78,7 @@ fIsol.close()
 # fIsol.close()
 
 
-# #  ================  Extracting Alphas ============================================
+#  ================  Extracting Alphas ============================================
 # os.system('rm ' + nameYlist)
 # Wbasis, fw = myhd.loadhd5_openFile(nameWbasis, 'Wbasis')
 # Isol, fIsol = myhd.loadhd5_openFile(nameSnaps,'solutions_trans')
@@ -89,18 +89,18 @@ fIsol.close()
 # fw.close()
 
 # Computing basis for stress
-# E1 = 10.0
-# nu = 0.3
-# contrast = 0.1 #inverse then in generation
-# ns = 20
-# Nmax = 100
-# os.system('rm ' + nameTau)
-# Isol, fIsol = myhd.loadhd5_openFile(nameSnaps,'solutions', mode = 'r')
-# EllipseData, fellipse = myhd.loadhd5_openFile(filename = nameEllipseData, label = 'ellipseData')
-# Wbasis, fw = myhd.loadhd5_openFile(nameWbasis, 'Wbasis')
-# tau, f = myhd.zeros_openFile(nameTau, [(ns,Nmax,3),(ns,3)]  , ['tau', 'tau_0'])
-# gdb.getStressBasis_noMesh(tau,Wbasis, Isol, EllipseData[:ns,:,:], Nmax, Vref, [E1,nu, contrast], EpsDirection = 0)
-# fw.close()
-# f.close()
-# fellipse.close()
-# fIsol.close()
+E1 = 10.0
+nu = 0.3
+contrast = 0.1 #inverse then in generation
+ns = 20
+Nmax = 400
+os.system('rm ' + nameTau)
+Isol, fIsol = myhd.loadhd5_openFile(nameSnaps,'solutions', mode = 'r')
+EllipseData, fellipse = myhd.loadhd5_openFile(filename = nameEllipseData, label = 'ellipseData')
+Wbasis, fw = myhd.loadhd5_openFile(nameWbasis, 'Wbasis')
+tau, f = myhd.zeros_openFile(nameTau, [(ns,Nmax,3),(ns,3)]  , ['tau', 'tau_0'])
+gdb.getStressBasis_noMesh(tau,Wbasis, Isol, EllipseData[:ns,:,:], Nmax, Vref, [E1,nu, contrast], EpsDirection = 0)
+fw.close()
+f.close()
+fellipse.close()
+fIsol.close()

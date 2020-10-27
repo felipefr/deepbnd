@@ -5,11 +5,11 @@
       <Geometry GeometryType="XY">
         <DataItem DataType="Float" Dimensions="1 2" Format="HDF" Precision="8">mesh_reduced_temp_regions.h5:/data0</DataItem>
       </Geometry>
-      <Topology NumberOfElements="1170" TopologyType="Triangle">
-        <DataItem DataType="Int" Dimensions="1170 3" Format="HDF" Precision="8">mesh_reduced_temp_regions.h5:/data1</DataItem>
+      <Topology NumberOfElements="1176" TopologyType="Triangle">
+        <DataItem DataType="Int" Dimensions="1176 3" Format="HDF" Precision="8">mesh_reduced_temp_regions.h5:/data1</DataItem>
       </Topology>
       <Attribute AttributeType="Scalar" Center="Cell" Name="regions">
-        <DataItem DataType="Int" Dimensions="1170" Format="HDF" Precision="4">mesh_reduced_temp_regions.h5:/data2</DataItem>
+        <DataItem DataType="Int" Dimensions="1176" Format="HDF" Precision="4">mesh_reduced_temp_regions.h5:/data2</DataItem>
       </Attribute>
     </Grid>
   </Domain>

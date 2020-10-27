@@ -31,7 +31,7 @@ def enforceVfracPerOffset(radius, NxL, maxOffset, H, Vfrac): # radius should be 
         
     return radius
 
-folder = ["/Users", "/home"][0] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/generateDataset/test/"
+folder = ["/Users", "/home"][0] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/generateDataset/3x3/"
 
 radFile = folder + "RVE_POD_{0}.{1}"
 
@@ -90,10 +90,10 @@ Mref = meut.EnrichedMesh('boundaryMesh.xdmf')
 Vref = VectorFunctionSpace(Mref,"CG", 1)
 usol = Function(Vref)
 
-ns = 1
+ns = 1100
 
 # Radius Generation
-seed = 0
+seed = 7
 np.random.seed(seed)
 
 os.system('rm ' + folder +  'ellipseData_{0}.h5'.format(seed))

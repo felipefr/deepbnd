@@ -498,7 +498,9 @@ class RBsimul: # specific for the case of multiscale, generalise afterwards
         self.EpsUnits = np.array([[1.,0.,0.,0.], [0.,0.,0.,1.],[0.,0.5,0.5,0.]])[EpsDirection,:]
         
         if(len(EpsFlucPrefix)> 0):
-            self.EpsFluc = myhd.genericLoadfile(EpsFlucPrefix,'EpsList')[:,2,:]
+            # self.EpsFluc = myhd.genericLoadfile(EpsFlucPrefix,'EpsList')[:,2,:]
+            # self.EpsFluc = myhd.genericLoadfile(EpsFlucPrefix,'EpsList')[:,:]
+            self.EpsFluc = myhd.loadhd5(EpsFlucPrefix,'EpsList')
         else:
             self.EpsFluc = np.zeros((ns,4))
             
@@ -527,11 +529,15 @@ class RBsimul: # specific for the case of multiscale, generalise afterwards
         X, fX = myhd.loadhd5_openFile(nameFile,identifier)
         
         self.filesHd5[identifier + label] = fX
-        
-        if(identifier == 'Isol'):
+               
+        if(identifier == 'Isol' or identifier =='solutions_trans'):
             self.Isol = X
         elif(identifier == 'Wbasis'):
-            self.WbasisDict[label] = X
+            if(len(label)>0):
+                self.WbasisDict[label] = X
+            else:
+                self.WbasisDict['L2bnd'] = X
+                
             
     def closeAllFiles(self):
         for l, f in list(self.filesHd5.items()):
@@ -568,7 +574,7 @@ class RBsimul: # specific for the case of multiscale, generalise afterwards
         mesh = fela.EnrichedMesh(self.nameMeshPrefix.format(ns,'xml'))
         V = VectorFunctionSpace(mesh,"CG", 1)
         
-        sigmaL0, sigmaEpsL0 = fmts.getSigma_SigmaEps(self.param,mesh,np.zeros((2,2)))
+        sigmaL0, sigmaEpsL0 = fmts.getSigma_SigmaEps(self.param,mesh,np.zeros((2,2)), op = 'cpp')
         
         for j in range(self.Nmax):
             self.basis.vector().set_local(self.Wbasis2adj[j,:])
@@ -602,7 +608,7 @@ class RBsimul: # specific for the case of multiscale, generalise afterwards
         
         else:
             mesh = fela.EnrichedMesh(self.nameMeshPrefix.format(ns,'xml'))
-            V = VectorFunctionSpace(mesh,"CG", 1)
+            V = VectorFunctionSpace(mesh,"CG", 2)
             u0 = Function(V)
            
             epsL = self.EpsUnits.reshape((2,2))
@@ -623,7 +629,7 @@ class RBsimul: # specific for the case of multiscale, generalise afterwards
         print(".... Now tau_0 for test ", ns)
         
         mesh = fela.EnrichedMesh(self.nameMeshPrefix.format(ns,'xml'))
-        V = VectorFunctionSpace(mesh,"CG", 1)
+        V = VectorFunctionSpace(mesh,"CG", 2)
         
         if(self.ExtOrth==0): 
         
@@ -661,6 +667,8 @@ class RBsimul: # specific for the case of multiscale, generalise afterwards
         V = VectorFunctionSpace(mesh,"CG", 1)
         
         u0 = Function(V)         
+        print('U0/{0}/{1}'.format(self.V0,ns))
+        print(self.filesHd5['base'].keys())
         u0.vector().set_local(self.filesHd5['base']['U0/{0}/{1}'.format(self.V0,ns)])
         
         self.urefAux.vector().set_local(np.array(self.Isol[ns,:]))
@@ -688,7 +696,7 @@ class RBsimul: # specific for the case of multiscale, generalise afterwards
         if(V0 == 'T'):
             return lambda W, epsbar : Function(W)
         elif(V0 == 'L'):
-            return lambda W, epsbar : mpms.solveMultiscale(self.param[0:2,:], W.mesh(), epsbar, op = 'Lin')[0]
+            return lambda W, epsbar : mpms.solveMultiscale(self.param[0:2,:], W.mesh(), epsbar, op = 'Lin', others = {'polyorder': 2, 'bdr' : 2})[0]
         elif(V0 == 'P'):
             return lambda W, epsbar : mpms.solveMultiscale(self.param[0:2,:], W.mesh(), epsbar, op = 'periodic', others = [1./3.,2./3.,1./3.,2./3.])[0]
         elif(V0 == 'M'):
@@ -702,7 +710,7 @@ class RBsimul: # specific for the case of multiscale, generalise afterwards
         if(V0 == 'T'):
             return lambda w,W : interpolate(w,W)
         elif(V0 == 'L'):
-            return lambda w,W : mpms.solveMultiscale(self.param[0:2,:], W.mesh(), np.zeros((2,2)), op = 'BCdirich_lag', others = [w])[0]
+            return lambda w,W : mpms.solveMultiscale(self.param[0:2,:], W.mesh(), np.zeros((2,2)), op = 'BCdirich_lag', others = {'polyorder': 2, 'uD' : w})[0]
         elif(V0 == 'P'):
             return lambda w,W : mpms.solveMultiscale(self.param[0:2,:], W.mesh(), np.zeros((2,2)), op = 'BCdirich_lag', others = [w])[0] # but should be antiperiodic
         elif(V0 == 'M'):
