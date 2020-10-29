@@ -106,7 +106,9 @@ def exportMeshHDF5_fromGMSH(gmshMesh = 'mesh.msh', meshFile = 'mesh.xdmf', label
     geometry = meshio.read(gmshMesh) if type(gmshMesh) == type('s') else gmshMesh
     
     meshFileRad = meshFile[:-5]
-    meshio.write(meshFile, meshio.Mesh(points=geometry.points[:,:2], cells={"triangle": geometry.cells["triangle"]}))
+    
+    meshio.write(meshFile, meshio.Mesh(points=geometry.points[:,:2], cells={"triangle": geometry.cells["triangle"]})) # working on mac, error with cell dictionary
+    # meshio.write(meshFile, meshio.Mesh(points=geometry.points[:,:2], cells={"triangle": geometry.cells}))
         
     mesh = meshio.Mesh(points=np.zeros((1,2)), cells={'line': geometry.cells['line']},
                                                                               cell_data={'line': {'faces': geometry.cell_data['line']["gmsh:physical"]}})

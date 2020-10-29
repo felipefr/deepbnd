@@ -23,7 +23,7 @@ import plotUtils as plut
 import matplotlib.pyplot as plt
 import copy
 
-folder = ["/Users", "/home"][0] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/convergenceStudy/partialRandom/axial/"
+folder = ["/Users", "/home"][1] + "/felipefr/EPFL/newDLPDEs/DATA/deepBoundary/convergenceStudy/partialRandom/axial/"
 
 radFile = folder + "RVE_POD_{0}.{1}"
 
