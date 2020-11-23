@@ -87,7 +87,36 @@ def getBlockCorrelation(A,N, Nblocks, dotProduct, radFile, radSolution, Vref, dx
     # A *= N**-1.
     if(division):
         A[:,:] = (1./N)*A[:,:]
+
+
     
+def getCorrelation_fromInterpolationMatricial(A,N, Isol, dotProduct, Vref, dxRef, division = False, N0 = 0):
+    
+    ui = Function(Vref)
+    uj = Function(Vref)
+    
+    Nh = len(Isol[0,:])
+    M = np.zeros((Nh,Nh))
+    
+    for i in range(Nh):     ## think in passing it to above
+        ei = np.zeros(Nh)
+        ei[i] = 1.0
+        ui.vector().set_local(ei)
+        for j in range(i, Nh):     ## think in passing it to above
+            ej = np.zeros(Nh)
+            ej[j] = 1.0
+            uj.vector().set_local(ej)
+            M[i,j] = dotProduct(ui,uj,dxRef)
+            M[j,i] = M[i,j]
+            
+    S = np.array(Isol[:,:])
+    A[:,:] = S@M@S.T
+    
+    # A *= N**-1.
+    if(division):
+        A[:,:] = (1./N)*A[:,:]
+
+
 def getCorrelation_fromInterpolation(A,N, Isol, dotProduct, Vref, dxRef, division = False, N0 = 0):
     
     ui = Function(Vref)
