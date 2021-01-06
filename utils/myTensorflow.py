@@ -1,7 +1,7 @@
 from functools import partial, update_wrapper
 import tensorflow as tf
-from tensorflow import keras
-from keras.optimizers import Adam
+# from tensorflow import tf.keras
+# from tensorflow keras.optimizers import Adam
 import numpy as np  
 import matplotlib.pyplot as plt
 
@@ -12,13 +12,13 @@ dictActivations = {'tanh' : tf.nn.tanh,
                    'leaky_relu': tf.nn.leaky_relu}
 
 
-dfInitK = keras.initializers.glorot_uniform(seed = 1)
-# dfInitK = keras.initializers.VarianceScaling(scale=1.0, mode="fan_in", distribution="untruncated_normal", seed=None)
-dfInitB = keras.initializers.Zeros()
+dfInitK = tf.keras.initializers.glorot_uniform(seed = 1)
+# dfInitK = tf.keras.initializers.VarianceScaling(scale=1.0, mode="fan_in", distribution="untruncated_normal", seed=None)
+dfInitB = tf.keras.initializers.Zeros()
 
 def set_seed_default_initialisers(seed):
-    return keras.initializers.glorot_uniform(seed = 1), keras.initializers.Zeros()
-    # return keras.initializers.VarianceScaling(scale=1.0, mode="fan_in", distribution="untruncated_normal", seed=seed), keras.initializers.Zeros()
+    return tf.keras.initializers.glorot_uniform(seed = 1), tf.keras.initializers.Zeros()
+    # return tf.keras.initializers.VarianceScaling(scale=1.0, mode="fan_in", distribution="untruncated_normal", seed=seed), tf.keras.initializers.Zeros()
 
 
 def mySequential(y,layers):
@@ -44,12 +44,12 @@ class MLPblock(tf.keras.layers.Layer):
 
       
         self.hidden_layers = [
-        keras.layers.Dense( Nneurons, activation=tf.keras.activations.linear,
+        tf.keras.layers.Dense( Nneurons, activation=tf.keras.activations.linear,
                             input_shape=input_shape),
-        keras.layers.Dense( Nneurons, activation=tf.nn.relu),
-        keras.layers.Dense(Nneurons, activation=tf.nn.leaky_relu),
-        keras.layers.Dense(Nneurons, activation=tf.nn.relu),
-        keras.layers.Dense(Nneurons, activation=tf.nn.relu)]
+        tf.keras.layers.Dense( Nneurons, activation=tf.nn.relu),
+        tf.keras.layers.Dense(Nneurons, activation=tf.nn.leaky_relu),
+        tf.keras.layers.Dense(Nneurons, activation=tf.nn.relu),
+        tf.keras.layers.Dense(Nneurons, activation=tf.nn.relu)]
         
     def call(self, input_features):
         return mySequential(input_features,self.hidden_layers)
@@ -65,16 +65,16 @@ class MLPblock_gen(tf.keras.layers.Layer):
         
         assert self.nLayers == len(drps) - 2 , "add dropout begin and end"
         
-        self.ld = [keras.layers.Dropout(drps[0])]
-        self.la = [keras.layers.Dense(Nneurons[0], activation=dictActivations[actLabel[0]], input_shape=input_shape, kernel_initializer=dfInitK, bias_initializer=dfInitB)]
+        self.ld = [tf.keras.layers.Dropout(drps[0])]
+        self.la = [tf.keras.layers.Dense(Nneurons[0], activation=dictActivations[actLabel[0]], input_shape=input_shape, kernel_initializer=dfInitK, bias_initializer=dfInitB)]
         
        
         for n, drp in zip(Nneurons[1:],drps[1:-1]):
-            self.ld.append(keras.layers.Dropout(drp)) 
-            self.la.append(keras.layers.Dense(n, activation=dictActivations[actLabel[1]], kernel_regularizer=l2_reg, 
+            self.ld.append(tf.keras.layers.Dropout(drp)) 
+            self.la.append(tf.keras.layers.Dense(n, activation=dictActivations[actLabel[1]], kernel_regularizer=l2_reg, 
                           kernel_constraint=tf.keras.constraints.MaxNorm(300.0), kernel_initializer=dfInitK, bias_initializer=dfInitB))   
         
-        self.ld.append(keras.layers.Dropout(drps[-1])) 
+        self.ld.append(tf.keras.layers.Dropout(drps[-1])) 
 
     def call(self, input_features):
         return mySequential2(input_features,self.la, self.ld)
@@ -84,8 +84,8 @@ class RBlayer(tf.keras.layers.Layer):
     def __init__(self, num_parameters, pde_mu_solver, output_shape): 
         super(RBlayer, self).__init__()
 
-        self.paramLayer = keras.layers.Dense(num_parameters, activation=tf.nn.sigmoid)
-        self.RBsolver = keras.layers.Lambda(pde_mu_solver, output_shape= output_shape)
+        self.paramLayer = tf.keras.layers.Dense(num_parameters, activation=tf.nn.sigmoid)
+        self.RBsolver = tf.keras.layers.Lambda(pde_mu_solver, output_shape= output_shape)
 
     def call(self, input_features):
         return mySequential(input_features,[self.paramLayer,self.RBsolver])
@@ -122,7 +122,7 @@ class DNNmodel(tf.keras.Model):
         else:   
             self.mlpblock = MLPblock_gen(Neurons, (self.Nin,), drps, lambReg, actLabel[0:2])
             
-        self.outputLayer = keras.layers.Dense( Nout, activation=dictActivations[actLabel[2]], kernel_initializer=dfInitK, bias_initializer=dfInitB)
+        self.outputLayer = tf.keras.layers.Dense( Nout, activation=dictActivations[actLabel[2]], kernel_initializer=dfInitK, bias_initializer=dfInitB)
         
     def call(self, inputs):
         
@@ -143,7 +143,7 @@ class DNNmodel_in(tf.keras.Model):
         else:   
             self.mlpblock = MLPblock_gen(Neurons, (self.Nin,), drps, lambReg, actLabel[0:2])
             
-        self.outputLayer = keras.layers.Dense( Nout, activation=dictActivations[actLabel[2]])
+        self.outputLayer = tf.keras.layers.Dense( Nout, activation=dictActivations[actLabel[2]])
         
     def call(self, inputs):
         
@@ -166,7 +166,7 @@ class EncoderModel(tf.keras.Model):
         
         self.mlpblock = MLPblock_gen(Neurons, (self.Nin,), drps, lambReg, actLabel[0:2])
             
-        self.outputLayer = keras.layers.Dense( Nout, activation=dictActivations[actLabel[2]])
+        self.outputLayer = tf.keras.layers.Dense( Nout, activation=dictActivations[actLabel[2]])
         
     def call(self, inputs):
         
@@ -178,12 +178,12 @@ class EncoderModel(tf.keras.Model):
 
 
 # Display training progress by printing a single dot for each completed epoch
-class PrintDot(keras.callbacks.Callback):
+class PrintDot(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs):
          if epoch % 100 == 0: print('')
          print('.', end='')
     
-def scheduler(epoch, decay, lr, EPOCHS):
+def scheduler(epoch, decay, lr, EPOCHS):    
     omega = np.sqrt(float(epoch/EPOCHS))
     rate = lr*(1.0 - omega) + omega*decay*lr
     print('learning_rate = ', rate)
@@ -192,6 +192,15 @@ def scheduler(epoch, decay, lr, EPOCHS):
 def custom_loss(w_l, w_mu, npar):
     return lambda y_p, y_d : tf.reduce_mean( w_l * tf.square(tf.subtract(y_p[:, :-npar],y_d[:, :-npar]) )) + tf.reduce_mean( w_mu * tf.square(tf.subtract(y_p[:, -npar:], y_d[:, -npar:]) ))
   
+# def custom_loss(w_l, w_mu, npar):
+#     return lambda y_p, y_d : tf.reduce_mean( w_l * tf.square(tf.subtract(y_p[:, :-npar],y_d[:, :-npar]) )) + tf.reduce_mean( w_mu * tf.square(tf.subtract(y_p[:, -npar:], y_d[:, -npar:]) ))
+
+# def custom_loss_mse(weight):
+#     return lambda y_p, y_d : tf.keras.losses.MeanSquaredError(y_p , y_d, sample_weight = weight)
+
+def custom_loss_mse(weight):
+    return lambda y_p, y_d : tf.reduce_mean(tf.multiply(weight,tf.reduce_sum(tf.square(tf.subtract(y_p,y_d)),axis = 0)))
+
 def mae_loc_(npar):
     def mae_loc(y_p, y_d):
         return tf.reduce_mean( tf.abs(tf.subtract(y_p[:, :-npar], y_d[:, :-npar]) ) ) 
@@ -213,14 +222,14 @@ def construct_pdednn_model_deprecated( number_of_inputs, number_of_output, num_p
     
     model = construct_model_hidden(number_of_inputs, network_width)
     
-    model.add(keras.layers.Dense(num_parameters, activation=tf.nn.sigmoid ))
-    model.add(keras.layers.Lambda(pde_activation.pde_mu_solver, output_shape=( number_of_output, )))
+    model.add(tf.keras.layers.Dense(num_parameters, activation=tf.nn.sigmoid ))
+    model.add(tf.keras.layers.Lambda(pde_activation.pde_mu_solver, output_shape=( number_of_output, )))
     
     return model
 
 def construct_pdednn_model( number_of_inputs, number_of_output, num_parameters, pde_activation):
     
-    model = keras.Sequential()
+    model = tf.keras.Sequential()
     model.add(MLPblock(Nneurons=64 , input_shape=(number_of_inputs,)))
     model.add(RBlayer(num_parameters, pde_activation.pde_mu_solver, (number_of_output,)))
     
@@ -230,9 +239,9 @@ def construct_dnn_model(  number_of_inputs, number_of_output, network_width='nor
     model = construct_model_hidden(number_of_inputs, network_width)
     
     if(act == 'sigmoid'):
-        model.add( keras.layers.Dense( number_of_output, activation=tf.nn.sigmoid ) )
+        model.add( tf.keras.layers.Dense( number_of_output, activation=tf.nn.sigmoid ) )
     elif(act == 'linear'):
-        model.add( keras.layers.Dense( number_of_output, activation=tf.keras.activations.linear))
+        model.add( tf.keras.layers.Dense( number_of_output, activation=tf.keras.activations.linear))
 
     return model
 
@@ -245,76 +254,76 @@ def construct_model_hidden( number_of_inputs, network_width='normal'):
         
         print( "TF network with network normal " )
 
-        model = keras.Sequential([
-        keras.layers.Dense( 1024, activation=tf.nn.relu,
+        model = tf.keras.Sequential([
+        tf.keras.layers.Dense( 1024, activation=tf.nn.relu,
                            input_shape=(number_of_inputs,)),
-            keras.layers.Dense( 512, activation=tf.nn.relu),
-            keras.layers.Dense(256, activation=tf.nn.relu),
-            keras.layers.Dense(128, activation=tf.nn.relu)
+            tf.keras.layers.Dense( 512, activation=tf.nn.relu),
+            tf.keras.layers.Dense(256, activation=tf.nn.relu),
+            tf.keras.layers.Dense(128, activation=tf.nn.relu)
       ])
     
     elif network_width == 'small':
         
         print( "TF network with network small " )
 
-        model = keras.Sequential([
-        keras.layers.Dense( 64, activation=tf.nn.relu,
+        model = tf.keras.Sequential([
+        tf.keras.layers.Dense( 64, activation=tf.nn.relu,
                             input_shape=(number_of_inputs,)),
-        keras.layers.Dense( 64, activation=tf.nn.relu),
-        keras.layers.Dense(64, activation=tf.nn.relu),
-        keras.layers.Dense(64, activation=tf.nn.relu)
+        tf.keras.layers.Dense( 64, activation=tf.nn.relu),
+        tf.keras.layers.Dense(64, activation=tf.nn.relu),
+        tf.keras.layers.Dense(64, activation=tf.nn.relu)
       ])
         
     elif network_width == 'constant':
         print( "TF network with network constant " )
 
-        model = keras.Sequential([
-        keras.layers.Dense( 256, activation=tf.nn.relu,
+        model = tf.keras.Sequential([
+        tf.keras.layers.Dense( 256, activation=tf.nn.relu,
                             input_shape=(number_of_inputs,)),
-        keras.layers.Dense( 256, activation=tf.nn.relu),
-        keras.layers.Dense(256, activation=tf.nn.relu),
-        keras.layers.Dense(256, activation=tf.nn.relu)
+        tf.keras.layers.Dense( 256, activation=tf.nn.relu),
+        tf.keras.layers.Dense(256, activation=tf.nn.relu),
+        tf.keras.layers.Dense(256, activation=tf.nn.relu)
       ])
     
     elif network_width == 'large':
         
         print( "TF network with network large " )
 
-        model = keras.Sequential([
-                keras.layers.Dense( 2048, activation=tf.nn.relu,
+        model = tf.keras.Sequential([
+                tf.keras.layers.Dense( 2048, activation=tf.nn.relu,
                            input_shape=(number_of_inputs,)),
-            keras.layers.Dense( 2048, activation=tf.nn.relu),
-            keras.layers.Dense(2048, activation=tf.nn.relu),
-            keras.layers.Dense(2048, activation=tf.nn.relu)
+            tf.keras.layers.Dense( 2048, activation=tf.nn.relu),
+            tf.keras.layers.Dense(2048, activation=tf.nn.relu),
+            tf.keras.layers.Dense(2048, activation=tf.nn.relu)
       ])
     elif network_width == 'modified_felipe':   
         Nneurons = 64
         print( "TF network with modified " )
-        model = keras.Sequential([
-            keras.layers.Dense( Nneurons, activation=tf.keras.activations.linear,
+        model = tf.keras.Sequential([
+            tf.keras.layers.Dense( Nneurons, activation=tf.keras.activations.linear,
                                 input_shape=(number_of_inputs,)),
-            keras.layers.Dense( Nneurons, activation=tf.nn.relu),
-            keras.layers.Dense(Nneurons, activation=tf.nn.leaky_relu),
-            keras.layers.Dense(Nneurons, activation=tf.nn.relu),
-            keras.layers.Dense(Nneurons, activation=tf.nn.relu)
+            tf.keras.layers.Dense( Nneurons, activation=tf.nn.relu),
+            tf.keras.layers.Dense(Nneurons, activation=tf.nn.leaky_relu),
+            tf.keras.layers.Dense(Nneurons, activation=tf.nn.relu),
+            tf.keras.layers.Dense(Nneurons, activation=tf.nn.relu)
             ])
 
     elif network_width == 'modified_felipe_autoencoder':   
         Nneurons = 64
         print( "TF network with modified " )
-        model = keras.Sequential([
-            keras.layers.Dense( Nneurons, activation=tf.keras.activations.linear,
+        model = tf.keras.Sequential([
+            tf.keras.layers.Dense( Nneurons, activation=tf.keras.activations.linear,
                                 input_shape=(number_of_inputs,)),
-            keras.layers.Dense( Nneurons, activation=tf.nn.relu),
-            keras.layers.Dense( Nneurons, activation=tf.nn.leaky_relu),
-            keras.layers.Dense( Nneurons, activation=tf.nn.relu),
-            keras.layers.Dense( Nneurons, activation=tf.nn.relu),
-            keras.layers.Dense( Nneurons/2, activation=tf.nn.relu),
-            keras.layers.Dense( Nneurons/4, activation=tf.nn.relu),
-            keras.layers.Dense( Nneurons/8, activation=tf.nn.relu)])
+            tf.keras.layers.Dense( Nneurons, activation=tf.nn.relu),
+            tf.keras.layers.Dense( Nneurons, activation=tf.nn.leaky_relu),
+            tf.keras.layers.Dense( Nneurons, activation=tf.nn.relu),
+            tf.keras.layers.Dense( Nneurons, activation=tf.nn.relu),
+            tf.keras.layers.Dense( Nneurons/2, activation=tf.nn.relu),
+            tf.keras.layers.Dense( Nneurons/4, activation=tf.nn.relu),
+            tf.keras.layers.Dense( Nneurons/8, activation=tf.nn.relu)])
 
     elif network_width == 'modified_felipe2':   
-        model = keras.Sequential(MLPblock(Nneurons=256 , input_shape=(number_of_inputs,)))
+        model = tf.keras.Sequential(MLPblock(Nneurons=256 , input_shape=(number_of_inputs,)))
 
     return model
 
@@ -341,14 +350,16 @@ def plot_history(history,savefile=None):
   plt.show( )
 
 def my_train_model(model, X_train, y_train, num_parameters, EPOCHS , 
-                                   lr = 1.e-4, decay = 1.e-2, w_l = 1.0, w_mu = 1.0):
+                                   lr = 1.e-4, decay = 1.e-2, w_l = 1.0, w_mu = 1.0, ratio_val = 0.2):
     
     # NoisyAdam = add_gradient_noise(Adam)
     
     
-    optimizer= keras.optimizers.Adam(learning_rate = lr, beta_1 = 0.9)
-    # optimizer= keras.optimizers.Adadelta(learning_rate=1.0)
-    # optimizer= keras.optimizers.SGD(learning_rate=0.01, momentum=0.9)
+    # optimizer= tf.keras.optimizers.Adam(learning_rate = lr, beta_1 = 0.9)
+    optimizer= tf.keras.optimizers.Adam(learning_rate = lr)
+    # optimizer= tf.keras.optimizers.RMSprop(learning_rate = lr)
+    # optimizer= tf.keras.optimizers.Adadelta(learning_rate=1.0)
+    # optimizer= tf.keras.optimizers.SGD(learning_rate=0.01, momentum=0.9)
     
     # mseloss = lambda y_p, y_d : tf.reduce_mean( tf.square(tf.subtract(y_p, y_d) ))
     
@@ -370,7 +381,10 @@ def my_train_model(model, X_train, y_train, num_parameters, EPOCHS ,
     #             optimizer=optimizer,
     #             metrics=[mae_mu_(num_parameters), mae_loc_(num_parameters)])
 
-    model.compile(loss='mse', optimizer=optimizer)
+    # model.compile(loss='mse', optimizer=optimizer, metrics = ['mse','mae'])
+    model.compile(loss = custom_loss_mse(weight = w_l),
+                optimizer=optimizer,
+                metrics=[custom_loss_mse(weight = w_l),'mse','mae'])
 
     # model.compile(loss='mse',
     #             optimizer=optimizer,
@@ -380,7 +394,7 @@ def my_train_model(model, X_train, y_train, num_parameters, EPOCHS ,
     
     # Store training stats
     history = model.fit(X_train, y_train, epochs=EPOCHS,
-                        validation_split=0.1, verbose=1,
+                        validation_split=ratio_val, verbose=1,
                         callbacks=[PrintDot(), decay_lr ], batch_size = 32)
 
     # Store training stats

@@ -80,7 +80,7 @@ class myGmsh(pygmsh.built_in.Geometry):
     def write(self,savefile = '', opt = 'meshio'):
         if(type(self.mesh) == type(None)):
             self.generate(gmsh_opt=['-bin','-v','0']) # before with -algo del2d, but noticed mesh distortions
-            
+        
         if(len(savefile) == 0):
             savefile = self.radFileMesh.format('xdmf')
         
@@ -88,11 +88,15 @@ class myGmsh(pygmsh.built_in.Geometry):
             meshio.write(savefile, self.mesh)
         elif(opt == 'fenics'):
             iofe.exportMeshHDF5_fromGMSH(self.mesh, savefile)
+        
+        # return self.mesh
 
             
     def generate(self , gmsh_opt = ['']):
-        self.mesh = pygmsh.generate_mesh(self, extra_gmsh_arguments = gmsh_opt, dim = 2,mesh_file_type = 'msh2')
-    
+        self.mesh = pygmsh.generate_mesh(self, extra_gmsh_arguments = gmsh_opt, dim = 2,mesh_file_type = 'msh2') # it should be msh2 cause of tags    
+        # self.mesh = pygmsh.generate_mesh(self, verbose=False, dim=2, prune_vertices=True, prune_z_0=True,
+                                          # remove_faces=False, extra_gmsh_arguments=gmsh_opt,  mesh_file_type='msh4') # it should be msh2 cause of tags
+
     def getEnrichedMesh(self, savefile = ''):
         
         if(len(savefile) == 0):

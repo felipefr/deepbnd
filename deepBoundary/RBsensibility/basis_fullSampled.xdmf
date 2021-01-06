@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd" []>
+<Xdmf Version="3.0" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <Domain>
+    <Grid Name="TimeSeries" GridType="Collection" CollectionType="Temporal">
+      <Grid Name="mesh" GridType="Uniform">
+        <Topology NumberOfElements="156" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="156 3" NumberType="UInt" Format="HDF">basis_fullSampled.h5:/Mesh/0/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="137 2" Format="HDF">basis_fullSampled.h5:/Mesh/0/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="0" />
+        <Attribute Name="u" AttributeType="Vector" Center="Node">
+          <DataItem Dimensions="137 3" Format="HDF">basis_fullSampled.h5:/VisualisationVector/0</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="mesh" GridType="Uniform">
+        <Topology NumberOfElements="156" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="156 3" NumberType="UInt" Format="HDF">basis_fullSampled.h5:/Mesh/1/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="137 2" Format="HDF">basis_fullSampled.h5:/Mesh/1/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="1" />
+        <Attribute Name="u" AttributeType="Vector" Center="Node">
+          <DataItem Dimensions="137 3" Format="HDF">basis_fullSampled.h5:/VisualisationVector/1</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="mesh" GridType="Uniform">
+        <Topology NumberOfElements="156" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="156 3" NumberType="UInt" Format="HDF">basis_fullSampled.h5:/Mesh/2/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="137 2" Format="HDF">basis_fullSampled.h5:/Mesh/2/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="2" />
+        <Attribute Name="u" AttributeType="Vector" Center="Node">
+          <DataItem Dimensions="137 3" Format="HDF">basis_fullSampled.h5:/VisualisationVector/2</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="mesh" GridType="Uniform">
+        <Topology NumberOfElements="156" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="156 3" NumberType="UInt" Format="HDF">basis_fullSampled.h5:/Mesh/3/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="137 2" Format="HDF">basis_fullSampled.h5:/Mesh/3/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="3" />
+        <Attribute Name="u" AttributeType="Vector" Center="Node">
+          <DataItem Dimensions="137 3" Format="HDF">basis_fullSampled.h5:/VisualisationVector/3</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="mesh" GridType="Uniform">
+        <Topology NumberOfElements="156" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="156 3" NumberType="UInt" Format="HDF">basis_fullSampled.h5:/Mesh/4/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="137 2" Format="HDF">basis_fullSampled.h5:/Mesh/4/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="4" />
+        <Attribute Name="u" AttributeType="Vector" Center="Node">
+          <DataItem Dimensions="137 3" Format="HDF">basis_fullSampled.h5:/VisualisationVector/4</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="mesh" GridType="Uniform">
+        <Topology NumberOfElements="156" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="156 3" NumberType="UInt" Format="HDF">basis_fullSampled.h5:/Mesh/5/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="137 2" Format="HDF">basis_fullSampled.h5:/Mesh/5/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="5" />
+        <Attribute Name="u" AttributeType="Vector" Center="Node">
+          <DataItem Dimensions="137 3" Format="HDF">basis_fullSampled.h5:/VisualisationVector/5</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="mesh" GridType="Uniform">
+        <Topology NumberOfElements="156" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="156 3" NumberType="UInt" Format="HDF">basis_fullSampled.h5:/Mesh/6/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="137 2" Format="HDF">basis_fullSampled.h5:/Mesh/6/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="6" />
+        <Attribute Name="u" AttributeType="Vector" Center="Node">
+          <DataItem Dimensions="137 3" Format="HDF">basis_fullSampled.h5:/VisualisationVector/6</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="mesh" GridType="Uniform">
+        <Topology NumberOfElements="156" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="156 3" NumberType="UInt" Format="HDF">basis_fullSampled.h5:/Mesh/7/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="137 2" Format="HDF">basis_fullSampled.h5:/Mesh/7/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="7" />
+        <Attribute Name="u" AttributeType="Vector" Center="Node">
+          <DataItem Dimensions="137 3" Format="HDF">basis_fullSampled.h5:/VisualisationVector/7</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="mesh" GridType="Uniform">
+        <Topology NumberOfElements="156" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="156 3" NumberType="UInt" Format="HDF">basis_fullSampled.h5:/Mesh/8/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="137 2" Format="HDF">basis_fullSampled.h5:/Mesh/8/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="8" />
+        <Attribute Name="u" AttributeType="Vector" Center="Node">
+          <DataItem Dimensions="137 3" Format="HDF">basis_fullSampled.h5:/VisualisationVector/8</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="mesh" GridType="Uniform">
+        <Topology NumberOfElements="156" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="156 3" NumberType="UInt" Format="HDF">basis_fullSampled.h5:/Mesh/9/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="137 2" Format="HDF">basis_fullSampled.h5:/Mesh/9/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="9" />
+        <Attribute Name="u" AttributeType="Vector" Center="Node">
+          <DataItem Dimensions="137 3" Format="HDF">basis_fullSampled.h5:/VisualisationVector/9</DataItem>
+        </Attribute>
+      </Grid>
+    </Grid>
+  </Domain>
+</Xdmf>

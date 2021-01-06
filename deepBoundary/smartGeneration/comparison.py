@@ -18,16 +18,16 @@ import fenicsWrapperElasticity as fela
 import multiphenicsMultiscale as mpms
 import ioFenicsWrappers as iofe
 import fenicsUtils as feut
-import plotUtils as plut
+# import plotUtils as plut
 import myHDF5 as myhd
 
 import matplotlib.pyplot as plt
 import copy
 
-listNames = ['LHS_maxmin','LHS', 'Sobol', 'random', 'LHS_maxmin_full']
-listNames2 = [r'LHSmaxmin',r'LHS', r'Sobol', r'random',r'LHSmaxminfull']
+listNames = ['LHS_modified','LHS_frozen_p2', 'LHS_frozen_p4']
+listNames2 = [r'LHSmodified',r'LHSfrozen_p2', r'LHS_frozen_p4']
 
-folder = ["/Users", "/home"][0] + "/felipefr/switchdrive/scratch/deepBoundary/smartGeneration/{0}/"
+folder = ["/Users", "/home"][1] + "/felipefr/switchdrive/scratch/deepBoundary/smartGeneration/{0}/"
 nameC = {}
 for l in listNames:
     nameC[l] = folder.format(l) + 'Cnew.h5'
@@ -47,12 +47,15 @@ lambdas = {}
 #     fC.close()
 
 
+# myhd.loadhd5(folder + 'eigens.hd5','eigenvalues', mode = 'r')
+
 for l in listNames:
-    lambdas[l] = np.loadtxt('lambda_{0}.txt'.format(l))
+    # lambdas[l] = np.loadtxt('lambda_{0}.txt'.format(l))
+    lambdas[l] = myhd.loadhd5(folder.format(l) + 'eigens.hd5','eigenvalues')
     
 plt.figure(1)
 for l,l2 in zip(listNames,listNames2):
-    plt.plot(lambdas[l][:160], label = l2)
+    plt.plot(lambdas[l][:40], label = l2)
 
 plt.legend()
 plt.xlabel('N')
@@ -60,4 +63,4 @@ plt.ylabel('eigenvalue')
 plt.grid()
 plt.yscale('log')
 
-plt.savefig('allSpectrum.pdf')
+plt.savefig('cutSpectrum_new.pdf')

@@ -281,6 +281,17 @@ def postProcessing_simple(u, outputFile, comm = MPI.comm_world):
     u.rename('u', 'displacements at nodes')    
     fileResults.write(u,0.)
     fileResults.close()
+    
+def postProcessing_temporal(u, outputFile, comm = MPI.comm_world):
+    fileResults = XDMFFile(comm,outputFile)
+    fileResults.parameters["flush_output"] = True
+    fileResults.parameters["functions_share_mesh"] = True
+    
+    for i, ui in enumerate(u):
+        ui.rename('u', 'displacements at nodes')    
+        fileResults.write(ui,float(i))
+
+    fileResults.close()
 
 def postProcessing_complete(u, outputFile, labels = [], param = [], rename = True):
     fileResults = XDMFFile(outputFile)

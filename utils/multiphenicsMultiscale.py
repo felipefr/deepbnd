@@ -71,8 +71,9 @@ def solveMultiscale(param, M, eps, op, others = {}):
     
     # condNumber = np.linalg.cond(A.array())
     
+    method = 'mumps' if 'method' not in others.keys() else others['method']
     sol = mp.BlockFunction(W)
-    mp.block_solve(A, sol.block_vector(), F, 'mumps')
+    mp.block_solve(A, sol.block_vector(), F, method)
 
     end = timer()
     print('time in solving system', end - start) # Time in seconds, e.g. 5.38091952400282
