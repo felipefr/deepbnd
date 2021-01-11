@@ -1,0 +1,2 @@
+model_checkpoint_path: "weights_LHS_p4_volFraction_drop02_nX36_nY40_49"
+all_model_checkpoint_paths: "weights_LHS_p4_volFraction_drop02_nX36_nY40_49"

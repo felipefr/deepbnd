@@ -26,7 +26,7 @@ from timeit import default_timer as timer
 
 from mpi4py import MPI as pyMPI
 import pickle
-from commonParameters import *
+# from commonParameters import *
 import h5py 
 from myCoeffClass import *
 import myHDF5 as myhd 
