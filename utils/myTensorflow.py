@@ -345,6 +345,7 @@ def plot_history(history,savefile=None):
   if savefile:
       plt.savefig(savefile + '.png')
       np.savetxt(savefile + '_history_.txt', np.array(history.history['loss']) )
+      np.savetxt(savefile + '_history_val.txt', np.array(history.history['val_loss']) )
   
   plt.grid()    
   # plt.show( )

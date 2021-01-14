@@ -93,6 +93,13 @@ def basicModelTraining(nsTrain, nX, nY, net, fnames, w_l = 1.0):
     X = X[indices,:]
     Y = Y[indices,:]
     
+    if(w_l<0.0): # to indicate we want to compute problem-specific weights
+        maxAlpha = scalerY.data_max_
+        minAlpha = scalerY.data_min_
+        
+        w_l = (maxAlpha - minAlpha)**2.0
+        w_l = w_l.astype('float32')    
+    
     model = mytf.DNNmodel(nX, nY, Neurons, actLabel = actLabel , drps = drps, lambReg = reg  )
     
     num_parameters = 0 # in case of treating differently a part of the outputs
@@ -107,9 +114,12 @@ def basicModelTraining(nsTrain, nX, nY, net, fnames, w_l = 1.0):
     
     return history
 
-run_id = 49
+f = open("../../../../rootDataPath.txt")
+rootData = f.read()[:-1]
+f.close()
 
-folder = ["/Users", "/home"][1] + "/felipefr/switchdrive/scratch/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/"
+
+folder = rootData + "/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/"
 nameSnaps = folder + 'snapshots_{0}.h5'
 nameC = folder + 'Cnew.h5'
 nameMeshRefBnd = 'boundaryMesh.xdmf'
@@ -123,17 +133,78 @@ nY = 40 # 10 alphas
 
 nsTrain = 10240
 
-# net = {'Neurons': 6*[1024], 'drps': 8*[0.2], 'activations': ['relu','relu','relu'], 
-#        'reg': 1.0e-5, 'lr': 0.0001, 'decay' : 1.0, 'epochs': 200} # normally reg = 1e-5
-
-# 48 , p4_volFraction ==> Adam, complete, new loss, 0.2 validation
-# net = {'Neurons': 5*[512], 'drps': 7*[0.2], 'activations': ['relu','relu','sigmoid'], 
-#         'reg': 1.0e-5, 'lr': 1.0e-5, 'decay' : 1.0, 'epochs': 500} # normally reg = 1e-5
-
-# 47 , p4_volFraction ==> Adam, complete, new loss, 0.2 validation
+run_id = 1
 net = {'Neurons': 5*[100], 'drps': 7*[0.0], 'activations': ['relu','relu','sigmoid'], 
-        'reg': 0.0, 'lr': 1.0e-3, 'decay' : 1.0, 'epochs': 100} # normally reg = 1e-5
+        'reg': 0.0, 'lr': 1.0e-3, 'decay' : 1.0, 'epochs': 500} # normally reg = 1e-5
 
+fnames = {}      
+fnames['suffix_out'] = '_LHS_p4_volFraction_drop02_nX{0}_nY{1}_{2}'.format(nX,nY,run_id)
+fnames['prefix_out'] = rootData + '/deepBoundary/smartGeneration/newTrainingSymmetry/'
+fnames['prefix_in_X'] = folder + "ellipseData_1.h5"
+fnames['prefix_in_Y'] = folder + "Y.h5"
+
+os.system("mkdir " + fnames['prefix_out']) # in case the folder is not present
+
+start = timer()
+
+hist = basicModelTraining(nsTrain, nX, nY, net, fnames, w_l = -1.0)
+end = timer()
+
+print(end - start)
+
+plt.figure(2)
+plt.plot(hist.history['mse'])
+plt.plot(hist.history['val_mse'])
+plt.grid()
+plt.yscale('log')
+plt.savefig(fnames['prefix_out'] + '/plot_mse_{0}.png'.format(run_id))
+plt.show()
+
+
+# maxAlpha = np.array([0.17388121, 0.1973413 , 0.18664389, 0.12928418, 0.11462739,
+#        0.11087452, 0.11722689, 0.05264552, 0.04252529, 0.04050415,
+#        0.03631256, 0.04377134, 0.01499888, 0.05021424, 0.0581319 ,
+#        0.10523377, 0.02970695, 0.04006157, 0.02983312, 0.03816407,
+#        0.02747411, 0.06176459, 0.01894008, 0.0366062 , 0.02435913,
+#        0.01335066, 0.03182855, 0.01870466, 0.0133517 , 0.00668606,
+#        0.01331717, 0.01650203, 0.00726236, 0.01135727, 0.00942798,
+#        0.01240217, 0.00787619, 0.01020624, 0.00450953, 0.00530154])
+
+# minAlpha = np.array([-0.16609199, -0.19917321, -0.2024665 , -0.13307096, -0.11348853,
+#        -0.12422796, -0.11626117, -0.0436747 , -0.04288061, -0.04090521,
+#        -0.03776284, -0.04145643, -0.01586489, -0.05644017, -0.05777447,
+#        -0.1045557 , -0.03067901, -0.04034265, -0.03779434, -0.03866696,
+#        -0.02506299, -0.05601496, -0.01925384, -0.0358233 , -0.02294756,
+#        -0.01570426, -0.02860568, -0.01831146, -0.01378326, -0.00571366,
+#        -0.01312897, -0.01737668, -0.00731983, -0.01092405, -0.00835599,
+#        -0.01172343, -0.00758808, -0.00980361, -0.00473612, -0.0051039 ])
+
+
+# 1)
+# Neurons= 4*[32]
+# drps = 6*[0.0]
+# lr2 = 0.00
+# lr = 0.01
+# decay = 0.5
+
+
+
+# 2)
+# Neurons= 4*[64]
+# drps = 6*[0.0]
+# lr2 = 0.000001
+# lr = 0.01
+# decay = 0.5
+
+
+
+# 3)
+# Neurons= 4*[64]
+# drps = 6*[0.0]
+# lr2 = 0.00001
+# lr = 0.01
+# decay = 0.5
+# actLabel = ['relu','relu','linear']
 
 # 42 , p4_volFraction ==> Adam, complete, new loss, 0.2 validation
 # net = {'Neurons': 6*[1024], 'drps': 8*[0.2], 'activations': ['relu','relu','relu'], 
@@ -199,76 +270,6 @@ net = {'Neurons': 5*[100], 'drps': 7*[0.0], 'activations': ['relu','relu','sigmo
 # 27
 # net = {'Neurons': 6*[1024], 'drps': 8*[0.2], 'activations': ['relu','relu','relu'], 
 #        'reg': 1.0e-6, 'lr': 0.01, 'decay' : 0.5, 'epochs': 100} # normally reg = 1e-5
-       
-fnames = {}      
-fnames['suffix_out'] = '_LHS_p4_volFraction_drop02_nX{0}_nY{1}_{2}'.format(nX,nY,run_id)
-fnames['prefix_out'] = 'pabloIdea/'
-fnames['prefix_in_X'] = folder + "ellipseData_1.h5"
-fnames['prefix_in_Y'] = folder + "Y.h5"
-
-os.system("mkdir " + fnames['prefix_out']) # in case the folder is not present
-
-start = timer()
-maxAlpha = np.array([0.17388121, 0.1973413 , 0.18664389, 0.12928418, 0.11462739,
-       0.11087452, 0.11722689, 0.05264552, 0.04252529, 0.04050415,
-       0.03631256, 0.04377134, 0.01499888, 0.05021424, 0.0581319 ,
-       0.10523377, 0.02970695, 0.04006157, 0.02983312, 0.03816407,
-       0.02747411, 0.06176459, 0.01894008, 0.0366062 , 0.02435913,
-       0.01335066, 0.03182855, 0.01870466, 0.0133517 , 0.00668606,
-       0.01331717, 0.01650203, 0.00726236, 0.01135727, 0.00942798,
-       0.01240217, 0.00787619, 0.01020624, 0.00450953, 0.00530154])
-
-minAlpha = np.array([-0.16609199, -0.19917321, -0.2024665 , -0.13307096, -0.11348853,
-       -0.12422796, -0.11626117, -0.0436747 , -0.04288061, -0.04090521,
-       -0.03776284, -0.04145643, -0.01586489, -0.05644017, -0.05777447,
-       -0.1045557 , -0.03067901, -0.04034265, -0.03779434, -0.03866696,
-       -0.02506299, -0.05601496, -0.01925384, -0.0358233 , -0.02294756,
-       -0.01570426, -0.02860568, -0.01831146, -0.01378326, -0.00571366,
-       -0.01312897, -0.01737668, -0.00731983, -0.01092405, -0.00835599,
-       -0.01172343, -0.00758808, -0.00980361, -0.00473612, -0.0051039 ])
-
-weight = (maxAlpha - minAlpha)**2.0
-weight = weight.astype('float32')
-hist = basicModelTraining(nsTrain, nX, nY, net, fnames, w_l = weight)
-end = timer()
-
-print(end - start)
-
-plt.figure(1)
-plt.plot(hist.history['mse'])
-plt.plot(hist.history['val_mse'])
-plt.grid()
-plt.yscale('log')
-# plt.savefig(fnames['prefix_out'] + '/mse_46.png')
-plt.show()
-
-
-# 1)
-# Neurons= 4*[32]
-# drps = 6*[0.0]
-# lr2 = 0.00
-# lr = 0.01
-# decay = 0.5
-
-
-
-# 2)
-# Neurons= 4*[64]
-# drps = 6*[0.0]
-# lr2 = 0.000001
-# lr = 0.01
-# decay = 0.5
-
-
-
-# 3)
-# Neurons= 4*[64]
-# drps = 6*[0.0]
-# lr2 = 0.00001
-# lr = 0.01
-# decay = 0.5
-# actLabel = ['relu','relu','linear']
-
 
 
 # # 4)
