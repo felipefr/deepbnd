@@ -140,7 +140,7 @@ end = timer()
 
 print(end - start)
 
-plt.figure(1)
+plt.figure(2)
 plt.plot(hist.history['mse'] , label = 'train')
 plt.plot(hist.history['val_mse'], label = 'validation')
 plt.legend()
@@ -151,7 +151,7 @@ plt.xlabel('epochs')
 plt.savefig(fnames['prefix_out'] + '/plot_mse_{0}.png'.format(run_id))
 
 
-plt.figure(2)
+plt.figure(3)
 plt.plot(hist.history['mae'] , label = 'train')
 plt.plot(hist.history['val_mae'], label = 'validation')
 plt.legend()

@@ -331,7 +331,7 @@ def construct_model_hidden( number_of_inputs, network_width='normal'):
 
 
 def plot_history(history,savefile=None):
-  plt.figure()
+  plt.figure(1)
   plt.xlabel('Epoch')
   plt.ylabel('Loss')
   plt.plot(history.epoch, np.array(history.history['loss']),
@@ -347,7 +347,7 @@ def plot_history(history,savefile=None):
       np.savetxt(savefile + '_history_.txt', np.array(history.history['loss']) )
   
   plt.grid()    
-  plt.show( )
+  # plt.show( )
 
 def my_train_model(model, X_train, y_train, num_parameters, EPOCHS , 
                                    lr = 1.e-4, decay = 1.e-2, w_l = 1.0, w_mu = 1.0, ratio_val = 0.2):
