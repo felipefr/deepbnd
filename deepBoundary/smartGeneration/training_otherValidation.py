@@ -98,11 +98,13 @@ def basicModelTraining(ns, nX, nY, net, fnames, w_l = 1.0, ratio_val = 0.2):
 run_id = 9 # "p4, no validation separated, shuffle, 100 neurons, nY = 40, 500 epochs, new loss"
 
 f = open("../../../rootDataPath.txt")
-rootData = f.readline()
+rootData = f.read()[:-1]
 f.close()
 
-folderTrain = rootData + "/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/"
+folderTrain = "{0}/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/".format(rootData)
 folderVal = rootData + "/deepBoundary/smartGeneration/validation_and_test/"
+
+print(folderTrain, rootData)
 
 nameMeshRefBnd = 'boundaryMesh.xdmf'
 
@@ -160,7 +162,7 @@ plt.xlabel('epochs')
 plt.savefig(fnames['prefix_out'] + '/plot_mae_{0}.png'.format(run_id))
 
 
-plt.show()
+# plt.show()
 
 
 # 1

@@ -3,7 +3,7 @@ from numpy import isclose
 from dolfin import *
 # import matplotlib.pyplot as plt
 from multiphenics import *
-sys.path.insert(0, '../../../utils/')
+sys.path.insert(0, '../../utils/')
 
 import fenicsWrapperElasticity as fela
 import matplotlib.pyplot as plt
