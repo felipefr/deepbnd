@@ -54,11 +54,22 @@ def basicModelTraining(ns, nX, nY, net, fnames, w_l = 1.0, ratio_val = 0.2):
     decay = net['decay']
     lr = net['lr']
     
-    indices = np.arange(len(X))
-    np.random.shuffle(indices)
+    # suffle only training
+    nshuffle = int((1.0 - ratio_val)*ns)
     
+    indices = np.arange(len(X))
+    np.random.shuffle(indices[:nshuffle])
+    np.random.shuffle(indices[nshuffle:])
+
     X = X[indices,:]
     Y = Y[indices,:]
+    
+    if(w_l<0.0): # to indicate we want to compute problem-specific weights
+        maxAlpha = scalerY.data_max_
+        minAlpha = scalerY.data_min_
+        
+        w_l = (maxAlpha - minAlpha)**2.0
+        w_l = w_l.astype('float32')
     
     model = mytf.DNNmodel(nX, nY, Neurons, actLabel = actLabel , drps = drps, lambReg = reg  )
     
@@ -83,11 +94,15 @@ def basicModelTraining(ns, nX, nY, net, fnames, w_l = 1.0, ratio_val = 0.2):
 # run_id = 6 # "minmax, no validation separated, shuffle, nY = 40, 500 epochs"
 
 # run_id = 7 # "p4, no validation separated, shuffle, 100 neurons, nY = 40, 2000 epochs"
-run_id = 8 # "p4, no validation separated, shuffle, 100 neurons, nY = 40, 500 epochs, new loss"
+# run_id = 8 # "p4, no validation separated, shuffle, 100 neurons, nY = 40, 500 epochs, new loss"
+run_id = 9 # "p4, no validation separated, shuffle, 100 neurons, nY = 40, 500 epochs, new loss"
 
+f = open("../../../rootDataPath.txt")
+rootData = f.readline()
+f.close()
 
-folderTrain = ["/Users", "/home"][1] + "/felipefr/switchdrive/scratch/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/"
-folderVal = ["/Users", "/home"][1] + "/felipefr/switchdrive/scratch/deepBoundary/smartGeneration/validation_and_test/"
+folderTrain = rootData + "/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/"
+folderVal = rootData + "/deepBoundary/smartGeneration/validation_and_test/"
 
 nameMeshRefBnd = 'boundaryMesh.xdmf'
 
@@ -95,29 +110,28 @@ nX = 36
 nY = 40 # 10 alphas
 
 nsTrain = 10240
-nsval = 0
+nsval = 2000
 ns = nsval + nsTrain
-ratio_val = 0.2
+ratio_val = nsval/ns
 
 # 48 , p4_volFraction ==> Adam, complete, new loss, 0.2 validation
 net = {'Neurons': 5*[100], 'drps': 7*[0.0], 'activations': ['relu','relu','sigmoid'], 
-        'reg': 0.0, 'lr': 1.0e-3, 'decay' : 1.0, 'epochs': 500} # normally reg = 1e-5
+        'reg': 0.0, 'lr': 1.0e-5, 'decay' : 1.0, 'epochs': 10} # normally reg = 1e-5
        
 fnames = {}      
 fnames['suffix_out'] = '_p4_nX{0}_nY{1}_{2}'.format(nX,nY,run_id)
-fnames['prefix_out'] = 'differentModels/'
-# fnames['prefix_in_X'] = [folderTrain + "ellipseData_1.h5", folderVal + "ellipseData_validation.h5"]
-# fnames['prefix_in_Y'] = [folderTrain + "Y.h5", folderVal + "Y_validation_p4.h5"]
-fnames['prefix_in_X'] = [folderTrain + "ellipseData_1.h5"]
-fnames['prefix_in_Y'] = [folderTrain + "Y.h5"]
+fnames['prefix_out'] = rootData + '/deepBoundary/smartGeneration/differentModels/'
+fnames['prefix_in_X'] = [folderTrain + "ellipseData_1.h5", folderVal + "ellipseData_validation.h5"]
+fnames['prefix_in_Y'] = [folderTrain + "Y.h5", folderVal + "Y_validation_p4.h5"]
+# fnames['prefix_in_X'] = [folderTrain + "ellipseData_1.h5"]
+# fnames['prefix_in_Y'] = [folderTrain + "Y.h5"]
 
 os.system("mkdir " + fnames['prefix_out']) # in case the folder is not present
 
 start = timer()
-weight = 0.75**np.arange(1,41)/np.sum(0.75**np.arange(1,41))
-weight = weight.astype('float32')
+
 # weight = np.ones(nY)
-hist = basicModelTraining(ns, nX, nY, net, fnames, w_l = weight, ratio_val = ratio_val)
+hist = basicModelTraining(ns, nX, nY, net, fnames, w_l = -1.0 , ratio_val = ratio_val)
 historyArray = np.array([hist.history[k] for k in ['loss','val_loss','mse','val_mse', 'mae', 'val_mae']])
 np.savetxt(fnames['prefix_out'] + 'history' + fnames['suffix_out'] + '.txt', historyArray)
 end = timer()
