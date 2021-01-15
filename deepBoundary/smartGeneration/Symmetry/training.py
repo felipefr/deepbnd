@@ -119,7 +119,7 @@ rootData = f.read()[:-1]
 f.close()
 
 
-folder = rootData + "/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/"
+folder = rootData + "/felipefr/switchdrive/scratch/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/"
 nameSnaps = folder + 'snapshots_{0}.h5'
 nameC = folder + 'Cnew.h5'
 nameMeshRefBnd = 'boundaryMesh.xdmf'
@@ -133,9 +133,14 @@ nY = 40 # 10 alphas
 
 nsTrain = 10240
 
-run_id = 1
+# run_id = 1
+# net = {'Neurons': 5*[100], 'drps': 7*[0.0], 'activations': ['relu','relu','sigmoid'], 
+#         'reg': 0.0, 'lr': 1.0e-3, 'decay' : 1.0, 'epochs': 500} # normally reg = 1e-5
+
+
+run_id = 2
 net = {'Neurons': 5*[100], 'drps': 7*[0.0], 'activations': ['relu','relu','sigmoid'], 
-        'reg': 0.0, 'lr': 1.0e-3, 'decay' : 1.0, 'epochs': 500} # normally reg = 1e-5
+        'reg': 0.0, 'lr': 1.0e-4, 'decay' : 1.0, 'epochs': 500} # normally reg = 1e-5
 
 fnames = {}      
 fnames['suffix_out'] = '_LHS_p4_volFraction_drop02_nX{0}_nY{1}_{2}'.format(nX,nY,run_id)
