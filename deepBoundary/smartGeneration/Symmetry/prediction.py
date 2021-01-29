@@ -134,7 +134,8 @@ nY = 140 # 10 alphas
 
 nsTrain = 10240
 
-run_id = sys.argv[1]
+# run_id = sys.argv[1]
+run_id = 1
 print("run_id is " ,  run_id)
 
 nets = {}
@@ -300,22 +301,54 @@ fnames['prefix_out'] = rootData + '/deepBoundary/smartGeneration/newTrainingSymm
 fnames['prefix_in_X'] = folder + "ellipseData_1.h5"
 fnames['prefix_in_Y'] = folder + "Y.h5"
 
+# 'weights_LHS_p4_volFraction_drop02_nX36_nY140_42'
+
 os.system("mkdir " + fnames['prefix_out']) # in case the folder is not present
 
 start = timer()
 
-hist = basicModelTraining(nsTrain, nX, nY, net, fnames, w_l = -1.0)
+# mytf.DNNmodel(nX, nY, Neurons, actLabel = actLabel , drps = drps, lambReg = reg  )
+
+X, Y, scalerX, scalerY = getTraining(0,nsTrain, nX, nY, fnames['prefix_in_X'], fnames['prefix_in_Y'])
+
+models = []
+for j in range(35,49):
+    net =  nets[str(j)]
+    fnames['suffix_out'] = '_{0}_{1}'.format(nY,j)        
+    models.append(mytf.DNNmodel(nX, nY, net['Neurons'], actLabel = net['activations'], drps = net['drps'], lambReg = net['reg']))
+    print(fnames['prefix_out'] + 'weights' + fnames['suffix_out'])
+    models[-1].load_weights( fnames['prefix_out'] + 'weights_LHS_p4_volFraction_drop02_nX36_nY140_{0}'.format(j))
+        
+Y_p = models[12].predict(X[:,:])
+
+plt.figure(1,(12,9))
+plt.suptitle('Model nY = 140')
+N0 = 134
+for i in range(6):
+    plt.subplot('23' + str(i+1))
+    plt.title('Alpha ' + str(i+1 + N0))
+    plt.scatter(Y[:,i + N0], Y_p[:,N0 + i],marker = '.')
+    plt.plot([0.0,1.0],[0.0,1.0],'k-')
+    plt.ylabel('Y reference')
+    plt.xlabel('Y predicted')
+    plt.grid()
+
+# plt.tight_layout(pad = 1.09)
+plt.savefig('Scatter_model_nY140_lasts2.png')
+plt.show()
+
+# hist = basicModelTraining(nsTrain, nX, nY, net, fnames, w_l = -1.0)
 end = timer()
 
-print(end - start)
+# print(end - start)
 
-plt.figure(2)
-plt.plot(hist.history['mse'])
-plt.plot(hist.history['val_mse'])
-plt.grid()
-plt.yscale('log')
-plt.savefig(fnames['prefix_out'] + '/plot_mse_{0}.png'.format(run_id))
-plt.show()
+# plt.figure(2)
+# plt.plot(hist.history['mse'])
+# plt.plot(hist.history['val_mse'])
+# plt.grid()
+# plt.yscale('log')
+# plt.savefig(fnames['prefix_out'] + '/plot_mse_{0}.png'.format(run_id))
+# plt.show()
 
 
 
