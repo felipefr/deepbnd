@@ -38,6 +38,7 @@ ns = 10240
 
 folder = rootData + '/deepBoundary/smartGeneration/newTrainingSymmetry/'
 folder2 = rootData + '/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/'
+folder3 = rootData + '/deepBoundary/smartGeneration/LHS_p4_fullSymmetric/'
 nameMeshRefBnd = 'boundaryMesh.xdmf'
 nameWbasis = folder2 + 'Wbasis_new.h5'
 nameSnaps = folder2 + 'snapshots_all.h5'
@@ -45,8 +46,12 @@ nameY = folder2 + 'Y.h5'
 nameout = 'plot_history_LHS_p4_volFraction_drop02_nX{0}_nY{1}_{2}_history_.txt'
 nameout_val = 'plot_history_LHS_p4_volFraction_drop02_nX{0}_nY{1}_{2}_history_val.txt'
 
-eig = myhd.loadhd5(folder2 + 'eigens.hd5', 'eigenvalues')
+eig = myhd.loadhd5(folder2 + 'eigens.hd5', 'eigenvalues')   
 errorPOD = np.zeros(160)
+
+eig_full_symmetric = myhd.loadhd5(folder3 + 'eigenvalues.hd5', 'eigenvalues')   
+errorPOD_full_symmetric = np.zeros(160)
+
 
 # Mref = meut.EnrichedMesh(nameMeshRefBnd)
 # Vref = VectorFunctionSpace(Mref,"CG", 1)
@@ -69,6 +74,7 @@ errorPOD = np.zeros(160)
 
 for i in range(160):
     errorPOD[i] = np.sum(eig[i:])/ns
+    errorPOD_full_symmetric[i] = np.sum(eig_full_symmetric[i:])/(4*ns)
 
 hist_1 = []
 hist_val_1 = []
@@ -183,6 +189,7 @@ plt.plot(Nlist_5,lastError_val_5, '-o', label = 'ErrorDNN_val 5')
 
 # plt.plot(Nlist,lastError_val, '-o', label = 'ErrorDNN_validation')
 plt.plot(np.arange(160),errorPOD,'--', label = 'ErrorPOD')
+plt.plot(np.arange(160),errorPOD_full_symmetric,'--', label = 'ErrorPOD_FS')
 plt.plot(Nlist_5,errorPOD[Nlist_5] + lastError_5, '-o', label = 'Total Error')
 plt.yscale('log')
 plt.xlabel('N')

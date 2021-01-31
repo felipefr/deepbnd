@@ -161,7 +161,7 @@ plt.xlabel('N')
 plt.ylabel('error')
 plt.grid()
 plt.legend()
-plt.savefig('error_complete_shear_severalArchs_val.png')
+# plt.savefig('error_complete_shear_severalArchs_val.png')
 
 plt.figure(2)
 plt.plot(errorPOD)
