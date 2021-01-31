@@ -24,6 +24,7 @@ nameSnaps = folder + 'snapshots_all.h5'
 nameC = folderBasis + 'C.h5'
 nameMeshRefBnd = 'boundaryMesh.xdmnaf'
 nameWbasis = folderBasis + 'Wbasis.h5'
+nameWbasis_constrained = folderBasis + 'Wbasis_constrained.h5'
 nameYlist = folder + 'Y.h5'
 nameTau = folderBasis + 'tau.h5'
 nameEllipseData = folder + 'ellipseData.h5'
@@ -73,12 +74,31 @@ Nmax = 160
 #fIsol.close()
 
 # # Computing basis 
-os.system('rm ' + nameWbasis)
+# os.system('rm ' + nameWbasis)
+# C, fC = myhd.loadhd5_openFile(nameC,'C')
+# Isol, fIsol = myhd.loadhd5_openFile(nameSnaps,'solutions_trans', mode = 'r')
+# Wbasis, f = myhd.zeros_openFile(nameWbasis, (Nmax,Vref.dim()), 'Wbasis')
+# sig, U = gdb.computingBasis(Wbasis,C,Isol,Nmax)
+# myhd.savehd5(folder + 'eigens.hd5', [sig,U],['eigenvalues','eigenvectors'], mode = 'w-')
+# f.close()
+# fC.close()
+# fIsol.close()
+
+# # Computing basis 
+os.system('rm ' + nameWbasis_constrained)
+nsc = int(ns/4)
 C, fC = myhd.loadhd5_openFile(nameC,'C')
 Isol, fIsol = myhd.loadhd5_openFile(nameSnaps,'solutions_trans', mode = 'r')
+Isol_c = np.zeros((ns,Isol.shape[1]))
+C_c = np.zeros((ns,ns))
+
+for i in range(4):
+    Isol_c[i*nsc]
+    for j in range(4):
+
 Wbasis, f = myhd.zeros_openFile(nameWbasis, (Nmax,Vref.dim()), 'Wbasis')
-sig, U = gdb.computingBasis(Wbasis,C,Isol,Nmax)
-myhd.savehd5(folder + 'eigens.hd5', [sig,U],['eigenvalues','eigenvectors'], mode = 'w-')
+sig, U = gdb.computingBasis(Wbasis_constrained,C,Isol,Nmax)
+myhd.savehd5(folder + 'eigens_constrained.hd5', [sig,U],['eigenvalues','eigenvectors'], mode = 'w-')
 f.close()
 fC.close()
 fIsol.close()
