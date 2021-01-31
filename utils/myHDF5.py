@@ -67,6 +67,10 @@ def txt2hd5(filenameIn, filenameOut, label, reshapeLast = [False,0], mode = 'w-'
 def addDataset(f,X, label):
     defaultCompression['chunks'] = toChunk(X.shape)
     f.create_dataset(label, data = X , **defaultCompression)
+    
+def extractDataset(filenameIn, filenameOut, label, mode):
+    X = loadhd5(filenameIn, label)
+    savehd5(filenameOut,X,label,mode)
 
 def savehd5(filename, X,label, mode):
     with h5py.File(filename, mode) as f:
