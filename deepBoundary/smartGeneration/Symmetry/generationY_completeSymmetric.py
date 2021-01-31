@@ -28,6 +28,7 @@ nameWbasis_constrained = folderBasis + 'Wbasis_constrained.h5'
 nameWbasis_svd_simple = folderBasis + 'Wbasis_svd_simple.h5'
 nameWbasis_svd_full = folderBasis + 'Wbasis_svd_full.h5'
 nameYlist = folder + 'Y.h5'
+nameYlist_svd_full = folder + 'Y_svd_full.h5'
 nameTau = folderBasis + 'tau.h5'
 nameEllipseData = folder + 'ellipseData.h5'
 
@@ -118,30 +119,17 @@ Nmax = 160
 # fIsol.close()
 
 # Computing basis SVD full
-os.system('rm ' + nameWbasis_svd_full)
-Isol, fIsol = myhd.loadhd5_openFile(nameSnaps,'solutions_trans', mode = 'r')
-Wbasis_svd_full, f = myhd.zeros_openFile(nameWbasis_svd_full, (Nmax,Vref.dim()), 'Wbasis')
-sig, U = gdb.computingBasis_svd(Wbasis_svd_full,Isol,Nmax,Vref, dsRef, dotProduct)
-os.system('rm ' + folder + 'eigens_svd_full.hd5')
-myhd.savehd5(folder + 'eigens_svd_full.hd5', [sig,U],['eigenvalues','eigenvectors'], mode = 'w-')
-f.close()
-fIsol.close()
+# os.system('rm ' + nameWbasis_svd_full)
+# Isol, fIsol = myhd.loadhd5_openFile(nameSnaps,'solutions_trans', mode = 'r')
+# Wbasis_svd_full, f = myhd.zeros_openFile(nameWbasis_svd_full, (Nmax,Vref.dim()), 'Wbasis')
+# sig, U = gdb.computingBasis_svd(Wbasis_svd_full,Isol,Nmax,Vref, dsRef, dotProduct)
+# os.system('rm ' + folder + 'eigens_svd_full.hd5')
+# myhd.savehd5(folder + 'eigens_svd_full.hd5', [sig,U],['eigenvalues','eigenvectors'], mode = 'w-')
+# f.close()
+# fIsol.close()
 
-
-
-
-# Recompute Basis Symmetries
-# os.system('rm ' + nameWbasisT1)
-# os.system('rm ' + nameWbasisT2)
-# os.system('rm ' + nameWbasisT3)
-# Wbasis, fw = myhd.loadhd5_openFile(nameWbasis, 'Wbasis')
-# WbasisT1, f1 = myhd.zeros_openFile(nameWbasisT1, (Nmax,Vref.dim()), 'Wbasis')
-# WbasisT2, f2 = myhd.zeros_openFile(nameWbasisT2, (Nmax,Vref.dim()), 'Wbasis')
-# WbasisT3, f3 = myhd.zeros_openFile(nameWbasisT3, (Nmax,Vref.dim()), 'Wbasis')
-
-
-# #  ================  Extracting Alphas ============================================
-# os.system('rm ' + nameYlistT3)
+#  ================  Extracting Alphas ============================================
+# os.system('rm ' + nameYlist)
 # Wbasis, fw = myhd.loadhd5_openFile(nameWbasisT3, 'Wbasis')
 # Isol = myhd.loadhd5(nameSnaps,'solutions_trans')
 # Ylist, f = myhd.zeros_openFile(nameYlistT3, (ns,Nmax) , 'Ylist')
@@ -149,6 +137,17 @@ fIsol.close()
 # f.close()
 # fIsol.close()
 # fw.close()
+
+#  ================  Extracting Alphas SVD full ============================================
+os.system('rm ' + nameYlist_svd_full)
+Wbasis, fw = myhd.loadhd5_openFile(nameWbasisT3, 'Wbasis')
+Isol = myhd.loadhd5(nameSnaps,'solutions_trans')
+Ylist, f = myhd.zeros_openFile(nameYlistT3, (ns,Nmax) , 'Ylist')
+gdb.getAlphas(Ylist,Wbasis,Isol,ns,Nmax, dotProduct, Vref, dsRef) 
+f.close()
+fIsol.close()
+fw.close()
+
 
 # Computing basis for stress
 # E1 = 10.0
