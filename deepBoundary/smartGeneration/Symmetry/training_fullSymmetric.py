@@ -115,12 +115,14 @@ f = open("../../../../rootDataPath.txt")
 rootData = f.read()[:-1]
 f.close()
 
-# run_id = sys.argv[1]
-# Nrb = sys.argv[2]
-run_id = 0
-Nrb = 20
-epochs = 500
-print("run_id is " ,  run_id, 'Nrb is ', Nrb)
+run_id = sys.argv[1]
+Nrb = sys.argv[2]
+epochs = sys.argv[3]
+# epochs = 500
+# run_id = 0
+# Nrb = 20
+
+print("run_id is " ,  run_id, 'Nrb is ', Nrb, 'epochs ', epochs)
 
 folder = rootData + "/deepBoundary/smartGeneration/LHS_p4_fullSymmetric/"
 nameMeshRefBnd = 'boundaryMesh.xdmf'
