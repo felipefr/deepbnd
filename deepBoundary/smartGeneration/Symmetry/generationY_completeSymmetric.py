@@ -140,9 +140,9 @@ Nmax = 160
 
 #  ================  Extracting Alphas SVD full ============================================
 os.system('rm ' + nameYlist_svd_full)
-Wbasis, fw = myhd.loadhd5_openFile(nameWbasisT3, 'Wbasis')
+Wbasis, fw = myhd.loadhd5_openFile(nameWbasis_svd_full, 'Wbasis')
 Isol = myhd.loadhd5(nameSnaps,'solutions_trans')
-Ylist, f = myhd.zeros_openFile(nameYlistT3, (ns,Nmax) , 'Ylist')
+Ylist, f = myhd.zeros_openFile(nameYlist_svd_full, (4*ns,Nmax) , 'Ylist')
 gdb.getAlphas(Ylist,Wbasis,Isol,ns,Nmax, dotProduct, Vref, dsRef) 
 f.close()
 fIsol.close()
