@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from dolfin import *
 
-import myTensorflow as mytf
+# import myTensorflow as mytf
 from timeit import default_timer as timer
 
 import h5py
@@ -49,7 +49,8 @@ nameout_val = 'plot_history_LHS_p4_volFraction_drop02_nX{0}_nY{1}_{2}_history_va
 eig = myhd.loadhd5(folder2 + 'eigens.hd5', 'eigenvalues')   
 errorPOD = np.zeros(160)
 
-eig_full_symmetric = myhd.loadhd5(folder3 + 'eigenvalues.hd5', 'eigenvalues')   
+# eig_full_symmetric = myhd.loadhd5(folder3 + 'eigenvalues.hd5', 'eigenvalues')  
+eig_full_symmetric = myhd.loadhd5(folder3 + 'eigens_svd_simple.hd5', 'eigenvalues')  
 errorPOD_full_symmetric = np.zeros(160)
 
 
@@ -74,7 +75,7 @@ errorPOD_full_symmetric = np.zeros(160)
 
 for i in range(160):
     errorPOD[i] = np.sum(eig[i:])/ns
-    errorPOD_full_symmetric[i] = np.sum(eig_full_symmetric[i:])/(4*ns)
+    errorPOD_full_symmetric[i] = np.sum(eig_full_symmetric[i:])/(ns)
 
 hist_1 = []
 hist_val_1 = []
@@ -189,14 +190,15 @@ plt.plot(Nlist_5,lastError_val_5, '-o', label = 'ErrorDNN_val 5')
 
 # plt.plot(Nlist,lastError_val, '-o', label = 'ErrorDNN_validation')
 plt.plot(np.arange(160),errorPOD,'--', label = 'ErrorPOD')
-plt.plot(np.arange(160),errorPOD_full_symmetric,'--', label = 'ErrorPOD_FS')
+plt.plot(np.arange(160),errorPOD_full_symmetric,'--', label = 'ErrorPOD_SVD')
 plt.plot(Nlist_5,errorPOD[Nlist_5] + lastError_5, '-o', label = 'Total Error')
+plt.ylim(1.0e-12,1.0e-1)
 plt.yscale('log')
 plt.xlabel('N')
 plt.ylabel('error')
 plt.grid()
 plt.legend()
-plt.savefig('error_complete_shear_total.png')
+plt.savefig('error_complete_shear_total_svd_simple.png')
 
 plt.figure(2)
 plt.plot(errorPOD)

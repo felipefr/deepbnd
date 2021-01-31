@@ -22,9 +22,11 @@ folderBasis = rootData + "/deepBoundary/smartGeneration/LHS_p4_fullSymmetric/"
 nameSnaps_simple = folder + 'snapshots_simple.h5'
 nameSnaps = folder + 'snapshots_all.h5'
 nameC = folderBasis + 'C.h5'
-nameMeshRefBnd = 'boundaryMesh.xdmnaf'
+nameMeshRefBnd = 'boundaryMesh.xdmf'
 nameWbasis = folderBasis + 'Wbasis.h5'
 nameWbasis_constrained = folderBasis + 'Wbasis_constrained.h5'
+nameWbasis_svd_simple = folderBasis + 'Wbasis_svd_simple.h5'
+nameWbasis_svd_full = folderBasis + 'Wbasis_svd_full.h5'
 nameYlist = folder + 'Y.h5'
 nameTau = folderBasis + 'tau.h5'
 nameEllipseData = folder + 'ellipseData.h5'
@@ -84,24 +86,49 @@ Nmax = 160
 # fC.close()
 # fIsol.close()
 
-# # Computing basis 
-os.system('rm ' + nameWbasis_constrained)
-nsc = int(ns/4)
-C, fC = myhd.loadhd5_openFile(nameC,'C')
+# # Computing basis Contrain
+# os.system('rm ' + nameWbasis_constrained)
+# nsc = int(ns/4)
+# C, fC = myhd.loadhd5_openFile(nameC,'C')
+# Isol, fIsol = myhd.loadhd5_openFile(nameSnaps,'solutions_trans', mode = 'r')
+# Isol_c = np.zeros((ns,Isol.shape[1]))
+# C_c = np.zeros((ns,ns))
+
+# for i in range(4):
+#     Isol_c[i*nsc : (i+1)*nsc , :] = Isol[i*ns : i*ns + nsc, :]
+#     for j in range(4):
+#         C_c[i*nsc : (i+1)*nsc , j*nsc : (j+1)*nsc ] = C[i*ns : i*ns + nsc, j*ns : j*ns + nsc]
+
+# fC.close()
+# fIsol.close()
+
+# Wbasis_constrained, f = myhd.zeros_openFile(nameWbasis_constrained, (Nmax,Vref.dim()), 'Wbasis')
+# sig, U = gdb.computingBasis(Wbasis_constrained,C_c,Isol_c,Nmax)
+# myhd.savehd5(folder + 'eigens_constrained.hd5', [sig,U],['eigenvalues','eigenvectors'], mode = 'w-')
+# f.close()
+
+# Computing basis SVD simple
+# os.system('rm ' + nameWbasis_svd_simple)
+# Isol, fIsol = myhd.loadhd5_openFile(nameSnaps_simple,'solutions_trans', mode = 'r')
+# Wbasis_svd_simple, f = myhd.zeros_openFile(nameWbasis_svd_simple, (Nmax,Vref.dim()), 'Wbasis')
+# sig, U = gdb.computingBasis_svd(Wbasis_svd_simple,Isol,Nmax,Vref, dsRef, dotProduct)
+# os.system('rm ' + folder + 'eigens_svd_simple.hd5')
+# myhd.savehd5(folder + 'eigens_svd_simple.hd5', [sig,U],['eigenvalues','eigenvectors'], mode = 'w-')
+# f.close()
+# fIsol.close()
+
+# Computing basis SVD full
+os.system('rm ' + nameWbasis_svd_full)
 Isol, fIsol = myhd.loadhd5_openFile(nameSnaps,'solutions_trans', mode = 'r')
-Isol_c = np.zeros((ns,Isol.shape[1]))
-C_c = np.zeros((ns,ns))
-
-for i in range(4):
-    Isol_c[i*nsc]
-    for j in range(4):
-
-Wbasis, f = myhd.zeros_openFile(nameWbasis, (Nmax,Vref.dim()), 'Wbasis')
-sig, U = gdb.computingBasis(Wbasis_constrained,C,Isol,Nmax)
-myhd.savehd5(folder + 'eigens_constrained.hd5', [sig,U],['eigenvalues','eigenvectors'], mode = 'w-')
+Wbasis_svd_full, f = myhd.zeros_openFile(nameWbasis_svd_full, (Nmax,Vref.dim()), 'Wbasis')
+sig, U = gdb.computingBasis_svd(Wbasis_svd_full,Isol,Nmax,Vref, dsRef, dotProduct)
+os.system('rm ' + folder + 'eigens_svd_full.hd5')
+myhd.savehd5(folder + 'eigens_svd_full.hd5', [sig,U],['eigenvalues','eigenvectors'], mode = 'w-')
 f.close()
-fC.close()
 fIsol.close()
+
+
+
 
 # Recompute Basis Symmetries
 # os.system('rm ' + nameWbasisT1)

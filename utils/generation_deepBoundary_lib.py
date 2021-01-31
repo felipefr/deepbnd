@@ -163,31 +163,45 @@ def computingBasis(Wbasis,C,Isol,Nmax, divisionInC = False, N0=0,N1=0):
 
     return sig, U
 
-def computingBasis_cholesky(Wbasis,C,Isol,Nmax, divisionInC = False, N0=0,N1=0):
+def getMassMatrix(Isol,Vref,dxRef,dotProduct):
+    ui = Function(Vref)
+    uj = Function(Vref)
     
-    if(N1 ==0):
-        N1 = Nmax
-        
-    sig, U = np.linalg.eigh(C)
-   
-    asort = np.argsort(sig)
-    sig = sig[asort[::-1]]
-    U = U[:,asort[::-1]]
+    Nh = len(Isol[0,:])
+    M = np.zeros((Nh,Nh))
     
-    ns = len(C)
-    
-    if(divisionInC):
-        fac = np.sqrt(ns) 
-    else:
-        fac = 1.0    
-    
-    for i in range(N0,N1):
-        print("computing basis " , i )
-    
-        Wbasis[i,:] = (U[:,i]/(fac*np.sqrt(sig[i]))).reshape((1,len(sig)))@Isol
-        # (U[:,:Nmax]/np.sqrt(ns*sig[:Nmax])).T@Isol
+    for i in range(Nh):     ## think in passing it to above
+        ei = np.zeros(Nh)
+        ei[i] = 1.0
+        ui.vector().set_local(ei)
+        for j in range(i, Nh):     ## think in passing it to above
+            ej = np.zeros(Nh)
+            ej[j] = 1.0
+            uj.vector().set_local(ej)
+            M[i,j] = dotProduct(ui,uj,dxRef)
+            M[j,i] = M[i,j]
 
-    return sig, U
+    return M
+
+def computingBasis_svd(Wbasis,Isol,Nmax, Vref,dxRef,dotProduct):
+
+    M = getMassMatrix(Isol,Vref,dxRef,dotProduct)
+    UM,SM,VMT = np.linalg.svd(M)  
+    Msqrt = (UM[:,:len(SM)]*np.sqrt(SM))@VMT
+            
+    U, sig, VT = np.linalg.svd(Isol@Msqrt) # sig here means the sqrt of eigenvalues for the correlation matrix method
+   
+    U = U[:,:len(sig)]
+    ns = len(U)
+    print(U.shape)
+    print(sig.shape)
+    print(Isol.shape)
+    for i in range(Nmax):
+        print("computing basis " , i )
+        Wbasis[i,:] = (U[:,i]/sig[i]).reshape((1,ns))@Isol
+        
+    return sig**2, U    
+
 
 def reinterpolateWbasis(Wbasis, Vref, Wbasis0 , Vref0):
     
