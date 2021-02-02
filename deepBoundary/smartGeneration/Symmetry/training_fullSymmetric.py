@@ -116,8 +116,9 @@ rootData = f.read()[:-1]
 f.close()
 
 run_id = sys.argv[1]
-Nrb = sys.argv[2]
-epochs = sys.argv[3]
+Nrb = int(sys.argv[2])
+epochs = int(sys.argv[3])
+label = sys.argv[4]
 # epochs = 500
 # run_id = 0
 # Nrb = 20
@@ -131,7 +132,7 @@ nameEllipseData = folder + 'ellipseData_1.h5'
 nameEllipseData_new = folder + 'ellipseData_fullSymmetric.h5'
 
 fnames = {}      
-fnames['suffix_out'] = 'fullSymmetric_std_{0}_nY{1}'.format(run_id,Nrb)
+fnames['suffix_out'] = 'fullSymmetric_{0}_{1}_nY{2}'.format(label,run_id,Nrb)
 fnames['prefix_out'] = rootData + '/deepBoundary/smartGeneration/newTrainingSymmetry/fullSymmetric/'
 fnames['prefix_in_X'] = nameEllipseData_new
 fnames['prefix_in_Y'] = nameYlist
@@ -141,20 +142,22 @@ nX = 36 # because the only first 4 are relevant, the other are constant
 nY = 160 # 10 alphas
 nsTrain = 4*10240
 
-createSymmetricEllipseData(nameEllipseData, nameEllipseData_new)
+# createSymmetricEllipseData(nameEllipseData, nameEllipseData_new)
 X, Y, scalerX, scalerY = getTraining(0,nsTrain, nX, nY, fnames['prefix_in_X'], fnames['prefix_in_Y'])
 
 nets = {}
 
 # series with 5000 epochs
-nets[0] = {'Neurons': 5*[100], 'drps': 7*[0.0], 'activations': ['relu','relu','sigmoid'], 
+nets['0'] = {'Neurons': 5*[100], 'drps': 7*[0.0], 'activations': ['relu','relu','sigmoid'], 
         'reg': 0.0, 'lr': 1.0e-4, 'decay' : 1.0} # normally reg = 1e-5
 
-net = nets[run_id]
-net['epochs'] = epochs
-net['weightTsh'] = Nrb
+nets['1'] = {'Neurons': 5*[100], 'drps': 7*[0.0], 'activations': ['relu','relu','sigmoid'], 
+        'reg': 0.0, 'lr': 1.0e-4, 'decay' : 1.0} # normally reg = 1e-5
 
-os.system("mkdir " + fnames['prefix_out']) # in case the folder is not present
+net = nets[str(run_id)]
+net['epochs'] = int(epochs)
+net['weightTsh'] = int(Nrb)
+#os.system("mkdir " + fnames['prefix_out']) # in case the folder is not present
 
 start = timer()
 
@@ -167,4 +170,4 @@ plt.plot(hist.history['val_mse'])
 plt.grid()
 plt.yscale('log')
 plt.savefig(fnames['prefix_out'] + '/plot_mse_{0}.png'.format(run_id))
-plt.show()
+#plt.show()
