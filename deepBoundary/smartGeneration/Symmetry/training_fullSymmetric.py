@@ -141,7 +141,7 @@ nX = 36 # because the only first 4 are relevant, the other are constant
 nY = 160 # 10 alphas
 nsTrain = 4*10240
 
-# createSymmetricEllipseData(nameEllipseData, nameEllipseData_new)
+createSymmetricEllipseData(nameEllipseData, nameEllipseData_new)
 X, Y, scalerX, scalerY = getTraining(0,nsTrain, nX, nY, fnames['prefix_in_X'], fnames['prefix_in_Y'])
 
 nets = {}

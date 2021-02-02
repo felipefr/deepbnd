@@ -78,6 +78,8 @@ errorPOD_full_symmetric = np.zeros(160)
 for i in range(160):
     errorPOD[i] = np.sum(eig[i:])/ns
     errorPOD_full_symmetric[i] = np.sum(eig_full_symmetric[i:])/(4*ns)
+    
+
 
 hist_1 = []
 hist_val_1 = []
@@ -177,30 +179,51 @@ lastError_val_4 = np.array(lastError_val_4)
 lastError_5 = np.array(lastError_5)
 lastError_val_5 = np.array(lastError_val_5)
 
+# ====  new losses
+folder_fullSymmetric = rootData + '/deepBoundary/smartGeneration/newTrainingSymmetry/fullSymmetric/logs_losses/'
+
+nYlist_fullSymmetric = [5,10,15,20,25,30,35,40,60,80,100,120,140,160]
+
+history_fullSymmetric = []
+
+for ny in nYlist_fullSymmetric:
+    history_fullSymmetric.append(np.loadtxt(folder_fullSymmetric + 'loss_log_ny{0}.txt'.format(ny)))
+
+lastError_fullSymmetric = [history_fullSymmetric[i][-1,0] for i in range(len(nYlist_fullSymmetric))]
+lastError_fullSymmetric_val = [history_fullSymmetric[i][-1,1] for i in range(len(nYlist_fullSymmetric))]
+
 plt.figure(1)
 # plt.plot(Nlist_1_2[:-1],lastError_1, '-o', label = 'ErrorDNN_train 1')
 # plt.plot(Nlist_1_2,lastError_2, '-o', label = 'ErrorDNN_train 2')
 # plt.plot(Nlist_3,lastError_3, '-o', label = 'ErrorDNN_train 3')
 # plt.plot(Nlist_4,lastError_4, '-o', label = 'ErrorDNN_train 4')
-plt.plot(Nlist_5,lastError_5, '-o', label = 'ErrorDNN_train 5')
+# plt.plot(Nlist_5,lastError_5, '-o', label = 'ErrorDNN_train')
 
 # plt.plot(Nlist_1_2[:-1],lastError_val_1, '-o', label = 'ErrorDNN_val 1')
 # plt.plot(Nlist_1_2,lastError_val_2, '-o', label = 'ErrorDNN_val 2')
 # plt.plot(Nlist_3,lastError_val_3, '-o', label = 'ErrorDNN_val 3')
 # plt.plot(Nlist_4,lastError_val_4, '-o', label = 'ErrorDNN_val 4')
-plt.plot(Nlist_5,lastError_val_5, '-o', label = 'ErrorDNN_val 5')
+# plt.plot(Nlist_5,lastError_val_5, '-o', label = 'ErrorDNN_val 5')
 
 # plt.plot(Nlist,lastError_val, '-o', label = 'ErrorDNN_validation')
-plt.plot(np.arange(160),errorPOD,'--', label = 'ErrorPOD')
-plt.plot(np.arange(160),errorPOD_full_symmetric,'--', label = 'ErrorPOD_withSymmetries')
+# plt.plot(np.arange(160),errorPOD,'--', label = 'ErrorPOD')
+# plt.plot(np.arange(160),errorPOD_full_symmetric,'--', label = 'ErrorPOD FS')
+# plt.plot(nYlist_fullSymmetric,lastError_fullSymmetric,'-o', label = 'ErrorDNN FS')
+plt.plot(np.arange(160),np.sqrt(errorPOD_full_symmetric/errorPOD_full_symmetric[0]),'--', label = 'ErrorPOD FS')
+plt.plot(nYlist_fullSymmetric,np.sqrt(lastError_fullSymmetric/errorPOD_full_symmetric[0]),'-o', label = 'ErrorDNN FS')
+# plt.plot(nYlist_fullSymmetric,lastError_fullSymmetric_val,'-', label = 'ErrorDNN_val FS')
 # plt.plot(Nlist_5,errorPOD[Nlist_5] + lastError_5, '-o', label = 'Total Error')
-plt.ylim(1.0e-12,1.0e-1)
+# plt.plot(nYlist_fullSymmetric[:-1], errorPOD_full_symmetric[nYlist_fullSymmetric[:-1]] + lastError_fullSymmetric[-1], '-o', label = 'Total Error FS')
+plt.plot(nYlist_fullSymmetric[:-1], np.sqrt((errorPOD_full_symmetric[nYlist_fullSymmetric[:-1]] + lastError_fullSymmetric[-1])/errorPOD_full_symmetric[0]), '-o', label = 'Total Error FS')
+plt.ylim(1.0e-5,1.0)
+# plt.xlim(20,80)
 plt.yscale('log')
 plt.xlabel('N')
-plt.ylabel('error')
+plt.ylabel('relative error (square root)')
 plt.grid()
 plt.legend()
-plt.savefig('error_complete_shear_total_fullSymmetries.png')
+# plt.savefig('comparison_fullSymmetry_loss_POD_zoom.png')
+plt.savefig('fullSymmetry_loss_POD_total_relative.png')
 
 plt.figure(2)
 plt.plot(errorPOD)
