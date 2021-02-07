@@ -139,7 +139,7 @@ f = open("../../../rootDataPath.txt")
 rootData = f.read()[:-1]
 f.close()
 
-folder = ["/Users", "/home"][1] + "/felipefr/switchdrive/scratch/deepBoundary/testStress/"
+folder = rootData + "/deepBoundary/testStress/"
 radFile = folder + "RVE_POD_{0}.{1}"
 
 opModel = 'periodic'
@@ -203,15 +203,10 @@ NR2 = 12
 NR3 = 20
 NR = NR1 + NR2 + NR3
 
-# ns = 5120
-ns = 12
+ns = 5120
 
-
-p = 1
-M = 1
-
-# p = 4
-# M = 4
+p = 4
+M = 4
 N = int(ns/(p**M))
        
 ns = N*p**M
@@ -219,27 +214,29 @@ print(ns)
 
 # Radius Generation
 seed = 17 # for the test   
-# np.random.seed(seed)
 
-# os.system('rm ' + folder +  'ellipseData_{0}.h5'.format(seed))
-# X, f = myhd.zeros_openFile(filename = folder +  'ellipseData_{0}.h5'.format(seed),  shape = (ns,Ny*Nx,5), label = 'ellipseData', mode = 'w-')
+if(int(sys.argv[1]) == 1):
+    np.random.seed(seed)
+    
+    os.system('rm ' + folder +  'ellipseData_{0}.h5'.format(seed))
+    X, f = myhd.zeros_openFile(filename = folder +  'ellipseData_{0}.h5'.format(seed),  shape = (ns,Ny*Nx,5), label = 'ellipseData', mode = 'w-')
+    
+    ellipseData, PermTotal, PermBox = geni.circularRegular2Regions(r0, r1, NxL, NyL, Lxt, Lyt, maxOffset, ordered = False, x0 = x0, y0 = y0)
+    ellipseData = ellipseData[PermTotal]
+    
+    R = getScikitoptSampleVolFraction_adaptativeSample_frozen(NR,Vfrac,r0,r1, H, p, M, N, 
+                                                        [i for i in range(M)], seed, op = 'lhs_maxmin')
+    
+    for i in range(ns):
+        ellipseData[:,2] = enforceVfracPerOffset(R[i,:], NxL, maxOffset, H, Vfrac)
+        print("inserting on ", i)
+        X[i,:,:] = ellipseData
+    
+    
+    f.close()
 
-# ellipseData, PermTotal, PermBox = geni.circularRegular2Regions(r0, r1, NxL, NyL, Lxt, Lyt, maxOffset, ordered = False, x0 = x0, y0 = y0)
-# ellipseData = ellipseData[PermTotal]
-
-# R = getScikitoptSampleVolFraction_adaptativeSample_frozen(NR,Vfrac,r0,r1, H, p, M, N, 
-                                                    # [i for i in range(M)], seed, op = 'lhs_maxmin')
-
-# for i in range(ns):
-    # ellipseData[:,2] = enforceVfracPerOffset(R[i,:], NxL, maxOffset, H, Vfrac)
-    # print("inserting on ", i)
-    # X[i,:,:] = ellipseData
-
-
-# f.close()
-
-Npartitions = 3
-partition = int(sys.argv[1])
+Npartitions = 8
+partition = int(sys.argv[2])
 nperpartition = int(ns/Npartitions)
 n0 = partition*nperpartition
 n1 = (partition+1)*nperpartition
@@ -280,7 +277,7 @@ for i, ii in enumerate(range(n0,n1)):
     snap_sigmasT[i,:] = fmts.homogenisation(U[0], mesh, sigma, [0,1,2,3], sigmaEps).flatten()[[0,3,2]]      
     end = timer()
     
-    iofe.postProcessing_complete(U[0], folder + 'sol_mesh_1.xdmf', ['u','lame','vonMises'], param)
+    # iofe.postProcessing_complete(U[0], folder + 'sol_mesh_1.xdmf', ['u','lame','vonMises'], param)
     print("concluded in ", end - start)      
     
             
