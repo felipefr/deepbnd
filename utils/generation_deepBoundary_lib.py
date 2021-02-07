@@ -934,7 +934,7 @@ def getStressBasis_noMesh_partitioned(tau, Wbasis, Isol, ellipseData, Nmax, Vref
 
         meshGMSH = meut.ellipseMesh2(ellipseData[n0 + i,:4,:], x0 = -1.0, y0 = -1.0, Lx = 2.0 , Ly = 2.0 , lcar = 0.1)
         meshGMSH.setTransfiniteBoundary(21)
-        meshGMSH.setNameMesh("mesh_reduced_temp.xdmf")
+        meshGMSH.setNameMesh("mesh_reduced_temp_{0}.xdmf".format(i+ns))
         mesh = meshGMSH.getEnrichedMesh() 
 
         V = VectorFunctionSpace(mesh,"CG", polyorder)
@@ -958,7 +958,6 @@ def getStressBasis_noMesh_partitioned(tau, Wbasis, Isol, ellipseData, Nmax, Vref
             Ibasis = transformBasis(mesh)
             tau[0][i,j,:] = ten2voigt(fmts.homogenisation(Ibasis, mesh, sigmaL0, [0,1], sigmaEpsL0))
 
-
-
+        os.system("rm mesh_reduced_temp_{0}*".format(i+ns))
 
             
