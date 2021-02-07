@@ -207,7 +207,7 @@ plt.figure(1)
 
 # plt.plot(Nlist,lastError_val, '-o', label = 'ErrorDNN_validation')
 # plt.plot(np.arange(160),errorPOD,'--', label = 'ErrorPOD')
-# plt.plot(np.arange(160),errorPOD_full_symmetric,'--', label = 'ErrorPOD FS')
+    # plt.plot(np.arange(160),errorPOD_full_symmetric,'--', label = 'ErrorPOD FS')
 # plt.plot(nYlist_fullSymmetric,lastError_fullSymmetric,'-o', label = 'ErrorDNN FS')
 plt.plot(np.arange(160),np.sqrt(errorPOD_full_symmetric/errorPOD_full_symmetric[0]),'--', label = 'ErrorPOD FS')
 plt.plot(nYlist_fullSymmetric,np.sqrt(lastError_fullSymmetric/errorPOD_full_symmetric[0]),'-o', label = 'ErrorDNN FS')
