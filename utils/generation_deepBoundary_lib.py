@@ -897,6 +897,67 @@ def getStressBasis_noMesh(tau, Wbasis, Isol, ellipseData, Nmax, Vref, param, Eps
             Ibasis = transformBasis(mesh)
             tau[0][i,j,:] = ten2voigt(fmts.homogenisation(Ibasis, mesh, sigmaL0, [0,1], sigmaEpsL0))
 
+def getStressBasis_noMesh_partitioned(tau, Wbasis, Isol, ellipseData, Nmax, Vref, param, EpsDirection, n0, n1): # tau = [ tau_basis, tau_0, tau_0_fluc]
+    
+    polyorder = 1
+    ns = n1 - n0
+    contrast = param[2]
+    E1 = param[0]
+    E2 = contrast*E1 # inclusions
+    nu1 = param[1]
+    nu2 = param[1]
+    
+    mu1 = elut.eng2mu(nu1,E1)
+    lamb1 = elut.eng2lambPlane(nu1,E1)
+    mu2 = elut.eng2mu(nu2,E2)
+    lamb2 = elut.eng2lambPlane(nu2,E2)
+    
+    param = np.array([[lamb1, mu1], [lamb2,mu2],[lamb1, mu1], [lamb2,mu2]])
+    
+    Mref = Vref.mesh()
+    normal = FacetNormal(Mref)
+    dsRef = Measure('ds', Mref)
+
+    
+    EpsUnits = np.array([[1.,0.,0.,0.],[0.,0.5,0.5,0.]])[EpsDirection,:]
+    
+    basis = Function(Vref)
+    usol = Function(Vref)
+    
+    others = {'polyorder' : polyorder, 'bdr' : 2, 'uD' : basis}
+    
+    transformBasis0 = lambda mesh, epsbar : mpms.solveMultiscale(param[0:2,:], mesh, epsbar, op = 'Lin', others = others)[0]
+    transformBasis = lambda mesh : mpms.solveMultiscale(param[0:2,:], mesh, np.zeros((2,2)), op = 'BCdirich_lag', others = others)[0]
+    
+    for i in range(ns):
+        print(".... Now computing tau for test ", i)
+
+        meshGMSH = meut.ellipseMesh2(ellipseData[n0 + i,:4,:], x0 = -1.0, y0 = -1.0, Lx = 2.0 , Ly = 2.0 , lcar = 0.1)
+        meshGMSH.setTransfiniteBoundary(21)
+        meshGMSH.setNameMesh("mesh_reduced_temp.xdmf")
+        mesh = meshGMSH.getEnrichedMesh() 
+
+        V = VectorFunctionSpace(mesh,"CG", polyorder)
+        
+        basis.vector().set_local(np.zeros(Vref.dim()))
+        usol.vector().set_local(Isol[i,:])
+                
+        epsL = EpsUnits.reshape((2,2)) + feut.Integral(outer(usol,normal), dsRef, shape = (2,2))/4.0
+        Ibasis = transformBasis0(mesh,epsL)
+        sigmaL, sigmaEpsL = fmts.getSigma_SigmaEps(param,mesh,epsL, op = 'cpp')
+        tau[1][i,:] = ten2voigt(fmts.homogenisation(Ibasis, mesh, sigmaL, [0,1], sigmaEpsL))
+                
+        sigmaL0, sigmaEpsL0 = fmts.getSigma_SigmaEps(param,mesh,np.zeros((2,2)), op = 'cpp')
+        
+        for j in range(Nmax):
+            basis.vector().set_local(Wbasis[j,:])
+            # a = np.zeros(2)
+            # B = -feut.Integral(outer(basis,normal), dsRef, shape = (2,2))/4.0
+            # T = feut.affineTransformationExpession(a,B,Mref)
+            # others['uD'] = basis + T
+            Ibasis = transformBasis(mesh)
+            tau[0][i,j,:] = ten2voigt(fmts.homogenisation(Ibasis, mesh, sigmaL0, [0,1], sigmaEpsL0))
+
 
 
 

@@ -203,10 +203,10 @@ NR2 = 12
 NR3 = 20
 NR = NR1 + NR2 + NR3
 
-ns = 5120
+ns = 12
 
-p = 4
-M = 4
+p = 1
+M = 1
 N = int(ns/(p**M))
        
 ns = N*p**M
@@ -235,54 +235,54 @@ if(int(sys.argv[1]) == 1):
     
     f.close()
 
-Npartitions = 8
-partition = int(sys.argv[2])
-nperpartition = int(ns/Npartitions)
-n0 = partition*nperpartition
-n1 = (partition+1)*nperpartition
+# Npartitions = 8
+# partition = int(sys.argv[2])
+# nperpartition = int(ns/Npartitions)
+# n0 = partition*nperpartition
+# n1 = (partition+1)*nperpartition
 
-ntotal = n1 - n0
+# ntotal = n1 - n0
 
-os.system('rm ' + folder +  'snapshots_{0}_{1}.h5'.format(seed,partition))
-snapshots, fsnaps = myhd.zeros_openFile(filename = folder +  'snapshots_{0}_{1}.h5'.format(seed,partition),  
-                                        shape = [(ntotal,Vref.dim()),(ntotal,3),(ntotal,2), (ntotal,2,2), (ntotal,3)], 
-                                        label = ['solutions','sigma','a','B', 'sigmaTotal'], mode = 'w-')
+# os.system('rm ' + folder +  'snapshots_{0}_{1}.h5'.format(seed,partition))
+# snapshots, fsnaps = myhd.zeros_openFile(filename = folder +  'snapshots_{0}_{1}.h5'.format(seed,partition),  
+#                                         shape = [(ntotal,Vref.dim()),(ntotal,3),(ntotal,2), (ntotal,2,2), (ntotal,3)], 
+#                                         label = ['solutions','sigma','a','B', 'sigmaTotal'], mode = 'w-')
 
-snap_solutions, snap_sigmas, snap_a, snap_B, snap_sigmasT = snapshots
+# snap_solutions, snap_sigmas, snap_a, snap_B, snap_sigmasT = snapshots
 
          
-ellipseData = myhd.loadhd5(folder +  'ellipseData_{0}.h5'.format(seed), 'ellipseData') # unique, not partitioned
-for i, ii in enumerate(range(n0,n1)):
-    print("Solving snapshot", ii)
-    start = timer()
-    meshGMSH = meut.ellipseMesh2Domains(x0L, y0L, LxL, LyL, NL, ellipseData[ii,:,:], Lxt, Lyt, lcar, x0 = x0, y0 = y0)
-    meshGMSH.setTransfiniteBoundary(NpLxt)
-    meshGMSH.setTransfiniteInternalBoundary(NpLxL)   
+# ellipseData = myhd.loadhd5(folder +  'ellipseData_{0}.h5'.format(seed), 'ellipseData') # unique, not partitioned
+# for i, ii in enumerate(range(n0,n1)):
+#     print("Solving snapshot", ii)
+#     start = timer()
+#     meshGMSH = meut.ellipseMesh2Domains(x0L, y0L, LxL, LyL, NL, ellipseData[ii,:,:], Lxt, Lyt, lcar, x0 = x0, y0 = y0)
+#     meshGMSH.setTransfiniteBoundary(NpLxt)
+#     meshGMSH.setTransfiniteInternalBoundary(NpLxL)   
         
-    meshGMSH.setNameMesh(folder + "mesh_temp_{0}.xdmf".format(partition))
-    mesh = meshGMSH.getEnrichedMesh()
+#     meshGMSH.setNameMesh(folder + "mesh_temp_{0}.xdmf".format(partition))
+#     mesh = meshGMSH.getEnrichedMesh()
      
-    sigma, sigmaEps = fmts.getSigma_SigmaEps(param,mesh,eps, op = 'cpp')
+#     sigma, sigmaEps = fmts.getSigma_SigmaEps(param,mesh,eps, op = 'cpp')
     
-    # Solving with Multiphenics
-    others = {'method' : 'default', 'polyorder' : 1, 'per': [x0, x0 + Lxt, y0, y0 + Lyt]}
-    U = mpms.solveMultiscale(param, mesh, eps, op = opModel, others = others)
+#     # Solving with Multiphenics
+#     others = {'method' : 'default', 'polyorder' : 1, 'per': [x0, x0 + Lxt, y0, y0 + Lyt]}
+#     U = mpms.solveMultiscale(param, mesh, eps, op = opModel, others = others)
 
-    T, snap_a[i,:], snap_B[i,:,:] = feut.getAffineTransformationLocal(U[0],mesh,[0,1], justTranslation = False)    
+#     T, snap_a[i,:], snap_B[i,:,:] = feut.getAffineTransformationLocal(U[0],mesh,[0,1], justTranslation = False)    
 
-    usol.interpolate(U[0])
+#     usol.interpolate(U[0])
    
-    snap_solutions[i,:] = usol.vector().get_local()[:]
-    snap_sigmas[i,:] = fmts.homogenisation(U[0], mesh, sigma, [0,1], sigmaEps).flatten()[[0,3,2]]    
-    snap_sigmasT[i,:] = fmts.homogenisation(U[0], mesh, sigma, [0,1,2,3], sigmaEps).flatten()[[0,3,2]]      
-    end = timer()
+#     snap_solutions[i,:] = usol.vector().get_local()[:]
+#     snap_sigmas[i,:] = fmts.homogenisation(U[0], mesh, sigma, [0,1], sigmaEps).flatten()[[0,3,2]]    
+#     snap_sigmasT[i,:] = fmts.homogenisation(U[0], mesh, sigma, [0,1,2,3], sigmaEps).flatten()[[0,3,2]]      
+#     end = timer()
     
-    # iofe.postProcessing_complete(U[0], folder + 'sol_mesh_1.xdmf', ['u','lame','vonMises'], param)
-    print("concluded in ", end - start)      
+#     # iofe.postProcessing_complete(U[0], folder + 'sol_mesh_1.xdmf', ['u','lame','vonMises'], param)
+#     print("concluded in ", end - start)      
     
             
-fsnaps.close()
-# fellipse.close()
+# fsnaps.close()
+# # fellipse.close()
 
     
 

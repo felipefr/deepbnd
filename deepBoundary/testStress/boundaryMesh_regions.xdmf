@@ -5,10 +5,10 @@
       <Geometry GeometryType="XY">
         <DataItem DataType="Float" Dimensions="1 2" Format="HDF" Precision="8">boundaryMesh_regions.h5:/data0</DataItem>
       </Geometry>
-      <Topology TopologyType="Triangle" NumberOfElements="136">
+      <Topology NumberOfElements="136" TopologyType="Triangle">
         <DataItem DataType="Int" Dimensions="136 3" Format="HDF" Precision="8">boundaryMesh_regions.h5:/data1</DataItem>
       </Topology>
-      <Attribute Name="regions" AttributeType="Scalar" Center="Cell">
+      <Attribute AttributeType="Scalar" Center="Cell" Name="regions">
         <DataItem DataType="Int" Dimensions="136" Format="HDF" Precision="4">boundaryMesh_regions.h5:/data2</DataItem>
       </Attribute>
     </Grid>
