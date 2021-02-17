@@ -21,6 +21,8 @@ import multiphenicsMultiscale as mpms
 import fenicsUtils as feut
 import ioFenicsWrappers as iofe
 import meshUtils as meut
+import symmetryLib as syml
+
 
 from timeit import default_timer as timer
 
@@ -183,19 +185,21 @@ def getMassMatrix(Isol,Vref,dxRef,dotProduct):
 
     return M
 
-def computingBasis_svd(Wbasis,Isol,Nmax, Vref,dxRef,dotProduct):
+def computingBasis_svd(Wbasis,M,Isol,Nmax, Vref,dxRef,dotProduct):
 
-    M = getMassMatrix(Isol,Vref,dxRef,dotProduct)
+    M[:,:] = getMassMatrix(Isol,Vref,dxRef,dotProduct)
     UM,SM,VMT = np.linalg.svd(M)  
     Msqrt = (UM[:,:len(SM)]*np.sqrt(SM))@VMT
             
-    U, sig, VT = np.linalg.svd(Isol@Msqrt) # sig here means the sqrt of eigenvalues for the correlation matrix method
-   
-    U = U[:,:len(sig)]
-    ns = len(U)
+    U, sig, VT = np.linalg.svd(Isol@Msqrt,full_matrices = False) # sig here means the sqrt of eigenvalues for the correlation matrix method
+    
     print(U.shape)
     print(sig.shape)
     print(Isol.shape)
+    
+    U = U[:,:len(sig)]
+    ns = len(U)
+
     for i in range(Nmax):
         print("computing basis " , i )
         Wbasis[i,:] = (U[:,i]/sig[i]).reshape((1,ns))@Isol
@@ -227,6 +231,10 @@ def getAlphas(Ylist, Wbasis,Isol,ns,Nmax, dotProduct, Vref, dxRef):   # fill Yli
         for j in range(Nmax):
             basis.vector().set_local(np.array(Wbasis[j,:]))
             Ylist[i,j] = dotProduct(basis, usol, dxRef)
+            
+def getAlphas_fast(Ylist, Wbasis_M,Isol,ns,Nmax, dotProduct, Vref, dxRef):   # fill Ylist = np.zeros((ns,Nmax)) 
+    Wbasis, M = Wbasis_M
+    Ylist[:,:] = Isol @ M @ Wbasis[:Nmax,:].T
 
 
 def getProjection(alpha_u,Wbasis,Vref):
@@ -234,7 +242,45 @@ def getProjection(alpha_u,Wbasis,Vref):
     Proj_u.vector().set_local(Wbasis.T @ alpha_u)
     return Proj_u
 
-def getErrors(N,Ylist,Wbasis, Isol, Vref, dxRef, dotProduct):
+# Compute error L2 given the projections and base for each snapshot (dimension of Y dictates dimensions)
+def getErrors(Ylist,Wbasis, Isol, Vref, dxRef, dotProduct):
+    ns , N = Ylist.shape
+    assert(Wbasis.shape[0] == N)
+    
+    ei = Function(Vref)
+    errors = np.zeros(ns)
+    for i in range(ns):
+        ei.vector().set_local(Isol[i,:] - Wbasis.T@Ylist[i,:] )
+        errors[i] = np.sqrt( dotProduct(ei,ei,dxRef) )
+        
+    return errors
+
+# Compute MSE error in the L2 norm : (POD or total error)
+def getMSE(NbasisList,Ylist,Wbasis, Isol, Vref, dxRef, dotProduct):
+    MSE = []
+    ns = len(Ylist)
+    for N in NbasisList:
+        print("computing mse error for N=", N)
+        errors = getErrors(Ylist[:,:N],Wbasis[:N,:], Isol, Vref, dxRef, dotProduct)
+        MSE.append(np.sum(errors**2)/ns)
+        
+    return np.array(MSE)
+
+def getMSE_fast(NbasisList,Ylist,Wbasis_M, Isol):
+    MSE = np.zeros(len(NbasisList))
+    Wbasis, M = Wbasis_M
+    ns = len(Ylist)
+    for k, N in enumerate(NbasisList):
+        print("computing mse error for N=", N)
+        E = Isol - Ylist[:,:N] @ Wbasis[:N,:]
+        error = np.array([np.dot(E[i,:],M@E[i,:]) for i in range(len(E))])
+        MSE[k] = np.sum(error/ns)
+        
+    return MSE
+
+
+# Compute the error in the projections simply
+def getMSE_DNN(Yp,Yt):
     ns = len(Ylist)
     ei = Function(Vref)
     errors = np.zeros(ns)
@@ -244,15 +290,7 @@ def getErrors(N,Ylist,Wbasis, Isol, Vref, dxRef, dotProduct):
         
     return errors
 
-def getMSE(NbasisList,Ylist,Wbasis, Isol, Vref, dxRef, dotProduct):
-    MSE = []
-    ns = len(Ylist)
-    for N in NbasisList:
-        print("computing mse error for N=", N)
-        errors = getErrors(N,Ylist,Wbasis, Isol, Vref, dxRef, dotProduct)
-        MSE.append(np.sqrt(np.sum(errors*errors)/ns))
-        
-    return np.array(MSE)
+
     
 def getMSEstresses(NbasisList,Ylist,tau,tau0,sigmaList):
     MSE = []
@@ -960,4 +998,56 @@ def getStressBasis_noMesh_partitioned(tau, Wbasis, Isol, ellipseData, Nmax, Vref
 
         os.system("rm mesh_reduced_temp_{0}*".format(i+ns))
 
-            
+
+def testOrthonormalityBasis(NrandTests , Wbasis, Vref, dxRef, dotProduct, Nmax = -1, silent = False):
+    
+    if(Nmax < 0):
+        Nmax = len(Wbasis)
+        
+    wi = Function(Vref)
+    wj = Function(Vref)
+    
+    target = np.ones(3*NrandTests)
+    target[0::3] = 0.0
+    prods = np.zeros(3*NrandTests)
+    
+    for k in range(NrandTests):
+        i = np.random.randint(0,Nmax)
+        j = np.random.randint(0,Nmax)
+        if(i==j):
+            j = i + 1
+        
+        wi.vector().set_local(Wbasis[i,:])
+        wj.vector().set_local(Wbasis[j,:])               
+        
+        prods[3*k] = dotProduct(wi,wj,dxRef)
+        prods[3*k + 1] = dotProduct(wi,wi,dxRef)
+        prods[3*k + 2] = dotProduct(wj,wj,dxRef)
+        
+        if(not silent):
+            print('(w{0},w{1}) = {2}'.format(i,j,prods[3*k]))
+            print('(w{0},w{1}) = {2}'.format(i,i,prods[3*k + 1]))
+            print('(w{0},w{1}) = {2}'.format(j,j,prods[3*k + 2]))
+    
+                                             
+    return np.linalg.norm(prods - target)/(3*NrandTests)
+
+
+def testSymmetryBasis(Nmax , Wbasis_M, Vref, silent = False):
+    Wbasis , M = Wbasis_M
+    w = Function(Vref)
+    wT = Function(Vref)
+    
+    Transformations = [syml.T_MH,syml.T_MV,syml.T_MD]
+
+    error = np.zeros((Nmax,len(Transformations)))
+
+    for k in range(Nmax):
+        w.vector().set_local(Wbasis[k,:])
+        
+        for j, T in enumerate(Transformations):
+            wT.interpolate(feut.myfog(w,T)) 
+            e = w.vector().get_local()[:] - wT.vector().get_local()[:]
+            error[k,j] = np.dot(M@e,e)
+                                             
+    return error

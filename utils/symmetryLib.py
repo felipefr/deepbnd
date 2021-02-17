@@ -2,6 +2,12 @@ import os, sys
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler #
 import myHDF5 as myhd ##
+import copy 
+# import dolfin as df
+
+# T_MH = df.Expression(('-x[0]','x[1]'), degree = 1)
+# T_MV = df.Expression(('x[0]','-x[1]'), degree = 1)
+# T_MD = df.Expression(('-x[0]','-x[1]'), degree = 1)
 
 def mirror(X, perm):
     perm = list(np.array(perm) - 1)
@@ -65,6 +71,23 @@ def getTraining_usingSymmetry(ns_start, ns_end, nX, nY, Xdatafile, Ydatafile, sc
     X = np.concatenate((X,XT1,XT2,XT3))
     Y = np.concatenate((Y,YT1,YT2,YT3))
     
+    if(type(scalerX) == type(None)):
+        scalerX = MinMaxScaler()
+        scalerX.fit(X)
+    
+    if(type(scalerY) == type(None)):
+        scalerY = MinMaxScaler()
+        scalerY.fit(Y)
+            
+    return scalerX.transform(X), scalerY.transform(Y), scalerX, scalerY
+
+def getTraining(ns_start, ns_end, nX, nY, Xdatafile, Ydatafile, scalerX = None, scalerY = None):
+    X = np.zeros((ns_end - ns_start,nX))
+    Y = np.zeros((ns_end - ns_start,nY))
+    
+    X = myhd.loadhd5(Xdatafile, 'ellipseData')[ns_start:ns_end,:nX,2]
+    Y = myhd.loadhd5(Ydatafile, 'Ylist')[ns_start:ns_end,:nY]
+
     if(type(scalerX) == type(None)):
         scalerX = MinMaxScaler()
         scalerX.fit(X)

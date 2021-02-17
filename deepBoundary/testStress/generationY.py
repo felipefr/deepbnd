@@ -11,21 +11,25 @@ import matplotlib.pyplot as plt
 import myHDF5 as myhd
 import meshUtils as meut
 import fenicsUtils as feut
+import symmetryLib as syml
 
-f = open("../../../rootDataPath.txt")
-rootData = f.read()[:-1]
-f.close()
+# f = open("../../../rootDataPath.txt")
+# rootData = f.read()[:-1]
+# f.close()
 
-folder = rootData + "/deepBoundary/testStress/"
-folderBasis = rootData + "/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/"
+# folder = rootData + "/deepBoundary/testStress/P2/"
+# folderBasis = rootData + "/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/"
 # folderBasis = rootData + "/deepBoundary/smartGeneration/LHS_p4_fullSymmetric/"
 
-nameSnaps = folder + 'snapshots_17_{0}.h5'
+folder = './models/dataset_test/'
+folderBasis = './models/dataset_extendedSymmetry_recompute/'
+
+nameSnaps = folder + 'snapshots.h5'
 nameMeshRefBnd = 'boundaryMesh.xdmf'
-nameWbasis = folderBasis + 'Wbasis_new.h5'
-nameYlist = folder + 'Y_{0}.h5'
-nameTau = folder + 'tau_{0}.h5'
-nameEllipseData = folder + 'ellipseData_17.h5'
+nameWbasis = folderBasis + 'Wbasis.h5'
+nameYlist = folder + 'Y_MD.h5'
+nameTau = folder + 'tau.h5'
+nameEllipseData = folder + 'ellipseData.h5'
 
 dotProduct = lambda u,v, dx : assemble(inner(u,v)*ds)
 
@@ -35,10 +39,10 @@ Vref = VectorFunctionSpace(Mref,"CG", 1)
 dxRef = Measure('dx', Mref) 
 dsRef = Measure('ds', Mref) 
 
-ns = 12
-npar = 12
+ns = int(10240/2)
+npar = ns
 Nmax = 160
-Npartitions = 3
+Npartitions = 1
 
 op = int(sys.argv[1])
 partition = int(sys.argv[2])
@@ -58,9 +62,13 @@ if(op == 0):
     print('merging')
     os.system('rm ' + nameSnaps.format(labelSnaps))
     myhd.merge([nameSnaps.format(i) for i in range(Npartitions)], nameSnaps.format(labelSnaps), 
-                InputLabels = ['solutions', 'a','B', 'sigma'], OutputLabels = ['solutions', 'a','B', 'sigma'], axis = 0, mode = 'w-')
+                InputLabels = ['solutions', 'a','B', 'sigma', 'sigmaTotal'], OutputLabels = ['solutions', 'a','B', 'sigma', 'sigmaTotal'], axis = 0, mode = 'w-')
 
-            # InputLabels = ['solutions', 'a','B', 'sigma', 'sigmaT'], OutputLabels = ['solutions', 'a','B', 'sigma', 'sigmaT'], axis = 0, mode = 'w-')
+if(op == 4):
+    print('merging Y')
+    os.system('rm ' + nameYlist.format(labelSnaps))
+    myhd.merge([nameYlist.format(i) for i in range(Npartitions)], nameYlist.format(labelSnaps), 
+                InputLabels = ['Ylist'], OutputLabels = ['Ylist'], axis = 0, mode = 'w-')
 
 # Translating solution
 if(op == 1):
@@ -68,7 +76,6 @@ if(op == 1):
     Isol_full , Isol_a, Isol_B = Isol
     Isol_trans = Isol_full[:,:]
     usol = Function(Vref)
-    normal = FacetNormal(Mref)
     for i in range(npar):
         print('translating ', i)
         usol.vector().set_local(Isol_full[i,:])
@@ -77,14 +84,33 @@ if(op == 1):
         
     myhd.addDataset(fIsol,Isol_trans, 'solutions_trans')
     fIsol.close()
+    
+# Mirroying solution
+if(op == 6):
+    Isol, f = myhd.loadhd5_openFile(nameSnaps.format(labelSnaps),'solutions_trans', mode = 'a')
+    Transformations = [syml.T_MH,syml.T_MV,syml.T_MD]
+    usol = Function(Vref)    
+
+    for T, label_T in zip(Transformations, ['sol_T_MH','sol_T_MV','sol_T_MD']):
+        Isol_mirror = np.zeros(Isol.shape)
+        for i in range(npar):
+            print('mirroying ', i)
+            usol.vector().set_local(Isol[i,:])
+            Isol_mirror[i,:] = interpolate(feut.myfog(usol,T),Vref).vector().get_local()[:] 
+        
+        
+        myhd.addDataset(f,Isol_mirror, label_T)
+    
+    f.close()
 
 #  ================  Extracting Alphas ============================================
 if(op == 2):
     os.system('rm ' + nameYlist.format(labelSnaps))
-    Wbasis = myhd.loadhd5(nameWbasis, 'Wbasis')
-    Isol = myhd.loadhd5(nameSnaps.format(labelSnaps),'solutions_trans')
+    # Wbasis = myhd.loadhd5(nameWbasis, 'Wbasis')
+    Wbasis_M = myhd.loadhd5(nameWbasis, ['Wbasis','massMatrix'])
+    Isol = myhd.loadhd5(nameSnaps.format(labelSnaps),'sol_T_MD')
     Ylist, f = myhd.zeros_openFile(nameYlist.format(labelSnaps), (npar,Nmax) , 'Ylist')
-    gdb.getAlphas(Ylist,Wbasis,Isol,npar,Nmax, dotProduct, Vref, dsRef) 
+    gdb.getAlphas_fast(Ylist,Wbasis_M,Isol,npar,Nmax, dotProduct, Vref, dsRef) 
     f.close()
 
 
@@ -101,4 +127,15 @@ if(op == 3):
     tau, f = myhd.zeros_openFile(nameTau, [(ns,Nmax,3),(ns,3)]  , ['tau', 'tau_0'])
     # gdb.getStressBasis_noMesh(tau,Wbasis, Isol, EllipseData[:ns,:,:], Nmax, Vref, [E1,nu, contrast], EpsDirection = 1) # shear
     gdb.getStressBasis_noMesh_partitioned(tau,Wbasis, Isol, EllipseData[:ns,:,:], Nmax, Vref, [E1,nu, contrast],  1, n0, n1) # shear
+    f.close()
+
+# ======================= Computing basis =======================================
+if(op == 5): 
+    os.system('rm ' + nameWbasis)
+    Isol = myhd.loadhd5(nameSnaps,'solutions_trans')
+    Wbasis_M, f = myhd.zeros_openFile(nameWbasis, [(Nmax,Vref.dim()),[Vref.dim(),Vref.dim()]], ['Wbasis','massMatrix'])
+    Wbasis , M = Wbasis_M
+    sig, U = gdb.computingBasis_svd(Wbasis, M, Isol,Nmax,Vref, dsRef, dotProduct)
+    os.system('rm ' + folder + 'eigens.hd5')
+    myhd.savehd5(folder + 'eigens.hd5', [sig,U],['eigenvalues','eigenvectors'], mode = 'w-')
     f.close()

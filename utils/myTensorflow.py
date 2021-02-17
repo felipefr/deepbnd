@@ -16,6 +16,11 @@ dfInitK = tf.keras.initializers.glorot_uniform(seed = 1)
 # dfInitK = tf.keras.initializers.VarianceScaling(scale=1.0, mode="fan_in", distribution="untruncated_normal", seed=None)
 dfInitB = tf.keras.initializers.Zeros()
 
+# def partial2(func, *args, **kwargs):
+#     partial_func = partial(func, *args, **kwargs)
+#     update_wrapper(partial_func, func)
+#     return partial_func
+
 def set_seed_default_initialisers(seed):
     return tf.keras.initializers.glorot_uniform(seed = 1), tf.keras.initializers.Zeros()
     # return tf.keras.initializers.VarianceScaling(scale=1.0, mode="fan_in", distribution="untruncated_normal", seed=seed), tf.keras.initializers.Zeros()
@@ -108,7 +113,20 @@ class PDEDNNmodel(tf.keras.Model):
         y = self.rblayer(mu)
         
         return y
-        
+
+def DNNmodel_notFancy(n,m,Nneurons,activations):
+    
+    assert len(activations) == 3 
+    
+    L = len(Nneurons) - 1
+    
+    layers = [tf.keras.layers.Dense( Nneurons[0], activation=dictActivations[activations[0]], input_shape=(n,))]
+    for i in range(L):
+        layers.append(tf.keras.layers.Dense( Nneurons[i+1], activation=dictActivations[activations[1]]))
+    layers.append(tf.keras.layers.Dense( m, activation=dictActivations[activations[2]])) 
+    
+    return tf.keras.Sequential(layers)
+
 
 class DNNmodel(tf.keras.Model):
     def __init__(self, Nin, Nout, Neurons, actLabel, drps=None, lambReg=0.0):
@@ -200,6 +218,9 @@ def custom_loss(w_l, w_mu, npar):
 
 def custom_loss_mse(weight):
     return lambda y_p, y_d : tf.reduce_mean(tf.multiply(weight,tf.reduce_sum(tf.square(tf.subtract(y_p,y_d)),axis = 0)))
+
+def custom_loss_mse_2(y_p,y_d,weight):
+    return tf.reduce_mean(tf.multiply(weight,tf.reduce_sum(tf.square(tf.subtract(y_p,y_d)),axis = 0)))
 
 def mae_loc_(npar):
     def mae_loc(y_p, y_d):
@@ -383,9 +404,9 @@ def my_train_model(model, X_train, y_train, num_parameters, EPOCHS ,
     #             metrics=[mae_mu_(num_parameters), mae_loc_(num_parameters)])
 
     # model.compile(loss='mse', optimizer=optimizer, metrics = ['mse','mae'])
-    model.compile(loss = custom_loss_mse(weight = w_l),
+    model.compile(loss = partial2(custom_loss_mse_2, weight = w_l),
                 optimizer=optimizer,
-                metrics=[custom_loss_mse(weight = w_l),'mse','mae'])
+                metrics=[partial2(custom_loss_mse_2, weight = w_l),'mse','mae'])
 
     # model.compile(loss='mse',
     #             optimizer=optimizer,

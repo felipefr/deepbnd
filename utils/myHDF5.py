@@ -12,10 +12,10 @@ defaultCompression = {'dtype' : 'f8',  'compression' : "gzip",
 toChunk = lambda a: tuple([1] + [a[i] for i in range(1,len(a))])
 
 
-def merge(filenameInputs, filenameOutputs, InputLabels, OutputLabels, axis = 0, mode = 'w-'):
+def merge(filenameInputs, filenameOutput, InputLabels, OutputLabels , axis = 0, mode = 'w-'):
     
 
-    with h5py.File(filenameOutputs, mode) as ff:
+    with h5py.File(filenameOutput, mode) as ff:
         for li,lo in zip(InputLabels,OutputLabels):  
             d = []
             for fn in filenameInputs:
