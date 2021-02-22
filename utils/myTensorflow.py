@@ -5,6 +5,8 @@ import tensorflow as tf
 import numpy as np  
 import matplotlib.pyplot as plt
 
+from keras.callbacks import ModelCheckpoint
+
 dictActivations = {'tanh' : tf.nn.tanh, 
                    'sigmoid' : tf.nn.sigmoid , 
                    'linear': tf.keras.activations.linear,
@@ -20,6 +22,33 @@ dfInitB = tf.keras.initializers.Zeros()
 #     partial_func = partial(func, *args, **kwargs)
 #     update_wrapper(partial_func, func)
 #     return partial_func
+
+class myMinMaxScaler:
+    def __init__(self):
+        self.data_min = []
+        self.data_max = []
+        self.n = 0
+                
+    def fit(self,x):
+        self.n = x.shape[1]
+        
+        for i in range(n):
+            self.data_min.append(x[:,i].min())
+            self.data_max.append(x[:,i].max())
+        
+        self.data_min = np.array(self.data_min)
+        self.data_max = np.array(self.data_max)
+
+        self.scaler = lambda x,i : (x - self.data_min[i])/(self.data_max[i]-self.data_min[i])
+        self.inv_scaler = lambda x,i : (self.data_max[i]-self.data_min[i])*x + self.data_min[i]
+
+
+    def transform(self,x):
+        return np.array( [self.scaler(x[:,i],i) for i in range(n)] ).T
+            
+    def inverse_transform(self,x):
+        return np.array( [self.inv_scaler(x[:,i],i) for i in range(n)] ).T
+
 
 def set_seed_default_initialisers(seed):
     return tf.keras.initializers.glorot_uniform(seed = 1), tf.keras.initializers.Zeros()
@@ -200,6 +229,15 @@ class PrintDot(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs):
          if epoch % 100 == 0: print('')
          print('.', end='')
+
+
+def checkpoint(saveFile, stepEpochs = 1):
+    # save_weights_only  
+    return ModelCheckpoint(saveFile, monitor='loss', verbose=1,
+                           save_best_only=True, mode='auto', period=stepEpochs)
+
+
+
     
 def scheduler(epoch, decay, lr, EPOCHS):    
     omega = np.sqrt(float(epoch/EPOCHS))
@@ -220,7 +258,7 @@ def custom_loss_mse(weight):
     return lambda y_p, y_d : tf.reduce_mean(tf.multiply(weight,tf.reduce_sum(tf.square(tf.subtract(y_p,y_d)),axis = 0)))
 
 def custom_loss_mse_2(y_p,y_d,weight):
-    return tf.reduce_mean(tf.multiply(weight,tf.reduce_sum(tf.square(tf.subtract(y_p,y_d)),axis = 0)))
+    return tf.reduce_sum(tf.reduce_mean(tf.multiply(weight,tf.square(tf.subtract(y_p,y_d))), axis=0))
 
 def mae_loc_(npar):
     def mae_loc(y_p, y_d):
@@ -372,7 +410,8 @@ def plot_history(history,savefile=None):
   # plt.show( )
 
 def my_train_model(model, X_train, y_train, num_parameters, EPOCHS , 
-                                   lr = 1.e-4, decay = 1.e-2, w_l = 1.0, w_mu = 1.0, ratio_val = 0.2):
+                                   lr = 1.e-4, decay = 1.e-2, w_l = 1.0, w_mu = 1.0, 
+                                   ratio_val = 0.2, saveFile = 'save.hdf5', stepEpochs=1):
     
     # NoisyAdam = add_gradient_noise(Adam)
     
@@ -404,20 +443,20 @@ def my_train_model(model, X_train, y_train, num_parameters, EPOCHS ,
     #             metrics=[mae_mu_(num_parameters), mae_loc_(num_parameters)])
 
     # model.compile(loss='mse', optimizer=optimizer, metrics = ['mse','mae'])
-    model.compile(loss = partial2(custom_loss_mse_2, weight = w_l),
-                optimizer=optimizer,
-                metrics=[partial2(custom_loss_mse_2, weight = w_l),'mse','mae'])
+    lossW= partial2(custom_loss_mse_2, weight = w_l)
+    model.compile(loss = lossW, optimizer=optimizer, metrics=[lossW,'mse','mae'])
 
     # model.compile(loss='mse',
     #             optimizer=optimizer,
     #             metrics=[partial2(mae_mu,npar = num_parameters), partial2(mae_loc , npar = num_parameters)])
 
-    decay_lr = tf.keras.callbacks.LearningRateScheduler(partial2(scheduler ,lr = lr, decay = decay, EPOCHS = EPOCHS))    
+    schdDecay = partial2(scheduler ,lr = lr, decay = decay, EPOCHS = EPOCHS)
+    decay_lr = tf.keras.callbacks.LearningRateScheduler(schdDecay)    
     
     # Store training stats
     history = model.fit(X_train, y_train, epochs=EPOCHS,
                         validation_split=ratio_val, verbose=1,
-                        callbacks=[PrintDot(), decay_lr ], batch_size = 32)
+                        callbacks=[PrintDot(), decay_lr, checkpoint(saveFile,stepEpochs)], batch_size = 32)
 
     # Store training stats
     # history = model.fit(X_train, y_train, epochs=EPOCHS,
