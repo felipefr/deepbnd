@@ -97,3 +97,27 @@ def getTraining(ns_start, ns_end, nX, nY, Xdatafile, Ydatafile, scalerX = None, 
         scalerY.fit(Y)
             
     return scalerX.transform(X), scalerY.transform(Y), scalerX, scalerY
+
+
+def getDatasets(nX, nY, Xdatafile, Ydatafile, scalerX = None, scalerY = None):
+    Xlist = []
+    Ylist = []
+        
+    ndata = len(Xdatafile)
+
+    for Xdatafile_i, Ydatafile_i in zip(Xdatafile,Ydatafile):    
+        Xlist.append(myhd.loadhd5(Xdatafile_i, 'ellipseData')[:,:nX,2])
+        Ylist.append(myhd.loadhd5(Ydatafile_i, 'Ylist')[:,:nY])
+    
+    X = np.concatenate(tuple(Xlist),axis = 0)
+    Y = np.concatenate(tuple(Ylist),axis = 0)
+    
+    if(type(scalerX) == type(None)):
+        scalerX = MinMaxScaler()
+        scalerX.fit(X)
+    
+    if(type(scalerY) == type(None)):
+        scalerY = MinMaxScaler()
+        scalerY.fit(Y)
+            
+    return scalerX.transform(X), scalerY.transform(Y), scalerX, scalerY

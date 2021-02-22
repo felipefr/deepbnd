@@ -411,7 +411,7 @@ def plot_history(history,savefile=None):
 
 def my_train_model(model, X_train, y_train, num_parameters, EPOCHS , 
                                    lr = 1.e-4, decay = 1.e-2, w_l = 1.0, w_mu = 1.0, 
-                                   ratio_val = 0.2, saveFile = 'save.hdf5', stepEpochs=1):
+                                   ratio_val = 0.2, saveFile = 'save.hdf5', stepEpochs=1, validationSet = None):
     
     # NoisyAdam = add_gradient_noise(Adam)
     
@@ -454,9 +454,19 @@ def my_train_model(model, X_train, y_train, num_parameters, EPOCHS ,
     decay_lr = tf.keras.callbacks.LearningRateScheduler(schdDecay)    
     
     # Store training stats
-    history = model.fit(X_train, y_train, epochs=EPOCHS,
-                        validation_split=ratio_val, verbose=1,
-                        callbacks=[PrintDot(), decay_lr, checkpoint(saveFile,stepEpochs)], batch_size = 32)
+    
+    if(type(validationSet) == type(None)):
+        print("training with a fixed split for the validation" )        
+        history = model.fit(X_train, y_train, epochs=EPOCHS,
+                            validation_split=ratio_val, verbose=1,
+                            callbacks=[PrintDot(), decay_lr, checkpoint(saveFile,stepEpochs)], batch_size = 32)
+
+    else:
+        print("training with a given validation dataset" )
+        history = model.fit(X_train, y_train, epochs=EPOCHS,
+                    validation_data = (validationSet['X'],validationSet['Y']), verbose=1,
+                    callbacks=[PrintDot(), decay_lr, checkpoint(saveFile,stepEpochs)], batch_size = 32)
+        
 
     # Store training stats
     # history = model.fit(X_train, y_train, epochs=EPOCHS,
