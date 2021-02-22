@@ -5,7 +5,7 @@ import tensorflow as tf
 import numpy as np  
 import matplotlib.pyplot as plt
 
-from keras.callbacks import ModelCheckpoint
+from tf.keras.callbacks import ModelCheckpoint
 
 dictActivations = {'tanh' : tf.nn.tanh, 
                    'sigmoid' : tf.nn.sigmoid , 
