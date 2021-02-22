@@ -52,13 +52,10 @@ def basicModelTraining(nsTrain, nX, nY, net, fnames):
     num_parameters = 0 # in case of treating differently a part of the outputs
     history = mytf.my_train_model( model, X, Y, num_parameters, Epochs, lr = lr, decay = decay, 
                                   w_l = w_l, w_mu = 0.0, ratio_val = ratio_val,
-                                  saveFile = saveFile, stepEpochs = stepEpochs)
+                                  saveFile = saveFile.format(nY), stepEpochs = stepEpochs)
         
-    mytf.plot_history( history, savefile = fnames['prefix_out'] + 'plot_history' + fnames['suffix_out'])
-            
-    model.save_weights(fnames['prefix_out'] + fnames['suffix_out'])
-    # model.save(fnames['prefix_out'] + fnames['suffix_out'])
-    
+    mytf.plot_history( history, savefile = saveFile.format(nY)[:-5] + '_plot')
+                
     return history
 
 Nrb = int(sys.argv[1])
@@ -71,7 +68,7 @@ nameYlist = folder +  'Y.h5'
 nameEllipseData = folder + 'ellipseData.h5'
 
 fnames = {}      
-fnames['file_weights'] = './models/extendedSymmetry_lossCorrected/weights_ny{0}.hd5'.format(Nrb)
+fnames['file_weights'] = './models/extendedSymmetry_newCase1/weights_ny{0}.hdf5'.format(Nrb)
 fnames['file_X'] = nameEllipseData
 fnames['file_Y'] = nameYlist
 fnames['stepEpochs'] = 1
@@ -89,11 +86,3 @@ start = timer()
 
 hist = basicModelTraining(nsTrain, nX, Nrb, net, fnames)
 end = timer()
-
-plt.figure(2)
-plt.plot(hist.history['mse'])
-plt.plot(hist.history['val_mse'])
-plt.grid()
-plt.yscale('log')
-plt.savefig(fnames['prefix_out'] + '/plot_mse_{0}.png'.format(Nrb))
-#plt.show()

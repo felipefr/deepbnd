@@ -34,11 +34,11 @@ simpleOrExtended = 1
 
 nbasis = 160
 ntest  = 5120
-folderTest = './models/dataset_test/'
-# folderTest = './models/dataset_extendedSymmetry_recompute/'
+# folderTest = './models/dataset_test/'
+folderTest = './models/dataset_extendedSymmetry_recompute/'
 folderTrain = ['./models/dataset_simple/','./models/dataset_extendedSymmetry_recompute/'][simpleOrExtended]
 
-nameYtest = folderTest + 'Y_extended.h5'
+nameYtest = folderTest + 'Y.h5'
 nameSnapsTest = folderTest + 'snapshots.h5'
 nameYtrain = folderTrain + 'Y.h5'
 nameWbasisTrain = folderTrain + 'Wbasis.h5'
@@ -55,9 +55,9 @@ IsolTest = myhd.loadhd5(nameSnapsTest, 'solutions_trans')
 # ======================= Reading Prepared Losses (Validate with brute force computed error) =================== 
 
 ns = [10240,4*10240][simpleOrExtended]
-nameHist = './models/extendedSymmetry_lossCorrected/plot_historyweights_ny{0}_history_{1}.txt'
+nameHist = './models/extendedSymmetry/histories/loss_log_ny{0}.txt'
 
-NlistModel = [5,10,20,40,60,80,100,120,140]
+NlistModel = [5,20,40,140]
 lastError = np.array([np.loadtxt(nameHist.format(ny,''))[-1] for ny in NlistModel])
 lastError_val = np.array([np.loadtxt(nameHist.format(ny,'val'))[-1] for ny in NlistModel])
 
@@ -89,30 +89,35 @@ Wbasis_M = myhd.loadhd5(nameWbasisTrain, ['Wbasis','massMatrix']) # for the simp
 # ================ Alternative Prediction ========================================== 
 nX = 36
 ns = 4*10240
+nYmax = 160
 
-folderModels = './models/extendedSymmetry_lossCorrected/'
+folderModels = './models/extendedSymmetry/'
 
 
-X, Y, scalerX, scalerY = syml.getTraining(0,ns, nX, NlistModel[-1], nameEllipseDataTrain, nameYtrain )
-namenet = 'weights_ny{0}'
+X, Y, scalerX, scalerY = syml.getTraining(0,ns, nX, nYmax, nameEllipseDataTrain, nameYtrain )
+namenet = 'weights_nY{0}'
     
-net = {'Neurons': 5*[100], 'activations': ['relu','relu','sigmoid'], 'lr': 1.0e-4, 'decay' : 1.0} # normally reg = 1e-5
+# net = {'Neurons': 5*[100], 'activations': ['relu','relu','sigmoid'], 'lr': 1.0e-4, 'decay' : 1.0} # normally reg = 1e-5
+net = {'Neurons': 5*[100], 'drps': 7*[0.0], 'activations': ['relu','relu','sigmoid'], 'reg': 0.0}  # normally reg = 1e-5
 
 models = []
 for nYi in NlistModel:      
-    models.append(mytf.DNNmodel_notFancy(nX, nYi, net['Neurons'], net['activations']))
+    # models.append(mytf.DNNmodel_notFancy(nX, nYi, net['Neurons'], net['activations']))
+    models.append(mytf.DNNmodel(nX, nYmax, net['Neurons'], actLabel = net['activations'], drps = net['drps'], lambReg = net['reg']))
     models[-1].load_weights( folderModels + namenet.format(nYi))
     
 # Prediction 
 Xtest_scaled = scalerX.transform(ellipseDataTest[:,:,2])
-Ytest_scaled = scalerY.transform(Ytest[:,:NlistModel[-1]])
+Ytest_scaled = scalerY.transform(Ytest[:,:])
 Y_p_scaled = []
 Y_p = []
 
 for i in range(len(models)):
     print('predictig model ', i )
     Y_p_scaled.append(models[i].predict(Xtest_scaled))
-    Y_p.append(scalerY.inverse_transform(np.concatenate((Y_p_scaled[-1] , np.zeros((len(Xtest_scaled), NlistModel[-1] - NlistModel[i]))), axis = 1)))
+    # Y_p.append(scalerY.inverse_transform(np.concatenate((Y_p_scaled[-1] , np.zeros((len(Xtest_scaled), NlistModel[-1] - NlistModel[i]))), axis = 1)))
+    Y_p.append(scalerY.inverse_transform(Y_p_scaled[-1]))
+
 
 # ================ Computing the error ========================================== 
 lossTest_mse = []
@@ -135,7 +140,7 @@ plt.plot(NlistModel, errorL2_mse_total, '-o', label = 'ErrorDNN + ErrorPOD (brut
 plt.plot(NlistModel,lossTest_mse, '-x', label = 'ErrorDNN')
 plt.plot(np.arange(160),errorPOD,'--', label = 'ErrorPOD')
 plt.plot(NlistModel,0.8*lastError + 0.2*lastError_val,'-+', label = 'ErrorDNN TF')
-plt.ylim(1.0e-3,0.1)
+# plt.ylim(1.0e-3,0.1)
 plt.yscale('log')
 plt.xlabel('N')
 plt.ylabel('weighted mean square error')
@@ -159,7 +164,7 @@ plt.legend()
 
 # plt.figure(4)
 
-# plt.title('POD extended symmetric recomputed (test)')
+# plt.title('POD extended symmetric recomputed (test = train)')
 # plt.plot(Nlist,errorL2_mse_POD, '-o', label = 'ErrorPOD (brute force) - Test'.format(i))
 # plt.plot(np.arange(160),errorPOD,'--', label = 'ErrorPOD (eigenvalues)')
 # plt.ylim(1.0e-10,0.1)
@@ -173,7 +178,7 @@ plt.legend()
 # Histogram
 plt.figure(2,(18,10))
 plt.subplot('321')
-plt.title('Histogram Y_1 (test)')
+plt.title('Histogram Y_1 (test = train)')
 plt.hist(Ytest[:,0],bins = 20)
 
 plt.subplot('322')
@@ -181,7 +186,7 @@ plt.title('Histogram Y_1 (prediction)')
 plt.hist(Y_p[2][:,0], bins = 20)
 
 plt.subplot('323')
-plt.title('Histogram Y_2 (test)')
+plt.title('Histogram Y_2 (test = train)')
 plt.hist(Ytest[:,1],bins = 20)  
 
 plt.subplot('324')
@@ -190,18 +195,18 @@ plt.hist(Y_p[2][:,1], bins = 20)
 
 
 plt.subplot('325')
-plt.title('Histogram Y_3 (test)')
+plt.title('Histogram Y_3 (test = train)')
 plt.hist(Ytest[:,2],bins = 20)
 
 plt.subplot('326')
 plt.title('Histogram Y_3 (prediction)')
 plt.hist(Y_p[2][:,2], bins = 20)
 
-plt.savefig('histograms_looseFitting_1-3.png')
+plt.savefig('histograms_trainingAsTest_1-3.png')
 
 plt.figure(3,(18,10))
 plt.subplot('321')
-plt.title('Histogram Y_4 (test)')
+plt.title('Histogram Y_4 (test = train)')
 plt.hist(Ytest[:,3],bins = 20)
 
 plt.subplot('322')
@@ -209,7 +214,7 @@ plt.title('Histogram Y_4 (prediction)')
 plt.hist(Y_p[2][:,3], bins = 20)
 
 plt.subplot('323')
-plt.title('Histogram Y_5 (test)')
+plt.title('Histogram Y_5 (test = train)')
 plt.hist(Ytest[:,4],bins = 20)
 
 plt.subplot('324')
@@ -218,12 +223,12 @@ plt.hist(Y_p[2][:,4], bins = 20)
 
 
 plt.subplot('325')
-plt.title('Histogram Y_6 (test)')
+plt.title('Histogram Y_6 (test = train)')
 plt.hist(Ytest[:,5],bins = 20)
 
 plt.subplot('326')
-plt.title('Histogram Y_6 (prediction)')
+plt.title('Histogram Y_6 (prediction)'  )
 plt.hist(Y_p[2][:,5], bins = 20)
 
-plt.savefig('histograms_looseFitting_4-6.png')
+plt.savefig('histograms_trainingAsTest_4-6.png')
 

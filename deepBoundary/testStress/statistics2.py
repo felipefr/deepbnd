@@ -70,16 +70,16 @@ plt.title('Histogram Y_1 (test)')
 plt.hist(Ytest[:,0],bins = 20)
 
 plt.subplot('322')
-plt.title('Histogram Y_1 (train 0:10240)')
-plt.hist(Ytrain[:10240,0], bins = 20)
+plt.title('Histogram Y_1 (train)')
+plt.hist(Ytrain[:,0], bins = 20)
 
 plt.subplot('323')
 plt.title('Histogram Y_2 (test)')
 plt.hist(Ytest[:,1],bins = 20)
 
 plt.subplot('324')
-plt.title('Histogram Y_2 (train 0:10240)')
-plt.hist(Ytrain[:10240,1], bins = 20)
+plt.title('Histogram Y_2 (train)')
+plt.hist(Ytrain[:,1], bins = 20)
 
 
 plt.subplot('325')
@@ -87,10 +87,10 @@ plt.title('Histogram Y_3 (test)')
 plt.hist(Ytest[:,2],bins = 20)
 
 plt.subplot('326')
-plt.title('Histogram Y_3 (train 0:10240)')
-plt.hist(Ytrain[:10240,2], bins = 20)
+plt.title('Histogram Y_3 (train)')
+plt.hist(Ytrain[:,2], bins = 20)
 
-plt.savefig('histograms_train_vs_test-0-2_notSymmetrised.png')
+# plt.savefig('histograms_train_vs_test-0-2_notSymmetrised.png')
 
 plt.figure(2,(18,10))
 plt.subplot('321')
@@ -98,16 +98,16 @@ plt.title('Histogram Y_4 (test)')
 plt.hist(Ytest[:,3],bins = 20)
 
 plt.subplot('322')
-plt.title('Histogram Y_4 (train 0:10240)')
-plt.hist(Ytrain[:10240,3], bins = 20)
+plt.title('Histogram Y_4 (train)')
+plt.hist(Ytrain[:,3], bins = 20)
 
 plt.subplot('323')
 plt.title('Histogram Y_5 (test)')
 plt.hist(Ytest[:,4],bins = 20)
 
 plt.subplot('324')
-plt.title('Histogram Y_5 (train 0:10240)')
-plt.hist(Ytrain[:10240,4], bins = 20)
+plt.title('Histogram Y_5 (train)')
+plt.hist(Ytrain[:,4], bins = 20)
 
 
 plt.subplot('325')
@@ -115,10 +115,10 @@ plt.title('Histogram Y_6 (test)')
 plt.hist(Ytest[:,5],bins = 20)
 
 plt.subplot('326')
-plt.title('Histogram Y_6 (train 0:10240)')
-plt.hist(Ytrain[:10240,5], bins = 20)
+plt.title('Histogram Y_6 (train)')
+plt.hist(Ytrain[:,5], bins = 20)
 
-plt.savefig('histograms_train_vs_test-3-5_notSymmetrised.png')
+# plt.savefig('histograms_train_vs_test-3-5_notSymmetrised.png')
 
 
 # # plt.plot(np.mean(Ytrain,axis=0))
