@@ -22,16 +22,19 @@ import json
 import copy
 
 def basicModelTraining(nsTrain, nX, nY, net, fnames):
-    X, Y, scalerX, scalerY = syml.getTraining(0,nsTrain, nX, nY, fnames['prefix_in_X'], fnames['prefix_in_Y'])
+    X, Y, scalerX, scalerY = syml.getTraining(0,nsTrain, nX, nY, fnames['file_X'], fnames['file_Y'])
     
     Neurons = net['Neurons']
     actLabel = net['activations']
     Epochs = net['epochs']
     decay = net['decay']
-    lr = net['lr'];
-    
+    lr = net['lr']
+    saveFile = fnames['file_weights'] 
+    stepEpochs = fnames['stepEpochs']
+    ratio_val = 0.2
+     
     indices = np.arange(len(X))
-    np.random.shuffle(indices)
+    # # np.random.shuffle(indices)
     
     X = X[indices,:nX]
     Y = Y[indices,:nY]
@@ -47,7 +50,9 @@ def basicModelTraining(nsTrain, nX, nY, net, fnames):
     model = mytf.DNNmodel_notFancy(nX, nY, net['Neurons'], net['activations'])
     
     num_parameters = 0 # in case of treating differently a part of the outputs
-    history = mytf.my_train_model( model, X, Y, num_parameters, Epochs, lr = lr, decay = decay, w_l = w_l, w_mu = 0.0)
+    history = mytf.my_train_model( model, X, Y, num_parameters, Epochs, lr = lr, decay = decay, 
+                                  w_l = w_l, w_mu = 0.0, ratio_val = ratio_val,
+                                  saveFile = saveFile, stepEpochs = stepEpochs)
         
     mytf.plot_history( history, savefile = fnames['prefix_out'] + 'plot_history' + fnames['suffix_out'])
             
@@ -66,10 +71,10 @@ nameYlist = folder +  'Y.h5'
 nameEllipseData = folder + 'ellipseData.h5'
 
 fnames = {}      
-fnames['suffix_out'] = 'weights_ny{0}.hd5'.format(Nrb)
-fnames['prefix_out'] = './models/extendedSymmetry_lossCorrected/'
-fnames['prefix_in_X'] = nameEllipseData
-fnames['prefix_in_Y'] = nameYlist
+fnames['file_weights'] = './models/extendedSymmetry_lossCorrected/weights_ny{0}.hd5'.format(Nrb)
+fnames['file_X'] = nameEllipseData
+fnames['file_Y'] = nameYlist
+fnames['stepEpochs'] = 1
 
 nX = 36 # because the only first 4 are relevant, the other are constant
 nsTrain = 4*10240
@@ -79,7 +84,6 @@ net = {'Neurons': 5*[100], 'activations': ['relu','relu','sigmoid'], 'lr': 1.0e-
 # net = {'Neurons': 5*[100], 'activations': ['tanh','relu','linear'], 'lr': 1.0e-3, 'decay' : 1.0} # normally reg = 1e-5
 
 net['epochs'] = int(epochs)
-#os.system("mkdir " + fnames['prefix_out']) # in case the folder is not present
 
 start = timer()
 

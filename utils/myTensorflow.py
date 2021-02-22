@@ -232,9 +232,9 @@ class PrintDot(tf.keras.callbacks.Callback):
 
 
 def checkpoint(saveFile, stepEpochs = 1):
-    # save_weights_only  
+    #   
     return ModelCheckpoint(saveFile, monitor='loss', verbose=1,
-                           save_best_only=True, mode='auto', period=stepEpochs)
+                           save_best_only=True, save_weights_only = True, mode='auto', period=stepEpochs)
 
 
 
