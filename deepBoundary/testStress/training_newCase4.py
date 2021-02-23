@@ -99,7 +99,7 @@ if(Nrb<0):
     sys.exit() 
 
 fnames = {}      
-fnames['file_weights'] = './models/extendedSymmetry_newCase4/weights_ny{0}.hdf5'.format(Nrb)
+fnames['file_weights'] = './models/extendedSymmetry_newCase4/weights_ny{0}_linear_lrm4_small.hdf5'.format(Nrb)
 fnames['file_X'] = [nameEllipseData,nameEllipseData_val]
 fnames['file_Y'] = [nameYlist, nameYlist_val]
 fnames['stepEpochs'] = 1
@@ -107,8 +107,9 @@ fnames['stepEpochs'] = 1
 
 
 # series with 5000 epochs
-net = {'Neurons': 5*[100], 'activations': ['relu','relu','sigmoid'], 'lr': 1.0e-4, 'decay' : 1.0} # normally reg = 1e-5
-# net = {'Neurons': 5*[100], 'activations': ['tanh','relu','linear'], 'lr': 1.0e-3, 'decay' : 1.0} # normally reg = 1e-5
+# net = {'Neurons': 5*[100], 'activations': ['relu','relu','sigmoid'], 'lr': 1.0e-4, 'decay' : 1.0} # normally reg = 1e-5
+# net = {'Neurons': 5*[100], 'activations': ['tanh','relu','linear'], 'lr': 1.0e-4, 'decay' : 1.0} # normally reg = 1e-5
+net = {'Neurons': 4*[50], 'activations': ['tanh','relu','linear'], 'lr': 1.0e-4, 'decay' : 1.0} # normally reg = 1e-5
 
 net['epochs'] = int(epochs)
 

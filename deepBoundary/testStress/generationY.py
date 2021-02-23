@@ -21,13 +21,13 @@ import symmetryLib as syml
 # folderBasis = rootData + "/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/"
 # folderBasis = rootData + "/deepBoundary/smartGeneration/LHS_p4_fullSymmetric/"
 
-folder = './models/dataset_test/'
+folder = './models/dataset_testNew3/'
 folderBasis = './models/dataset_extendedSymmetry_recompute/'
 
 nameSnaps = folder + 'snapshots.h5'
 nameMeshRefBnd = 'boundaryMesh.xdmf'
 nameWbasis = folderBasis + 'Wbasis.h5'
-nameYlist = folder + 'Y_MD.h5'
+nameYlist = folder + 'Y.h5'
 nameTau = folder + 'tau.h5'
 nameEllipseData = folder + 'ellipseData.h5'
 
@@ -39,13 +39,16 @@ Vref = VectorFunctionSpace(Mref,"CG", 1)
 dxRef = Measure('dx', Mref) 
 dsRef = Measure('ds', Mref) 
 
-ns = int(10240/2)
+ns = 1000
 npar = ns
 Nmax = 160
-Npartitions = 1
+Npartitions = 20
 
-op = int(sys.argv[1])
-partition = int(sys.argv[2])
+# op = int(sys.argv[1])
+# partition = int(sys.argv[2])
+
+op = int(input('option'))
+partition = int(input('partition'))
 
 if(partition == -1):
     labelSnaps = 'all'
@@ -108,7 +111,7 @@ if(op == 2):
     os.system('rm ' + nameYlist.format(labelSnaps))
     # Wbasis = myhd.loadhd5(nameWbasis, 'Wbasis')
     Wbasis_M = myhd.loadhd5(nameWbasis, ['Wbasis','massMatrix'])
-    Isol = myhd.loadhd5(nameSnaps.format(labelSnaps),'sol_T_MD')
+    Isol = myhd.loadhd5(nameSnaps.format(labelSnaps),'solutions_trans')
     Ylist, f = myhd.zeros_openFile(nameYlist.format(labelSnaps), (npar,Nmax) , 'Ylist')
     gdb.getAlphas_fast(Ylist,Wbasis_M,Isol,npar,Nmax, dotProduct, Vref, dsRef) 
     f.close()
