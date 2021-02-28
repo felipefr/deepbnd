@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import symmetryLib as syml
 
 # Test Loading 
-folderTest = './models/dataset_testNew3/'
+folderTest = './models/dataset_newTest2/'
 nameYtest = folderTest + 'Y_extended.h5'
 nameEllipseDataTest = folderTest + 'ellipseData.h5'
 nameSnapsTest = folderTest + 'snapshots.h5'
@@ -35,10 +35,10 @@ ellipseDataTest = myhd.loadhd5(nameEllipseDataTest, 'ellipseData')
 IsolT = myhd.loadhd5(nameSnapsTest,['solutions_trans'])[0]
 
 ns0 = 0
-ns1 = 1000
+ns1 = 5120
 
 plt.figure(1,(13,7))
-plt.suptitle('Test seed=19 / RB extended ({0}:{1})'.format(ns0,ns1))
+plt.suptitle('Test seed=18 + No Mirror/ RB extended ({0}:{1})'.format(ns0,ns1))
 plt.subplot('321')
 plt.title('Histogram Y_1')
 plt.hist(Ytest[ns0:ns1,0],bins = 20)
@@ -65,4 +65,4 @@ plt.hist(Ytest[ns0:ns1,5], bins = 20)
 
 plt.tight_layout()
 
-plt.savefig("newTest3_extended.png")
+plt.savefig("newTest2_extended_noMirror.png")

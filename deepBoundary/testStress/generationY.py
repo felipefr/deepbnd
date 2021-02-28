@@ -21,13 +21,13 @@ import symmetryLib as syml
 # folderBasis = rootData + "/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/"
 # folderBasis = rootData + "/deepBoundary/smartGeneration/LHS_p4_fullSymmetric/"
 
-folder = './models/dataset_testNew3/'
+folder = './models/dataset_testNew2/'
 folderBasis = './models/dataset_extendedSymmetry_recompute/'
 
 nameSnaps = folder + 'snapshots.h5'
 nameMeshRefBnd = 'boundaryMesh.xdmf'
 nameWbasis = folderBasis + 'Wbasis.h5'
-nameYlist = folder + 'Y.h5'
+nameYlist = folder + 'Y_extended.h5'
 nameTau = folder + 'tau.h5'
 nameEllipseData = folder + 'ellipseData.h5'
 
@@ -39,10 +39,10 @@ Vref = VectorFunctionSpace(Mref,"CG", 1)
 dxRef = Measure('dx', Mref) 
 dsRef = Measure('ds', Mref) 
 
-ns = 1000
+ns = 5120
 npar = ns
 Nmax = 160
-Npartitions = 20
+Npartitions = 8
 
 # op = int(sys.argv[1])
 # partition = int(sys.argv[2])

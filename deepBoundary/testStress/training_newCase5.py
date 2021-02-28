@@ -47,7 +47,6 @@ def basicModelTraining(nsTrain, nX, nY, net, fnames):
     
     print(maxAlpha[0:5])
     print(minAlpha[0:5])
-    input()
     
     w_l = fac*(maxAlpha - minAlpha)**2.0  
     w_l = w_l.astype('float32')

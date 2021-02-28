@@ -102,9 +102,11 @@ def getTraining(ns_start, ns_end, nX, nY, Xdatafile, Ydatafile, scalerX = None, 
 def getDatasets(nX, nY, Xdatafile, Ydatafile, scalerX = None, scalerY = None):
     Xlist = []
     Ylist = []
-        
-    ndata = len(Xdatafile)
-
+    
+    if(type(Xdatafile) != type([])):
+        Xdatafile = [Xdatafile]
+        Ydatafile = [Ydatafile]
+    
     for Xdatafile_i, Ydatafile_i in zip(Xdatafile,Ydatafile):    
         Xlist.append(myhd.loadhd5(Xdatafile_i, 'ellipseData')[:,:nX,2])
         Ylist.append(myhd.loadhd5(Ydatafile_i, 'Ylist')[:,:nY])
