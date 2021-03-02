@@ -1,0 +1,38 @@
+# archId = 1, using base 4, train 4, val 3, 'Neurons': 5*[100], 'lr': 1.0e-4
+# archId = 2, using base 5, train 4, val 3 ,  'Neurons': 5*[100], 'lr': 1.0e-4
+# archId = 3, using base 5, train 4, val 3 ,  'Neurons': 5*[50], 'lr': 1.0e-3
+# archId = 4, using base 5, train 4, val 3 ,  'Neurons': 3*[20], 'lr': 1.0e-3
+# archId = 5, using base 5, train 4, val 3 ,  'Neurons': 2*[10], 'lr': 1.0e-3
+# archId = 6, using base 5, train 4, val 3 ,  'Neurons': 1*[40], 'lr': 1.0e-3
+# archId = 7, using base 5, train 4, val 3 ,  'Neurons': 1*[40], 'lr': 1.0e-3, sigmoid
+# archId = 8, using base 5, train 4, val 3 ,  'Neurons': 1*[40], 'lr': 1.0e-2
+# archId = 9, using base 5, train 4, val 3 ,  'Neurons': 1*[40], 'lr': 1.0e-2, swish
+# archId = 10, using base 5, train 4, val 3 ,  'Neurons': 1*[40], 'lr': 5.0e-3, 3*swish
+# archId = 11, using base 5, train 4, val 3 ,  'Neurons': 1*[20], 'lr': 5.0e-3, 3*swish
+# archId = 12, using base 5, train 4, val 3 ,  'Neurons': 1*[40], 'lr': 5.0e-3, 3*swish, 'drps' : 4*[0.01], 'reg' : 0.0
+# archId = 14, using base 5, train 4, val 3 ,  'Neurons': 1*[60], 'lr': 5.0e-3, ['tanh','relu','linear'], 'drps' : 4*[0.05], 'reg' : 0.0, consensus
+# archId = 15, using base 5, train 4, val 3 ,  'Neurons': 1*[40], 'lr': 5.0e-3, ['tanh','relu','linear'], 'drps' : 3*[0.00], 'reg' : 0.0, consensus
+# archId = 16, using base 5, train 4, val 3 ,  'Neurons': 1*[40], 'lr': 5.0e-3, ['tanh','relu','linear'], 'drps' : 3*[0.00], 'reg' : 0.0, consensus diffrent
+# archId = 17, using base 5, train 4, val 3 ,  'Neurons': 1*[40], 'lr': 5.0e-3, ['tanh','relu','linear'], 'drps' : 3*[0.00], 'reg' : 0.0, consensus diffrent, petite train
+# archId = 18, using base 5, train 4, val 3 ,  'Neurons': 1*[40], 'lr': 1.0e-4, 3*swish, 'drps' : 3*[0.00], 'reg' : 0.0, consensus diffrent, petite train, RMS
+# archId = 19, using base 5, train 4, val 3 ,  'Neurons': [1*[40],3*[150]] , 'lr': 1.0e-2, 3*swish, 'drps' : 5*[0.40], 'reg' : 0.0, consensus diffrent, petite train, ADAM (beta_1 = 0.87, beta_2 = 0.98)
+# archId = 20, using base 5, train 4, val 3 ,  'Neurons': [1*[40],3*[150]] , 'lr': 1.0e-2, 3*swish, 'drps' : 5*[0.40], 'reg' : 0.0, consensus diffrent, petite train, ADAM (beta_1 = 0.87, beta_2 = 0.98), L1
+# archId = 21, using base 5, train 4, val 3 ,  'Neurons': [40,20,20] , 'lr': 1.0e-3, ['tanh','swish','swish'], 'drps' : 0, 'reg' : 1e-7, L1
+# archId = 22, using base 5, train 4, val 3 ,  'Neurons': [80,40,40] , 'lr': 1.0e-3, ['tanh','swish','swish'], 'drps' : 0.01, 'reg' : 1e-5, L2 and L1 (bias too)
+# archId = 24, net = {'Neurons': [120,80,60], 'activations': ['swish','swish','swish'], 'lr': 5.0e-4, 'decay' : 1.0, 'drps' : 5*[0.01], 'reg' : 1.0e-5} # normally reg = 1e-5
+# archId = 25, net = {'Neurons': [120,80,60], 'activations': ['swish','swish','swish'], 'lr': 5.0e-4, 'decay' : 1.0, 'drps' : 5*[0.0], 'reg' : 1.0e-5} # normally reg = 1e-5
+# archId = 26, net = {'Neurons': [120,80,60], 'activations': 4*['swish'], 'lr': 5.0e-4, 'decay' : 1.0, 'drps' : [0.0] + 3*[0.01] + [0.0], 'reg' : 1.0e-5} # normally reg = 1e-5
+# archId = 27, net = {'Neurons': [100,100,100], 'activations': 4*['swish'], 'lr': 5.0e-4, 'decay' : 1.0, 'drps' : [0.0] + 3*[0.02] + [0.0], 'reg' : 1.0e-5}
+
+
+# series with 5000 epochs
+# net = {'Neurons': 1*[40], 'activations': ['relu','relu','sigmoid'], 'lr': 1.0e-3, 'decay' : 1.0} # normally reg = 1e-5
+# net = {'Neurons': 1*[20], 'activations': ['swish','swish','swish'], 'lr': 5.0e-3, 'decay' : 1.0} # normally reg = 1e-5
+# net = {'Neurons': 1*[40], 'activations': ['tanh','relu','linear'], 'lr': 5.0e-3, 'decay' : 1.0, 'drps' : 3*[0.00], 'reg' : 0.0} # normally reg = 1e-5
+# net = {'Neurons': [1*[40],3*[150]], 'activations': 2*[['swish','swish','swish']], 'lr': 1.0e-2, 'decay' : 1.0, 'drps' : [3*[0.00],5*[0.40]], 'reg' : [0.0,1.0e-7]} # normally reg = 1e-5
+# net = {'Neurons': [120,80,60], 'activations': ['swish','swish','swish'], 'lr': 5.0e-4, 'decay' : 1.0, 'drps' : 5*[0.01], 'reg' : 1.0e-5}
+# net = {'Neurons': 4*[50], 'activations': ['tanh','relu','linear'], 'lr': 1.0e-4, 'decay' : 1.0} # normally reg = 1e-5
+
+# model = mytf.DNNmodel_notFancy(nX, nY, net['Neurons'], net['activations'])
+# model = mytf.DNNmodel(nX, nY, net['Neurons'], net['activations'], drps=net['drps'], lambReg=net['reg'])    
+# model = mytf.DNNmodel_consensus(nX, nY, net['Neurons'], net['activations'], drps=net['drps'], lambReg=net['reg'])

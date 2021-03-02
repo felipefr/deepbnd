@@ -21,13 +21,14 @@ import symmetryLib as syml
 # folderBasis = rootData + "/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/"
 # folderBasis = rootData + "/deepBoundary/smartGeneration/LHS_p4_fullSymmetric/"
 
-folder = './models/dataset_testNew2/'
-folderBasis = './models/dataset_extendedSymmetry_recompute/'
+folder = './models/dataset_test/'
+folderBasis = './models/dataset_new4/'
 
 nameSnaps = folder + 'snapshots.h5'
 nameMeshRefBnd = 'boundaryMesh.xdmf'
 nameWbasis = folderBasis + 'Wbasis.h5'
-nameYlist = folder + 'Y_extended.h5'
+nameYlist = folder + 'Y_Wbasis4.h5'
+nameXYlist = folder + 'XY_Wbasis4.h5'
 nameTau = folder + 'tau.h5'
 nameEllipseData = folder + 'ellipseData.h5'
 
@@ -39,10 +40,10 @@ Vref = VectorFunctionSpace(Mref,"CG", 1)
 dxRef = Measure('dx', Mref) 
 dsRef = Measure('ds', Mref) 
 
-ns = 5120
+ns = 51200
 npar = ns
 Nmax = 160
-Npartitions = 8
+Npartitions = 10
 
 # op = int(sys.argv[1])
 # partition = int(sys.argv[2])
@@ -112,10 +113,7 @@ if(op == 2):
     # Wbasis = myhd.loadhd5(nameWbasis, 'Wbasis')
     Wbasis_M = myhd.loadhd5(nameWbasis, ['Wbasis','massMatrix'])
     Isol = myhd.loadhd5(nameSnaps.format(labelSnaps),'solutions_trans')
-    Ylist, f = myhd.zeros_openFile(nameYlist.format(labelSnaps), (npar,Nmax) , 'Ylist')
-    gdb.getAlphas_fast(Ylist,Wbasis_M,Isol,npar,Nmax, dotProduct, Vref, dsRef) 
-    f.close()
-
+    myhd.savehd5(nameYlist,gdb.getAlphas_fast(Wbasis_M,Isol,npar,Nmax, dotProduct, Vref, dsRef),'Ylist',mode='w') 
 
 # ======================= Computing basis for stress ==============================
 if(op == 3):
@@ -139,6 +137,14 @@ if(op == 5):
     Wbasis_M, f = myhd.zeros_openFile(nameWbasis, [(Nmax,Vref.dim()),[Vref.dim(),Vref.dim()]], ['Wbasis','massMatrix'])
     Wbasis , M = Wbasis_M
     sig, U = gdb.computingBasis_svd(Wbasis, M, Isol,Nmax,Vref, dsRef, dotProduct)
+    print(U.shape)
     os.system('rm ' + folder + 'eigens.hd5')
     myhd.savehd5(folder + 'eigens.hd5', [sig,U],['eigenvalues','eigenvectors'], mode = 'w-')
     f.close()
+
+# ======================= Create XY =======================================
+if(op == 7): 
+    os.system('rm ' + nameXYlist)
+    Y = myhd.loadhd5(nameYlist,'Ylist')
+    X = myhd.loadhd5(nameEllipseData,'ellipseData')[:,:,2]
+    myhd.savehd5(nameXYlist, [Y,X], ['Y','X'], mode='w')

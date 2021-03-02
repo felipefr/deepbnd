@@ -232,9 +232,9 @@ def getAlphas(Ylist, Wbasis,Isol,ns,Nmax, dotProduct, Vref, dxRef):   # fill Yli
             basis.vector().set_local(np.array(Wbasis[j,:]))
             Ylist[i,j] = dotProduct(basis, usol, dxRef)
             
-def getAlphas_fast(Ylist, Wbasis_M,Isol,ns,Nmax, dotProduct, Vref, dxRef):   # fill Ylist = np.zeros((ns,Nmax)) 
+def getAlphas_fast(Wbasis_M,Isol,ns,Nmax, dotProduct, Vref, dxRef):   # fill Ylist = np.zeros((ns,Nmax)) 
     Wbasis, M = Wbasis_M
-    Ylist[:,:] = Isol @ M @ Wbasis[:Nmax,:].T
+    return Isol @ M @ Wbasis[:Nmax,:].T
 
 
 def getProjection(alpha_u,Wbasis,Vref):

@@ -8,11 +8,17 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 dictActivations = {'tanh' : tf.nn.tanh, 
-                   'sigmoid' : tf.nn.sigmoid , 
-                   'linear': tf.keras.activations.linear,
-                   'relu': tf.keras.activations.relu,
-                   'leaky_relu': tf.nn.leaky_relu}
+                    'sigmoid' : tf.nn.sigmoid , 
+                    'linear': tf.keras.activations.linear,
+                    'relu': tf.keras.activations.relu,
+                    'leaky_relu': tf.nn.leaky_relu, 
+                    'swish' : tf.keras.activations.swish}
 
+# dictActivations = {'tanh' : tf.nn.tanh, 
+#                    'sigmoid' : tf.nn.sigmoid , 
+#                    'linear': tf.keras.activations.linear,
+#                    'relu': tf.keras.activations.relu,
+#                    'leaky_relu': tf.nn.leaky_relu}
 
 dfInitK = tf.keras.initializers.glorot_uniform(seed = 1)
 # dfInitK = tf.keras.initializers.VarianceScaling(scale=1.0, mode="fan_in", distribution="untruncated_normal", seed=None)
@@ -22,6 +28,32 @@ dfInitB = tf.keras.initializers.Zeros()
 #     partial_func = partial(func, *args, **kwargs)
 #     update_wrapper(partial_func, func)
 #     return partial_func
+
+class CustomDense(tf.keras.layers.Layer):
+    def __init__(self, units=32):
+        super(CustomDense, self).__init__()
+        self.units = units
+
+    def build(self, input_shape):
+        self.w = self.add_weight(
+            shape=(input_shape[-1], self.units),
+            initializer="random_normal",
+            trainable=True,
+        )
+        self.b = self.add_weight(
+            shape=(self.units,), initializer="random_normal", trainable=True
+        )
+
+    def call(self, inputs):
+        return tf.matmul(inputs, self.w) + self.b
+
+    def get_config(self):
+        return {"units": self.units}
+
+# inputs = keras.Input((4,))
+# outputs = CustomDense(10)(inputs)
+
+# model = keras.Model(inputs, outputs)
 
 class myMinMaxScaler:
     def __init__(self):
@@ -94,6 +126,9 @@ class MLPblock_gen(tf.keras.layers.Layer):
         super(MLPblock_gen, self).__init__()
         
         l2_reg = lambda w: lambReg * tf.linalg.norm(w)**2.0
+        l1_reg = lambda w: lambReg * tf.linalg.norm(w,ord=1)
+        
+        reg = tf.keras.regularizers.l1_l2(l1=0.1*lambReg, l2=lambReg)
         
         self.nLayers = len(Nneurons)
         
@@ -101,11 +136,11 @@ class MLPblock_gen(tf.keras.layers.Layer):
         
         self.ld = [tf.keras.layers.Dropout(drps[0])]
         self.la = [tf.keras.layers.Dense(Nneurons[0], activation=dictActivations[actLabel[0]], input_shape=input_shape, kernel_initializer=dfInitK, bias_initializer=dfInitB)]
-        
-       
+            
         for n, drp in zip(Nneurons[1:],drps[1:-1]):
             self.ld.append(tf.keras.layers.Dropout(drp)) 
-            self.la.append(tf.keras.layers.Dense(n, activation=dictActivations[actLabel[1]], kernel_regularizer=l2_reg, 
+            self.la.append(tf.keras.layers.Dense(n, activation=dictActivations[actLabel[1]], 
+                          kernel_regularizer=reg, bias_regularizer=reg, 
                           kernel_constraint=tf.keras.constraints.MaxNorm(300.0), kernel_initializer=dfInitK, bias_initializer=dfInitB))   
         
         self.ld.append(tf.keras.layers.Dropout(drps[-1])) 
@@ -178,6 +213,19 @@ class DNNmodel(tf.keras.Model):
         
         return y
     
+class DNNmodel_consensus(tf.keras.Model):
+    def __init__(self, Nin, Nout, Neurons, actLabel, drps=None, lambReg=0.0):
+        super(DNNmodel_consensus,self).__init__()
+        
+        self.net1 = DNNmodel(Nin, Nout, Neurons[0], actLabel[0], drps[0], lambReg[0])
+        self.net2 = DNNmodel(Nin, Nout, Neurons[1], actLabel[1], drps[1], lambReg[1])
+        
+    def call(self, inputs):
+        z1 = self.net1(inputs)
+        z2 = self.net2(inputs)
+        
+        return 0.5*(z1 + z2)
+    
 class DNNmodel_in(tf.keras.Model):
     def __init__(self, Nin, Nout, Neurons, actLabel, drps=None, lambReg=0.0):
         super(DNNmodel,self).__init__()
@@ -231,13 +279,9 @@ class PrintDot(tf.keras.callbacks.Callback):
          print('.', end='')
 
 
-def checkpoint(saveFile, stepEpochs = 1):
-    #   
-    return ModelCheckpoint(saveFile, monitor='loss', verbose=1,
+def checkpoint(saveFile, stepEpochs = 1): 
+    return ModelCheckpoint(saveFile, monitor='val_loss', verbose=1,
                            save_best_only=True, save_weights_only = True, mode='auto', period=stepEpochs)
-
-
-
     
 def scheduler(epoch, decay, lr, EPOCHS):    
     omega = np.sqrt(float(epoch/EPOCHS))
@@ -389,13 +433,13 @@ def construct_model_hidden( number_of_inputs, network_width='normal'):
 
 
 
-def plot_history(history,savefile=None):
+def plot_history(history,label=['loss','val_loss'], savefile=None, ):
   plt.figure(1)
   plt.xlabel('Epoch')
   plt.ylabel('Loss')
-  plt.plot(history.epoch, np.array(history.history['loss']),
+  plt.plot(history.epoch, np.array(history.history[label[0]]),
            label='Train Loss')
-  plt.plot(history.epoch, np.array(history.history['val_loss']),
+  plt.plot(history.epoch, np.array(history.history[label[1]]),
            label = 'Val loss')
   plt.yscale('log')
   plt.legend()
@@ -403,8 +447,8 @@ def plot_history(history,savefile=None):
   
   if savefile:
       plt.savefig(savefile + '.png')
-      np.savetxt(savefile + '_history_.txt', np.array(history.history['loss']) )
-      np.savetxt(savefile + '_history_val.txt', np.array(history.history['val_loss']) )
+      np.savetxt(savefile + '_history_.txt', np.array(history.history[label[0]]) )
+      np.savetxt(savefile + '_history_val.txt', np.array(history.history[label[1]]) )
   
   plt.grid()    
   # plt.show( )
@@ -416,24 +460,24 @@ def my_train_model(model, X_train, y_train, num_parameters, EPOCHS ,
     # NoisyAdam = add_gradient_noise(Adam)
     
     
-    # optimizer= tf.keras.optimizers.Adam(learning_rate = lr, beta_1 = 0.9)
+    # optimizer= tf.keras.optimizers.Adam(learning_rate = lr, beta_1 = 0.87, beta_2=0.98) #beta_1=0.9, beta_2=0.999, epsilon=1e-07,
     optimizer= tf.keras.optimizers.Adam(learning_rate = lr)
     # optimizer= tf.keras.optimizers.RMSprop(learning_rate = lr)
-    # optimizer= tf.keras.optimizers.Adadelta(learning_rate=1.0)
-    # optimizer= tf.keras.optimizers.SGD(learning_rate=0.01, momentum=0.9)
+    # optimizer= tf.keras.optimizers.Adadelta(learning_rate=lr)
+    # optimizer= tf.keras.optimizers.SGD(learning_rate=lr, momentum=0.9)
     
     # mseloss = lambda y_p, y_d : tf.reduce_mean( tf.square(tf.subtract(y_p, y_d) ))
     
     # myfactr = 1e1
     # optimizer = tf.contrib.opt.ScipyOptimizerInterface(loss = mseloss, method = 'L-BFGS-B', 
     #                                                     options = {'maxiter': 1000,
-    #                                                                'maxfun': 50000,
-    #                                                                'maxcor': 70,
-    #                                                                'maxls': 70,
-    #                                                                # 'pgtol': myfactr * np.finfo(float).eps,
-    #                                                                # 'gtol': myfactr * np.finfo(float).eps,
-    #                                                                'disp': True})
-    #                                                                # 'ftol' : myfactr * np.finfo(float).eps})
+    #                                                                 'maxfun': 50000,
+    #                                                                 'maxcor': 70,
+    #                                                                 'maxls': 70,
+    #                                                                 # 'pgtol': myfactr * np.finfo(float).eps,
+    #                                                                 # 'gtol': myfactr * np.finfo(float).eps,
+    #                                                                 'disp': True})
+    #                                                                 # 'ftol' : myfactr * np.finfo(float).eps})
 
     # with tf.Session() as session:
     #     optimizer.minimize(session)

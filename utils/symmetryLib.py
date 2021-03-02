@@ -123,3 +123,28 @@ def getDatasets(nX, nY, Xdatafile, Ydatafile, scalerX = None, scalerY = None):
         scalerY.fit(Y)
             
     return scalerX.transform(X), scalerY.transform(Y), scalerX, scalerY
+
+def getDatasetsXY(nX, nY, XYdatafile, scalerX = None, scalerY = None):
+    Xlist = []
+    Ylist = []
+    
+    if(type(XYdatafile) != type([])):
+        XYdatafile = [XYdatafile]
+    
+    for XYdatafile_i in XYdatafile:    
+        Xlist.append(myhd.loadhd5(XYdatafile_i, 'X')[:,:nX])
+        Ylist.append(myhd.loadhd5(XYdatafile_i, 'Y')[:,:nY])
+    
+    X = np.concatenate(tuple(Xlist),axis = 0)
+    Y = np.concatenate(tuple(Ylist),axis = 0)
+    
+    if(type(scalerX) == type(None)):
+        scalerX = MinMaxScaler()
+        scalerX.fit(X)
+    
+    if(type(scalerY) == type(None)):
+        scalerY = MinMaxScaler()
+        scalerY.fit(Y)
+            
+    return scalerX.transform(X), scalerY.transform(Y), scalerX, scalerY
+
