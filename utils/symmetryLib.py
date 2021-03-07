@@ -26,8 +26,12 @@ def mirrorVertical(X):
 def mirrorDiagonal(X):
     return mirrorVertical(mirrorHorizontal(X))
     
-def createSymmetricEllipseData(ellipseFileName, ellipseFileName_new):
-    EllipseData = myhd.loadhd5(ellipseFileName, 'ellipseData')
+def createSymmetricEllipseData(ellipseFileName, ellipseFileName_new = '', useFiles = True):
+    if(useFiles):
+        EllipseData = myhd.loadhd5(ellipseFileName, 'ellipseData')
+    else:
+        EllipseData = ellipseFileName # the name is the data itself.
+        
     X = EllipseData[:,:,2]
     
     ns0 = len(X)
@@ -41,7 +45,10 @@ def createSymmetricEllipseData(ellipseFileName, ellipseFileName_new):
     
     EllipseData_new = np.concatenate(tuple(EllipseData_list))
     
-    myhd.savehd5(ellipseFileName_new, EllipseData_new, 'ellipseData', mode = 'w' )
+    if(useFiles):
+        myhd.savehd5(ellipseFileName_new, EllipseData_new, 'ellipseData', mode = 'w' )
+
+    return EllipseData_new
 
 def getTraining_usingSymmetry(ns_start, ns_end, nX, nY, Xdatafile, Ydatafile, scalerX = None, scalerY = None):
     X = np.zeros((ns_end - ns_start,nX))

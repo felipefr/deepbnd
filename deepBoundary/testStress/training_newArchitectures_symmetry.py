@@ -22,11 +22,11 @@ import tensorflow as tf
 from tensorflow_for_training import *
 
 
-folder = './models/dataset_new5/'
+folder = './models/dataset_hybrid/'
 nameXY = folder +  'XY.h5'
 
 folderVal = './models/dataset_newTest3/'
-nameXY_val = folderVal +  'XY_Wbasis5.h5'
+nameXY_val = folderVal +  'XY_hybrid.h5'
 
 
 Nrb = int(sys.argv[1])
@@ -41,7 +41,7 @@ print('Nrb is ', Nrb, 'epochs ', epochs)
 
 # net = {'Neurons': [1000,1000,1000], 'activations': 4*['swish'], 'lr': 5.0e-4, 'decay' : 1.0, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
 
-net = {'Neurons': [100, 100, 100], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.2, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
+net = {'Neurons': [1000, 1000], 'activations': 2*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 2*[0.1] + [0.0], 'reg' : 1.0e-7}
 
 net['epochs'] = int(epochs)
 net['nY'] = Nrb
@@ -50,9 +50,9 @@ net['archId'] = archId
 net['nsTrain'] = int(51200) 
 net['nsVal'] = int(5120)
 net['stepEpochs'] = 1
-net['file_weights'] = './models/newArchitectures/new5itself/weights_ny{0}_arch{1}.hdf5'.format(Nrb,archId)
-net['file_net'] = './models/newArchitectures/new5itself/net_ny{0}_arch{1}.txt'.format(Nrb,archId)
-net['file_prediction'] = './models/newArchitectures/new5itself/prediction_ny{0}_arch{1}.txt'.format(Nrb,archId)
+net['file_weights'] = './models/newArchitectures/symmetry/weights_ny{0}_arch{1}.hdf5'.format(Nrb,archId)
+net['file_net'] = './models/newArchitectures/symmetry/net_ny{0}_arch{1}.txt'.format(Nrb,archId)
+net['file_prediction'] = './models/newArchitectures/symmetry/prediction_ny{0}_arch{1}.txt'.format(Nrb,archId)
 net['file_XY'] = [nameXY, nameXY_val]
 
 scalerX, scalerY = syml.getDatasetsXY(nX, Nrb, net['file_XY'][0])[2:4]
@@ -84,32 +84,32 @@ end = timer()
 
 
 # Prediction 
-X, Y = syml.getDatasetsXY(nX, Nrb, net['file_XY'], scalerX, scalerY)[0:2]
-w_l = (scalerY.data_max_ - scalerY.data_min_)**2.0
+# X, Y = syml.getDatasetsXY(nX, Nrb, net['file_XY'], scalerX, scalerY)[0:2]
+# w_l = (scalerY.data_max_ - scalerY.data_min_)**2.0
 
-nsTrain = net['nsTrain']
-X_scaled = []; Y_scaled = []
-X_scaled.append(X[:nsTrain,:]); Y_scaled.append(Y[:nsTrain,:])
-X_scaled.append(X[nsTrain:,:]); Y_scaled.append(Y[nsTrain:,:])
+# nsTrain = net['nsTrain']
+# X_scaled = []; Y_scaled = []
+# X_scaled.append(X[:nsTrain,:]); Y_scaled.append(Y[:nsTrain,:])
+# X_scaled.append(X[nsTrain:,:]); Y_scaled.append(Y[nsTrain:,:])
 
 
-nameXYlist = ['./models/dataset_new4/XY_Wbasis5.h5','./models/dataset_newTest2/XY_Wbasis5.h5','./models/dataset_test/XY_Wbasis5.h5']
+# nameXYlist = ['./models/dataset_new4/XY_Wbasis5.h5','./models/dataset_newTest2/XY_Wbasis5.h5','./models/dataset_test/XY_Wbasis5.h5']
 
-for nameXY in nameXYlist:
-    Xtemp, Ytemp = syml.getDatasetsXY(nX, Nrb, nameXY, scalerX, scalerY)[0:2]
-    X_scaled.append(Xtemp); Y_scaled.append(Ytemp)
+# for nameXY in nameXYlist:
+#     Xtemp, Ytemp = syml.getDatasetsXY(nX, Nrb, nameXY, scalerX, scalerY)[0:2]
+#     X_scaled.append(Xtemp); Y_scaled.append(Ytemp)
 
-netp = net
-modelp = generalModel_dropReg(nX, Nrb, netp)   
-oldWeights = netp['file_weights']
+# netp = net
+# modelp = generalModel_dropReg(nX, Nrb, netp)   
+# oldWeights = netp['file_weights']
 
-modelp.load_weights(oldWeights)
+# modelp.load_weights(oldWeights)
 
-error_stats = []
-for Xi, Yi in zip(X_scaled,Y_scaled): 
-    Yi_p = modelp.predict(Xi)
-    error = tf.reduce_sum(tf.multiply(w_l,tf.square(tf.subtract(Yi_p,Yi))), axis=1).numpy()
+# error_stats = []
+# for Xi, Yi in zip(X_scaled,Y_scaled): 
+#     Yi_p = modelp.predict(Xi)
+#     error = tf.reduce_sum(tf.multiply(w_l,tf.square(tf.subtract(Yi_p,Yi))), axis=1).numpy()
     
-    error_stats.append(np.array([np.mean(error),np.std(error), np.max(error), np.min(error)]))
+#     error_stats.append(np.array([np.mean(error),np.std(error), np.max(error), np.min(error)]))
 
-np.savetxt(net['file_prediction'],np.array(error_stats))
+# np.savetxt(net['file_prediction'],np.array(error_stats))

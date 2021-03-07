@@ -17,18 +17,14 @@ import symmetryLib as syml
 # rootData = f.read()[:-1]
 # f.close()
 
-# folder = rootData + "/deepBoundary/testStress/P2/"
-# folderBasis = rootData + "/deepBoundary/smartGeneration/LHS_frozen_p4_volFraction/"
-# folderBasis = rootData + "/deepBoundary/smartGeneration/LHS_p4_fullSymmetric/"
-
-folder = './models/dataset_test/'
-folderBasis = './models/dataset_new4/'
+folder = './models/dataset_hybrid/'
+folderBasis = './models/dataset_hybrid/'
 
 nameSnaps = folder + 'snapshots.h5'
 nameMeshRefBnd = 'boundaryMesh.xdmf'
 nameWbasis = folderBasis + 'Wbasis.h5'
-nameYlist = folder + 'Y_Wbasis4.h5'
-nameXYlist = folder + 'XY_Wbasis4.h5'
+nameYlist = folder + 'Y.h5'
+nameXYlist = folder + 'XY.h5'
 nameTau = folder + 'tau.h5'
 nameEllipseData = folder + 'ellipseData.h5'
 
@@ -40,7 +36,7 @@ Vref = VectorFunctionSpace(Mref,"CG", 1)
 dxRef = Measure('dx', Mref) 
 dsRef = Measure('ds', Mref) 
 
-ns = 51200
+ns = 40960
 npar = ns
 Nmax = 160
 Npartitions = 10
