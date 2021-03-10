@@ -18,6 +18,9 @@ import tensorflow as tf
 
 ker = tf.keras.layers
 
+
+
+
 def simpleGeneralModel(Nin, Nout, net):
     Neurons, actLabels = net['Neurons'] , net['activations']
 
@@ -82,6 +85,11 @@ def basicModelTraining(XY_train, XY_val, model, net):
 
     schdDecay = mytf.partial2(mytf.scheduler ,lr = lr, decay = decay, EPOCHS = Epochs)
     decay_lr = tf.keras.callbacks.LearningRateScheduler(schdDecay)    
+
+    # decay_lr = tf.keras.callbacks.ReduceLROnPlateau(
+    #     monitor='val_loss', factor=0.8, patience=10, verbose=1,
+    #     mode='auto', min_delta=0.0001, cooldown=0, min_lr=0)
+
     
     kw = {}
     kw['epochs']= Epochs; kw['batch_size'] = 32

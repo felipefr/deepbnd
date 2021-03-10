@@ -3,11 +3,47 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler #
 import myHDF5 as myhd ##
 import copy 
+
+# order 0 : matrix order
+# order 1 : internal to external layer order (matrix convention ortherwise)
+from generationInclusions import orderedIndexesTotal as order0_2_order1 # Nx,Ny,NL (NLx = NLy) 
+from generationInclusions import inverseOrderedIndexesTotal as order1_2_order0 # Nx,Ny,NL (NLx = NLy)
+
 # import dolfin as df
 
 # T_MH = df.Expression(('-x[0]','x[1]'), degree = 1)
 # T_MV = df.Expression(('x[0]','-x[1]'), degree = 1)
 # T_MD = df.Expression(('-x[0]','-x[1]'), degree = 1)
+
+T_halfpi = lambda pairs: [(j, int(np.sqrt(len(pairs))) - 1 - i ) for i,j in pairs ]
+T_pi = lambda pairs: T_halfpi(T_halfpi(pairs))
+T_mhalfpi = lambda pairs: T_halfpi(T_pi(pairs))
+T_horiz = lambda pairs: [(int(np.sqrt(len(pairs))) - 1 - i, j ) for i,j in pairs ]
+T_vert = lambda pairs: [(i , int(np.sqrt(len(pairs))) - 1 - j ) for i,j in pairs ]
+T_diag = lambda pairs: T_horiz(T_vert(pairs))
+pairs2ind = lambda pairs: [i + j*int(np.sqrt(len(pairs))) for i,j in pairs]
+ind2pairs = lambda ind: [ ( k%int(np.sqrt(len(ind))), int(k/np.sqrt(len(ind))) )  for k in ind]
+
+# inverse transformation of pairs : Tinv(T(p)) = p and T(Tinv(p)) = p. 
+# This is done by: Transformin pairs -> convert pairs to indexes -> find the permutation to reorder indexes -> retransform indexes to pairs to pairs
+inverse_T = lambda pairs, T: ind2pairs( np.argsort( pairs2ind(T(pairs)) ) ) 
+
+
+# T_with_order1 : 1-ordered-vector --> 1-ordered-vector, given a transformation.
+def perm_with_order1(T, N, NL) :
+    Nx = Ny = int(np.sqrt(N))
+    
+    order0_2_order1_ = order0_2_order1(Nx,Ny,NL)
+    order1_2_order0_ = order1_2_order0(Nx,Ny,NL)
+    permTransform = np.array( pairs2ind(T(ind2pairs(np.arange(N)))) )
+
+    return order1_2_order0_[permTransform[order0_2_order1_]]
+
+# T_with_order0 : 0-ordered-vector --> 0-ordered-vector, given a transformation. 
+def perm_with_order0(T, N) :    
+    permTransform = np.array( pairs2ind(T(ind2pairs(np.arange(N)))) )
+
+    return permTransform
 
 def mirror(X, perm):
     perm = list(np.array(perm) - 1)

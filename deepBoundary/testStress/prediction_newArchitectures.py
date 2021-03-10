@@ -22,8 +22,8 @@ import tensorflow as tf
 from tensorflow_for_training import *
 
 
-folder = './models/dataset_new4/'
-nameXY = folder +  'XY_Wbasis5.h5'
+folder = './models/dataset_new5/'
+nameXY = folder +  'XY.h5'
 
 folderVal = './models/dataset_newTest3/'
 nameXY_val = folderVal +  'XY_Wbasis5.h5'
@@ -48,9 +48,9 @@ net['archId'] = archId
 net['nsTrain'] = int(51200) 
 net['nsVal'] = int(5120)
 net['stepEpochs'] = 1
-net['file_weights'] = './models/newArchitectures_cluster/new4/weights_ny{0}_arch{1}.hdf5'.format(Nrb,archId)
-net['file_net'] = './models/newArchitectures_cluster/new4/net_ny{0}_arch{1}.txt'.format(Nrb,archId)
-net['file_prediction'] = './models/newArchitectures_cluster/new4/prediction_ny{0}_arch{1}.txt'.format(Nrb,archId)
+net['file_weights'] = './models/newArchitectures_cluster/new5/weights_ny{0}_arch{1}.hdf5'.format(Nrb,archId)
+net['file_net'] = './models/newArchitectures_cluster/new5/net_ny{0}_arch{1}.txt'.format(Nrb,archId)
+net['file_prediction'] = './models/newArchitectures_cluster/new5_testingInOrderBase/prediction_ny{0}_arch{1}.txt'.format(Nrb,archId)
 net['file_XY'] = [nameXY, nameXY_val]
 
 scalerX, scalerY = syml.getDatasetsXY(nX, Nrb, net['file_XY'][0])[2:4]
@@ -76,7 +76,7 @@ X_scaled.append(X[:nsTrain,:]); Y_scaled.append(Y[:nsTrain,:])
 X_scaled.append(X[nsTrain:,:]); Y_scaled.append(Y[nsTrain:,:])
 
 
-nameXYlist = ['./models/dataset_new5/XY.h5','./models/dataset_newTest2/XY_Wbasis5.h5','./models/dataset_test/XY_Wbasis5.h5']
+nameXYlist = ['./models/dataset_new4/XY_Wbasis5.h5','./models/dataset_newTest2/XY_Wbasis5.h5','./models/dataset_test/XY_Wbasis5.h5']
 
 for nameXY in nameXYlist:
     Xtemp, Ytemp = syml.getDatasetsXY(nX, Nrb, nameXY, scalerX, scalerY)[0:2]

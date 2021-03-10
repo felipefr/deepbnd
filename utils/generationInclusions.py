@@ -23,6 +23,9 @@ def circularRegular(r0, r1, Nx,Ny,Lx = 1.0, Ly=1.0, x0 = 0.0, y0 = 0.0):
 
     return np.array([[cx[i],cy[i],r[i],e,angle] for i in range(N)])
 
+
+# Returns the permutation for to turn the standard numeration (per rows and columns) to the internal to external
+# layers numeration in just the internal box
 def orderedIndexesBox(Nx,Ny,offset):
     indexes = np.arange(0,Nx*Ny).reshape((Nx,Ny))
     indexesL = indexes[offset : Nx - offset, offset : Ny - offset].flatten()
@@ -34,6 +37,9 @@ def orderListBox(L):
     ind  = orderedIndexesBox(Nx,Nx,1)
     return list(np.array(L,dtype = 'int')[ind]) 
 
+
+# Returns the permutation for to turn the standard numeration (per rows and columns) to the internal to external
+# layers numeration 
 def orderedIndexesTotal(Nx,Ny,minNx):
     L = list(np.arange(0,Nx*Ny).reshape((Nx,Ny)).astype('int').flatten())
     
@@ -44,6 +50,10 @@ def orderedIndexesTotal(Nx,Ny,minNx):
         L = orderListBox(L[:ni]) + L[ni:]
                 
     return np.array(L,dtype = 'int')
+
+
+def inverseOrderedIndexesTotal(Nx,Ny,minNx):
+    return np.argsort(orderedIndexesTotal(Nx,Ny,minNx))
 
              
 def circularRegular2Regions(r0, r1, NxL, NyL, Lx = 1.0, Ly=1.0, offset = 0, ordered = False, x0 = 0.0, y0 = 0.0):

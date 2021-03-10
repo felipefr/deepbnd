@@ -41,7 +41,7 @@ print('Nrb is ', Nrb, 'epochs ', epochs)
 
 # net = {'Neurons': [1000,1000,1000], 'activations': 4*['swish'], 'lr': 5.0e-4, 'decay' : 1.0, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
 
-net = {'Neurons': [100, 100, 100], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.2, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
+net = {'Neurons': [10, 10, 10], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 1.0, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
 
 net['epochs'] = int(epochs)
 net['nY'] = Nrb
@@ -50,7 +50,7 @@ net['archId'] = archId
 net['nsTrain'] = int(51200) 
 net['nsVal'] = int(5120)
 net['stepEpochs'] = 1
-net['file_weights'] = './models/newArchitectures/new5itself/weights_ny{0}_arch{1}.hdf5'.format(Nrb,archId)
+net['file_weights'] = './models/newArchitectures/new5itself/weights_ny{0}_arch{1}_newLR.hdf5'.format(Nrb,archId)
 net['file_net'] = './models/newArchitectures/new5itself/net_ny{0}_arch{1}.txt'.format(Nrb,archId)
 net['file_prediction'] = './models/newArchitectures/new5itself/prediction_ny{0}_arch{1}.txt'.format(Nrb,archId)
 net['file_XY'] = [nameXY, nameXY_val]

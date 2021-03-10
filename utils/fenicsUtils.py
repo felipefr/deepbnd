@@ -62,6 +62,19 @@ class myfog(df.UserExpression): # fog f,g : R2 -> R2, generalise
     def value_shape(self):
         return (2,)
 
+class myfog_expression(df.UserExpression): # fog f,g : R2 -> R2, generalise 
+    def __init__(self, f, g, **kwargs):
+        self.f = f 
+        self.g = g
+        super().__init__(**kwargs)
+
+    def eval(self, values, x):
+        values[:2] = self.f(self.g(x))
+        
+    def value_shape(self):
+        return (2,)
+
+
 # code = '''
 # #include <pybind11/pybind11.h>
 # #include <pybind11/eigen.h>
