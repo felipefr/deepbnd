@@ -165,11 +165,11 @@ def computingBasis(Wbasis,C,Isol,Nmax, divisionInC = False, N0=0,N1=0):
 
     return sig, U
 
-def getMassMatrix(Isol,Vref,dxRef,dotProduct):
+def getMassMatrix(Vref,dxRef,dotProduct):
+    Nh = Vref.dim()
     ui = Function(Vref)
     uj = Function(Vref)
-    
-    Nh = len(Isol[0,:])
+
     M = np.zeros((Nh,Nh))
     
     for i in range(Nh):     ## think in passing it to above
@@ -186,8 +186,7 @@ def getMassMatrix(Isol,Vref,dxRef,dotProduct):
     return M
 
 def computingBasis_svd(Wbasis,M,Isol,Nmax, Vref,dxRef,dotProduct):
-
-    M[:,:] = getMassMatrix(Isol,Vref,dxRef,dotProduct)
+    M[:,:] = getMassMatrix(Vref,dxRef,dotProduct)
     UM,SM,VMT = np.linalg.svd(M)  
     Msqrt = (UM[:,:len(SM)]*np.sqrt(SM))@VMT
             

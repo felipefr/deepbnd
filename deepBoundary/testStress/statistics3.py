@@ -1,68 +1,57 @@
 import os, sys
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
-sys.path.insert(0,'../')
-sys.path.insert(0,'../../utils/')
-
+sys.path.insert(0, '../../utils/')
 import matplotlib.pyplot as plt
 import numpy as np
-
-import myTensorflow as mytf
-from timeit import default_timer as timer
-
-import h5py
-import pickle
 # import Generator as gene
 import myHDF5 as myhd
-import dataManipMisc as dman 
-from sklearn.preprocessing import MinMaxScaler
-import miscPosprocessingTools as mpt
-import myHDF5 as myHDF5
-
-import json
-import copy
-
-import matplotlib.pyplot as plt
-import symmetryLib as syml
 
 # Test Loading 
-folderTest = './models/dataset_newTest2/'
-nameYtest = folderTest + 'Y_extended.h5'
-nameEllipseDataTest = folderTest + 'ellipseData.h5'
-nameSnapsTest = folderTest + 'snapshots.h5'
+folderTest = './models/dataset_axial3/'
+nameXYtest = folderTest + 'XY_extended_WbasisSimple.h5'
 
-Ytest = myhd.loadhd5(nameYtest, 'Ylist')
-ellipseDataTest = myhd.loadhd5(nameEllipseDataTest, 'ellipseData')
-IsolT = myhd.loadhd5(nameSnapsTest,['solutions_trans'])[0]
+Ytest = myhd.loadhd5(nameXYtest, 'Y')
+load_sign = myhd.loadhd5(nameXYtest, 'load_sign')
 
-ns0 = 0
-ns1 = 5120
+
+ns = 10240
+par = 0
+ns0 = par*ns
+ns1 = (par+1)*ns
+
+Ytest_loadSigned = np.einsum('ij,i->ij', Ytest, load_sign)
+# Ytest_loadSigned = np.einsum('ij,i->ij', Ytest, np.ones(7*ns))
+
+indexes = np.concatenate( tuple( [np.arange(i*ns,(i+1)*ns) for i in range(7)] ) )
+
 
 plt.figure(1,(13,7))
-plt.suptitle('Test seed=18 + No Mirror/ RB extended ({0}:{1})'.format(ns0,ns1))
+plt.suptitle('Sign x Projections : Axial dataset (extended)/RB (simple basis)'.format(par))
 plt.subplot('321')
 plt.title('Histogram Y_1')
-plt.hist(Ytest[ns0:ns1,0],bins = 20)
+plt.hist(Ytest_loadSigned[indexes,0],bins = 20)
 
 plt.subplot('322')
 plt.title('Histogram Y_2')
-plt.hist(Ytest[ns0:ns1,1], bins = 20)
+plt.hist(Ytest_loadSigned[indexes,1], bins = 20)
 
 plt.subplot('323')
 plt.title('Histogram Y_3')
-plt.hist(Ytest[ns0:ns1,2],bins = 20)
+plt.hist(Ytest_loadSigned[indexes,2],bins = 20)
 
 plt.subplot('324')
 plt.title('Histogram Y_4')
-plt.hist(Ytest[ns0:ns1,3], bins = 20)
+plt.hist(Ytest_loadSigned[indexes,3], bins = 20)
 
 plt.subplot('325')
 plt.title('Histogram Y_5')
-plt.hist(Ytest[ns0:ns1,4],bins = 20)
+plt.hist(Ytest_loadSigned[indexes,4],bins = 20)
 
 plt.subplot('326')
 plt.title('Histogram Y_6')
-plt.hist(Ytest[ns0:ns1,5], bins = 20)
+plt.hist(Ytest_loadSigned[indexes,5], bins = 20)
 
-plt.tight_layout()
+# plt.tight_layout()
 
-plt.savefig("newTest2_extended_noMirror.png")
+# plt.savefig("Projections_Shear_WbasisExtendedOld.png")
+plt.show()
+

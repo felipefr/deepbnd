@@ -1,7 +1,6 @@
 import os, sys
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
-sys.path.insert(0,'../')
-sys.path.insert(0,'../../utils/')
+sys.path.insert(0,'../utils/')
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -22,11 +21,11 @@ import tensorflow as tf
 from tensorflow_for_training import *
 
 
-folder = './models/dataset_new5/'
-nameXY = folder +  'XY.h5'
+folder = './models/dataset_axial3/'
+nameXY = folder +  'XY_extended.h5'
 
-folderVal = './models/dataset_newTest3/'
-nameXY_val = folderVal +  'XY_Wbasis5.h5'
+folderVal = './models/dataset_axial2/'
+nameXY_val = folderVal +  'XY_Wbasis3_extended.h5'
 
 
 Nrb = int(sys.argv[1])
@@ -41,18 +40,18 @@ print('Nrb is ', Nrb, 'epochs ', epochs)
 
 # net = {'Neurons': [1000,1000,1000], 'activations': 4*['swish'], 'lr': 5.0e-4, 'decay' : 1.0, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
 
-net = {'Neurons': [10, 10, 10], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 1.0, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
+net = {'Neurons': [300, 300, 300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
 
 net['epochs'] = int(epochs)
 net['nY'] = Nrb
 net['nX'] = nX
 net['archId'] = archId
-net['nsTrain'] = int(51200) 
+net['nsTrain'] = int(4*10240) 
 net['nsVal'] = int(5120)
 net['stepEpochs'] = 1
-net['file_weights'] = './models/newArchitectures/new5itself/weights_ny{0}_arch{1}_newLR.hdf5'.format(Nrb,archId)
-net['file_net'] = './models/newArchitectures/new5itself/net_ny{0}_arch{1}.txt'.format(Nrb,archId)
-net['file_prediction'] = './models/newArchitectures/new5itself/prediction_ny{0}_arch{1}.txt'.format(Nrb,archId)
+net['file_weights'] = './models/dataset_axial3/models/weights_ny{0}_arch{1}_newLR.hdf5'.format(Nrb,archId)
+net['file_net'] = './models/dataset_axial3/models/net_ny{0}_arch{1}.txt'.format(Nrb,archId)
+net['file_prediction'] = './models/dataset_axial3/models/prediction_ny{0}_arch{1}.txt'.format(Nrb,archId)
 net['file_XY'] = [nameXY, nameXY_val]
 
 scalerX, scalerY = syml.getDatasetsXY(nX, Nrb, net['file_XY'][0])[2:4]

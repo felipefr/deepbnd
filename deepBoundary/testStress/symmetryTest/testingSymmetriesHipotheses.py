@@ -28,6 +28,11 @@ from ufl import nabla_div
 
 import symmetryLib as syml
 
+# eps_3 = shear, eps_1 = axial in x, eps_2 = axial in y
+
+# H1(alternative) : Test u(mu, eps_1) = u(mu, eps_2)  
+# H2: Test u(mu, eps_3) = -u(mu, -eps_3) ==> checked
+
 np.random.seed(3)
 r0 = 0.1
 r1 = 0.4
@@ -36,49 +41,23 @@ x0 = y0 = -1.0
 Lyt = Lxt = 2.0
 maxOffset = 2
 
-kindTransformation = 'rotation'
-codeTransformation = 2
-
-nxy = 100
+nxy = 20
 Mref = RectangleMesh(Point(x0, y0), Point(x0+Lxt, y0+Lyt), nxy, nxy, "right/left")
 Vref = VectorFunctionSpace(Mref,"CG", 2)
 
 x = SpatialCoordinate(Mref)
-
-if(kindTransformation == 'reflection'):
-    s0, s1 = [ (-1.0,1.0), (1.0,-1.0), (-1.0,-1.0) ][codeTransformation]
-    B = np.array([[s0,0.0],[0.0,s1]])
-    T = [syml.T_horiz, syml.T_vert, syml.T_diag][codeTransformation]
-        
-elif(kindTransformation == 'rotation'):
-    theta = [ 0.5*np.pi, np.pi, -0.5*np.pi][codeTransformation]
-    s = np.sin(theta)
-    c = np.cos(theta)
-    B = np.array([[c,-s],[s,c]])
-    T = [syml.T_halfpi, syml.T_pi, syml.T_mhalfpi][codeTransformation]
     
-Finv = feut.affineTransformationExpession(np.zeros(2), B.T, Mref)
 N = (2*maxOffset + NxL)*(2*maxOffset + NyL)
-perm = syml.perm_with_order1(T, N, NxL)  
 
 ellipseData, PermTotal, PermBox = geni.circularRegular2Regions(r0, r1, NxL, NyL, Lxt, Lyt, maxOffset, ordered = False, x0 = x0, y0 = y0)
 ellipseData = ellipseData[PermTotal]
 
-ellipseDataT = copy.deepcopy(ellipseData)
-ellipseDataT[:,2] = ellipseDataT[perm,2] 
-
 fac = Expression('1.0', degree = 2) # ground substance
-facT = Expression('1.0', degree = 2) # ground substance
 radiusThreshold = 0.01
 
 for xi, yi, ri in ellipseData[:,0:3]:
     fac = fac + Expression('exp(-a*( (x[0] - x0)*(x[0] - x0) + (x[1] - y0)*(x[1] - y0) ) )', 
                            a = - np.log(radiusThreshold)/ri**2, x0 = xi, y0 = yi, degree = 2)
-
-for xi, yi, ri in ellipseDataT[:,0:3]:
-    facT = facT + Expression('exp(-a*( (x[0] - x0)*(x[0] - x0) + (x[1] - y0)*(x[1] - y0) ) )', 
-                           a = - np.log(radiusThreshold)/ri**2, x0 = xi, y0 = yi, degree = 2)
-
 
 E = 10.0
 nu = 0.3
@@ -86,14 +65,22 @@ nu = 0.3
 mu = elut.eng2mu(nu,E)
 lamb = elut.eng2lambPlane(nu,E)
 
+
 class OnBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary
 
-eps_ = np.array([[1.0,0.1],[0.1,.8]])
+eps1_ = np.array([[1.0,0.0],[0.0,0.0]])
+eps2_ = np.array([[0.0,0.0],[0.0,1.0]])
+eps3_ = 0.5*np.array([[0.0,1.0],[1.0,0.0]])
 
-eps = as_matrix(eps_)
-epsT = as_matrix(B@eps_@B.T)
+# H1 testing
+epsL = as_matrix(eps1_)
+epsR = as_matrix(eps2_)
+
+# H2 testing
+# epsL = as_matrix(eps3_)
+# epsR = as_matrix(-eps3_)
 
 onBoundary = OnBoundary()
 
@@ -103,48 +90,54 @@ def sigma(u):
 u = TrialFunction(Vref)
 v = TestFunction(Vref)
 a = inner(fac*sigma(u),fela.epsilon(v))*dx
-aT = inner(facT*sigma(u),fela.epsilon(v))*dx
 
-f = -inner(fac*sigma(eps*x) , fela.epsilon(v))*dx
-fT = -inner(facT*sigma(epsT*x), fela.epsilon(v))*dx
+fL = -inner(fac*sigma(epsL*x) , fela.epsilon(v))*dx
+fR = -inner(fac*sigma(epsR*x), fela.epsilon(v))*dx
 
 bcs = DirichletBC(Vref, Constant((0.,0.)), onBoundary)
 
+AL, bL = assemble_system(a, fL, bcs)    
 
-A, b = assemble_system(a, f, bcs)    
-sol = Function(Vref)
-solve(A, sol.vector(), b)
-    
-AT, bT = assemble_system(aT, fT, bcs)    
-solT = Function(Vref)
-solve(AT, solT.vector(), bT)
+AR, bR = assemble_system(a, fR, bcs)    
 
 
-Bmultiplication = feut.affineTransformationExpession(np.zeros(2), B, Mref)
-solT_comp = interpolate( feut.myfog_expression(Bmultiplication, feut.myfog(sol,Finv)), Vref) # 
-ee = solT - solT_comp
+solL = Function(Vref)
+solve(AL, solL.vector(), bL)
+
+solR = Function(Vref)
+solve(AR, solR.vector(), bR)
+
+# solR.vector().set_local(-solR.vector().get_local()[:]) # to test H2
+
+theta = np.pi/2.0
+s = np.sin(theta)
+c = np.cos(theta)
+B = np.array([[c,-s],[s,c]]).T
+
+# Finv = feut.affineTransformationExpession(np.zeros(2), B.T, Mref)
+# Bmultiplication = feut.affineTransformationExpession(np.zeros(2), B, Mref)
+# solR_comp = interpolate( feut.myfog_expression(Bmultiplication, solR), Vref ) # 
+
+ee = solL - solR
 error = assemble(inner(ee,ee)*dx)
 
 print(error)
 
 plt.figure(1)
-plot(solT_comp[0]) 
+plot(solL[0]) 
 
 plt.figure(2)
-plot(solT_comp[1]) 
+plot(solL[1]) 
 
 plt.figure(3)
-plot(solT[0]) 
+plot(solR[0]) 
 
 plt.figure(4)
-plot(solT[1])
+plot(solR[1])
 
 Vref0 = FunctionSpace(Mref,"CG", 1) 
 facProj = project(fac, Vref0)
-facTProj = project(facT, Vref0)
 
 plt.figure(5)
 plot(facProj) 
 
-plt.figure(6)
-plot(facTProj)

@@ -66,7 +66,8 @@ def txt2hd5(filenameIn, filenameOut, label, reshapeLast = [False,0], mode = 'w-'
         
 def addDataset(f,X, label):
     defaultCompression['chunks'] = toChunk(X.shape)
-    f.create_dataset(label, data = X , **defaultCompression)
+    g = h5py.File(f, 'a') if (type(f) == type('l')) else f
+    g.create_dataset(label, data = X , **defaultCompression)
     
 def extractDataset(filenameIn, filenameOut, label, mode):
     X = loadhd5(filenameIn, label)
@@ -82,8 +83,13 @@ def savehd5(filename, X,label, mode):
                 defaultCompression['chunks'] = toChunk(X[i].shape)
                 f.create_dataset(l, data = X[i], **defaultCompression)
 
-
+def checkExistenceDataset(filename, label):
+    with h5py.File(filename, 'r') as f:
+        return label in f.keys()
+            
+        
 def loadhd5(filename, label):
+    
     with h5py.File(filename, 'r') as f:
         if(type(label) == type('l')):
             X = np.array(f[label])

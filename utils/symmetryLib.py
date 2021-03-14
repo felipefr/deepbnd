@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler #
 import myHDF5 as myhd ##
 import copy 
+# import fenicsUtils as feut
+# from dolfin import * 
 
 # order 0 : matrix order
 # order 1 : internal to external layer order (matrix convention ortherwise)
@@ -15,6 +17,7 @@ from generationInclusions import inverseOrderedIndexesTotal as order1_2_order0 #
 # T_MV = df.Expression(('x[0]','-x[1]'), degree = 1)
 # T_MD = df.Expression(('-x[0]','-x[1]'), degree = 1)
 
+T_id = lambda pairs: pairs
 T_halfpi = lambda pairs: [(j, int(np.sqrt(len(pairs))) - 1 - i ) for i,j in pairs ]
 T_pi = lambda pairs: T_halfpi(T_halfpi(pairs))
 T_mhalfpi = lambda pairs: T_halfpi(T_pi(pairs))
@@ -28,6 +31,59 @@ ind2pairs = lambda ind: [ ( k%int(np.sqrt(len(ind))), int(k/np.sqrt(len(ind))) )
 # This is done by: Transformin pairs -> convert pairs to indexes -> find the permutation to reorder indexes -> retransform indexes to pairs to pairs
 inverse_T = lambda pairs, T: ind2pairs( np.argsort( pairs2ind(T(pairs)) ) ) 
 
+
+def getPermutation(op, N = 36, NL = 4):
+    T = {'horiz': T_horiz,'vert': T_vert, 'diag': T_diag , 'id': T_id ,  
+         'halfPi': T_halfpi, 'pi': T_pi , 'mHalfPi': T_mhalfpi}[op]    
+
+    return perm_with_order1(T, N, NL)
+    
+
+def getLoadSign(op, loadType):
+    
+    table = {'shear': {'id': 1, 'horiz': -1,'vert': -1, 'diag':1, 'halfPi': -1,'pi': 1 , 'mHalfPi': -1},
+             'axial' : {'id': 1, 'horiz': 1,'vert':1, 'diag':1, 'halfPi': -1,'pi': 1 , 'mHalfPi': -1} }
+    
+    return table[loadType][op] 
+
+def PiolaTransform(op, Vref): #only detB = pm 1 in our context
+    Mref = Vref.mesh()    
+    
+    intOp = {'id': 0, 'horiz': -1,'vert': -2, 'diag':-3, 'halfPi': 1,'pi': 2 , 'mHalfPi': 3}[op]
+
+    if(intOp < 0): # Reflection
+        s0, s1 = [ (-1.0,1.0), (1.0,-1.0), (-1.0,-1.0) ][abs(intOp) - 1]
+        B = np.array([[s0,0.0],[0.0,s1]])
+            
+    elif(intOp>0): # Rotation
+        theta = intOp*np.pi/2.0
+        s = np.sin(theta) ; c = np.cos(theta)
+        B = np.array([[c,-s],[s,c]])
+    
+    else:
+        B = np.eye(2)
+
+    Finv = feut.affineTransformationExpession(np.zeros(2), B.T, Mref)
+    Bmultiplication = feut.affineTransformationExpession(np.zeros(2), B, Mref)
+    
+    return lambda sol: interpolate( feut.myfog_expression(Bmultiplication, feut.myfog(sol,Finv)), Vref) #
+
+
+def PiolaTransform_matricial(op, Vref): #only detB = pm 1 in our context
+    Nh = Vref.dim()    
+    Piola = PiolaTransform(op,Vref)
+    Pmat = np.zeros((Nh,Nh))
+    
+    phi_j = Function(Vref)
+    ej = np.zeros(Nh) 
+    
+    for j in range(Nh):
+        ej[j] = 1.0
+        phi_j.vector().set_local(ej)
+        Pmat[:,j] = Piola(phi_j).vector().get_local()[:]
+        ej[j] = 0.0
+        
+    return Pmat
 
 # T_with_order1 : 1-ordered-vector --> 1-ordered-vector, given a transformation.
 def perm_with_order1(T, N, NL) :
