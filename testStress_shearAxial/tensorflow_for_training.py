@@ -162,6 +162,58 @@ def basicModelTraining(XY_train, XY_val, model, net):
         
     return history
 
+
+def basicModelTraining_stress(XY_train, XY_val, model, net):
+    
+    Neurons = net['Neurons']
+    actLabel = net['activations']
+    Epochs = net['epochs']
+    decay = net['decay']
+    lr = net['lr']
+    saveFile = net['file_weights'] 
+    stepEpochs = net['stepEpochs']
+    
+    np.random.seed(1)
+    
+    Xtrain, Ytrain = XY_train
+    indices = np.arange(len(Xtrain))
+    np.random.shuffle(indices)
+
+    Xtrain = Xtrain[indices,:]
+    Ytrain = Ytrain[indices,:]
+
+    fac = 1e2
+    w_l = fac*(net['Y_data_max'] - net['Y_data_min'])**2.0  
+    w_l[2] = 2.*w_l[2]
+    w_l = w_l.astype('float32')
+    
+    lossW= mytf.partial2(mytf.custom_loss_mse_2, weight = w_l)
+        
+    
+    optimizer= tf.keras.optimizers.Adam(learning_rate = lr)
+    model.compile(loss = lossW, optimizer=optimizer, metrics=[lossW,'mse','mae'])
+
+    schdDecay = mytf.partial2(mytf.scheduler ,lr = lr, decay = decay, EPOCHS = Epochs)
+    decay_lr = tf.keras.callbacks.LearningRateScheduler(schdDecay)    
+
+    # decay_lr = tf.keras.callbacks.ReduceLROnPlateau(
+    #     monitor='val_loss', factor=0.8, patience=10, verbose=1,
+    #     mode='auto', min_delta=0.0001, cooldown=0, min_lr=0)
+
+    
+    kw = {}
+    kw['epochs']= Epochs; kw['batch_size'] = 32
+    kw['validation_data'] = XY_val
+    kw['verbose'] = 1
+    kw['callbacks']=[mytf.PrintDot(), decay_lr, mytf.checkpoint(saveFile,stepEpochs),
+                     tf.keras.callbacks.CSVLogger(saveFile[:-5] + '_history.csv' , append=True)]
+    
+    history = model.fit(Xtrain, Ytrain, **kw)
+    
+    mytf.plot_history( history, label=['custom_loss_mse_2','val_custom_loss_mse_2'], savefile = saveFile[:-5] + '_plot')
+        
+    return history
+
 def writeDict(d):
     f = open(d['file_net'],'w')
     

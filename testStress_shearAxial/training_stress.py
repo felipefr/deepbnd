@@ -20,22 +20,28 @@ import tensorflow as tf
 
 from tensorflow_for_training import *
 
+typeModel = 'axial'
 
-folder = './models/dataset_shear1/'
+folder = './models/dataset_{0}1/'.format(typeModel)
 nameXY = folder +  'XY_stress.h5'
 
-folderVal = './models/dataset_shear2/'
+folderVal = './models/dataset_{0}2/'.format(typeModel)
 nameXY_val = folderVal +  'XY_stress.h5'
+
+# epochs = 10
+# archId = 1
 
 epochs = int(sys.argv[1])
 archId = int(sys.argv[2])
 nX = 36
 nY = 3 # number of stresses
 
-print('Nrb is ', Nrb, 'epochs ', epochs)
+print('epochs ', epochs)
 
-net = {'Neurons': 3*[300, 300, 300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
-net = {'Neurons': [10, 10, 10], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
+# net = {'Neurons': 3*[300, 300, 300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
+net = {'Neurons': [40], 'activations': 1*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : 3*[0.0], 'reg' : 0.0}
+# net = {'Neurons': 3*[300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
+
 
 net['epochs'] = int(epochs)
 net['nY'] = nY
@@ -44,12 +50,12 @@ net['archId'] = archId
 net['nsTrain'] = int(5*10240) 
 net['nsVal'] = int(5120)
 net['stepEpochs'] = 1
-net['file_weights'] = './models/dataset_shear1_stress/models/weights_arch{0}.hdf5'.format(archId)
-net['file_net'] = './models/dataset_shear1_stress/models/net_arch{0}.txt'.format(archId)
-net['file_prediction'] = './models/dataset_shear1_stress/models/prediction_arch{0}.txt'.format(archId)
+net['file_weights'] = './models/dataset_{0}1/models/stress/weights_arch{1}.hdf5'.format(typeModel,archId)
+net['file_net'] = './models/dataset_{0}1/models/stress/net_arch{1}.txt'.format(typeModel,archId)
+net['file_prediction'] = './models/dataset_{0}1/models/stress/prediction_arch{1}.txt'.format(typeModel,archId)
 net['file_XY'] = [nameXY, nameXY_val]
 
-scalerX, scalerY = syml.getDatasetsXY(nX, Nrb, net['file_XY'][0])[2:4]
+scalerX, scalerY = syml.getDatasetsXY(nX, nY, net['file_XY'][0])[2:4]
 
 net['Y_data_max'] = scalerY.data_max_ 
 net['Y_data_min'] = scalerY.data_min_
@@ -61,16 +67,16 @@ net['routine'] = 'generalModel_dropReg'
 
 writeDict(net)
 
-XY_train = syml.getDatasetsXY(nX, Nrb, net['file_XY'][0], scalerX, scalerY)[0:2]
-XY_val = syml.getDatasetsXY(nX, Nrb, net['file_XY'][1], scalerX, scalerY)[0:2]
+XY_train = syml.getDatasetsXY(nX, nY, net['file_XY'][0], scalerX, scalerY)[0:2]
+XY_val = syml.getDatasetsXY(nX, nY, net['file_XY'][1], scalerX, scalerY)[0:2]
 
 
-model = generalModel_dropReg(nX, Nrb, net)    
+model = generalModel_dropReg(nX, nY, net)    
 model.summary()
 
 
 start = timer()
-hist = basicModelTraining(XY_train, XY_val, model, net)
+hist = basicModelTraining_stress(XY_train, XY_val, model, net)
 end = timer()
 
 # oldWeights = './models/newArchitectures/new4/weights_ny{0}_arch{1}_retaken6.hdf5'.format(Nrb,archId)
