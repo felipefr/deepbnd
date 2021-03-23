@@ -22,36 +22,31 @@ from tensorflow_for_training import *
 
 
 folder = './models/dataset_shear1/'
-# nameXY = folder +  'XY.h5'
+nameXY = folder +  'XY_stress.h5'
 
-folderVal = './models/dataset_axial2/'
-nameXY_val = folderVal +  'XY_Wbasis3_extended.h5'
+folderVal = './models/dataset_shear2/'
+nameXY_val = folderVal +  'XY_stress.h5'
 
-
-Nrb = int(sys.argv[1])
-epochs = int(sys.argv[2])
-archId = int(sys.argv[3])
+epochs = int(sys.argv[1])
+archId = int(sys.argv[2])
 nX = 36
+nY = 3 # number of stresses
 
 print('Nrb is ', Nrb, 'epochs ', epochs)
 
-# net = {'Neurons': [40], 'activations': 3*['swish'], 'lr': 1.0e-3, 'decay' : 1.0,
-#         'drps' : 3*[0.0], 'reg' : 0.0}
-
-# net = {'Neurons': [1000,1000,1000], 'activations': 4*['swish'], 'lr': 5.0e-4, 'decay' : 1.0, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
-
-net = {'Neurons': [300, 300, 300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
+net = {'Neurons': 3*[300, 300, 300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
+net = {'Neurons': [10, 10, 10], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
 
 net['epochs'] = int(epochs)
-net['nY'] = Nrb
+net['nY'] = nY
 net['nX'] = nX
 net['archId'] = archId
-net['nsTrain'] = int(4*10240) 
+net['nsTrain'] = int(5*10240) 
 net['nsVal'] = int(5120)
 net['stepEpochs'] = 1
-net['file_weights'] = './models/dataset_axial3/models/weights_ny{0}_arch{1}_newLR.hdf5'.format(Nrb,archId)
-net['file_net'] = './models/dataset_axial3/models/net_ny{0}_arch{1}.txt'.format(Nrb,archId)
-net['file_prediction'] = './models/dataset_axial3/models/prediction_ny{0}_arch{1}.txt'.format(Nrb,archId)
+net['file_weights'] = './models/dataset_shear1_stress/models/weights_arch{0}.hdf5'.format(archId)
+net['file_net'] = './models/dataset_shear1_stress/models/net_arch{0}.txt'.format(archId)
+net['file_prediction'] = './models/dataset_shear1_stress/models/prediction_arch{0}.txt'.format(archId)
 net['file_XY'] = [nameXY, nameXY_val]
 
 scalerX, scalerY = syml.getDatasetsXY(nX, Nrb, net['file_XY'][0])[2:4]

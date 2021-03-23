@@ -32,7 +32,7 @@ ind2pairs = lambda ind: [ ( k%int(np.sqrt(len(ind))), int(k/np.sqrt(len(ind))) )
 inverse_T = lambda pairs, T: ind2pairs( np.argsort( pairs2ind(T(pairs)) ) ) 
 
 
-def getPermutation(op, N = 36, NL = 4):
+def  getPermutation(op, N = 36, NL = 4):
     T = {'horiz': T_horiz,'vert': T_vert, 'diag': T_diag , 'id': T_id ,  
          'halfPi': T_halfpi, 'pi': T_pi , 'mHalfPi': T_mhalfpi}[op]    
 

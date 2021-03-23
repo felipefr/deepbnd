@@ -23,18 +23,16 @@ import tensorflow as tf
 
 # Test Loading 
 
-folderTrain = './models/dataset_new5/'
-folderBasis = './models/dataset_new4/'
+folderTrain = './models/dataset_shear1/'
+folderBasis = './models/dataset_shear1/'
 
 NlistModel = [5,10,20,40,80,140]
-predict_file = './models/newArchitectures_cluster/new5/prediction_ny{0}_arch{1}.txt'
+predict_file = './models/dataset_shear1/models/prediction_ny{0}_arch{1}.txt'
 
+errors = np.zeros((6,2,4)) # Nrb, Dataset, Stat
 
-errors = np.zeros((2,6,5,4)) # arch, Nrb, Dataset, Stat
-
-for i in range(2):
-    for j in range(6): 
-        errors[i,j,:,:] = np.loadtxt(predict_file.format(NlistModel[j],i+1))
+for j in range(6): 
+    errors[j,:,:] = np.loadtxt(predict_file.format(NlistModel[j],1))
 
 
 
@@ -51,20 +49,20 @@ for i in range(nbasis):
     
 # # ================ Alternative Prediction ========================================== 
 folderImages = './images/'
-suptitle = 'Arch_2_Dataset_Seed_5{0}_zoom.{1}' 
+suptitle = 'Shear_Model.{0}' 
 
 plt.figure(1)
 plt.title(suptitle.format('', ''))
-for i in range(5):
-    plt.plot(NlistModel, errors[1,:,i,0], '-o', label = 'E2_DNN dataset{0}'.format(i+1))
+for i in range(2):
+    plt.plot(NlistModel, errors[:,i,0], '-o', label = 'E2_DNN dataset{0}'.format(i+1))
 plt.plot(np.arange(160),errorPOD,'--', label = 'E2_POD')
-plt.ylim(0.9e-6,0.35e-5)
+plt.ylim(1.0e-8,1.0e-5)
 plt.yscale('log')
 plt.xlabel('N')
 plt.ylabel('weighted mean square error')
 plt.grid()
 plt.legend(loc = 'best')
-plt.savefig(folderImages + suptitle.format('_Error','png'))
+plt.savefig(suptitle.format('png'))
 
 
 # suptitle = 'Arch_1_Dataset_Seed_5_maxmin{0}_zoom.{1}' 

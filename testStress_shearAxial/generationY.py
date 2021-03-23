@@ -12,21 +12,22 @@ import meshUtils as meut
 import fenicsUtils as feut
 import symmetryLib as syml
 
-folder = './models/dataset_axial2/'
-folderBasis = './models/dataset_axial3/'
+folder = './models/dataset_axial1/'
+folderBasis = './models/dataset_axial1/'
 
 
-loadType = 'axial'
+loadType = 'shear'
 nameSnaps = folder + 'snapshots.h5'
 nameSnaps_original = folder + 'snapshots.h5'
 nameMeshRefBnd = 'boundaryMesh.xdmf'
-nameWbasis = folderBasis + 'Wbasis_extended.h5'
-nameYlist = folder + 'Y_Wbasis3_extended.h5'
-nameXYlist = folder + 'XY_Wbasis3_extended.h5'
+nameWbasis = folderBasis + 'Wbasis.h5'
+nameYlist = folder + 'Y.h5'
+nameXYlist = folder + 'XY.h5'
+nameXYlist_stress = folder + 'XY_stress.h5'
 nameTau = folder + 'tau.h5'
 nameEllipseData = folder + 'ellipseData.h5'
 nameEllipseData_original = folder + 'ellipseData.h5'
-nameEigen = folder + 'eigen_extended.hd5'
+nameEigen = folder + 'eigen.hd5'
 
 dotProduct = lambda u,v, dx : assemble(inner(u,v)*ds)
 
@@ -129,7 +130,7 @@ if(op == 5):
     os.system('rm ' + nameXYlist)
     Y = myhd.loadhd5(nameYlist,'Ylist')
     X = myhd.loadhd5(nameEllipseData,'ellipseData')[:,:,2]
-    # X = myhd.loadhd5(folder + 'XY_Wbasis1.h5','X')
+    # X = myhd.loadhd5(folder + 'XY_Wbasis4.h5','X')
 
     myhd.savehd5(nameXYlist, [Y,X], ['Y','X'], mode='w')
     
@@ -146,6 +147,9 @@ if(op == 6):
         Tlabels = ['id', 'horiz', 'vert', 'diag', 'halfPi' , 'mHalfPi']
     elif(loadType == 'axial'): 
         Tlabels = ['id', 'horiz', 'vert', 'diag']
+    elif(loadType == 'shear_limited'):
+        Tlabels = ['id']
+
         
     Ntransformation = len(Tlabels)
     
@@ -154,7 +158,7 @@ if(op == 6):
     
     for i, label in enumerate(Tlabels):
         Piola_mat = syml.PiolaTransform_matricial(label , Vref)
-        loadSign_label = syml.getLoadSign(label,loadType)
+        loadSign_label = syml.getLoadSign(label,loadType[:5])
         for j in range(ns):
             print('trasforming {0} as T_{1} sign {2}'.format(j,i,loadSign_label) )
             Isol[i*ns+j,:] = loadSign_label*Piola_mat@IsolOriginal[j,:]
@@ -173,6 +177,9 @@ if(op == 8):
         Tlabels = ['id', 'horiz', 'vert', 'diag', 'halfPi' , 'mHalfPi']
     elif(loadType == 'axial'): 
         Tlabels = ['id', 'horiz', 'vert', 'diag']
+    elif(loadType == 'shear_limited'):
+        Tlabels = ['id']
+
         
     Ntransformation = len(Tlabels)
     
@@ -183,7 +190,7 @@ if(op == 8):
         perm = syml.getPermutation(label)
         ellipseData[i*ns:(i+1)*ns,:,:] = ellipseDataOriginal[:,:,:] 
         ellipseData[i*ns:(i+1)*ns,:,2] = ellipseDataOriginal[:,perm,2] 
-        loadSign[i*ns:(i+1)*ns] = syml.getLoadSign(label,loadType)
+        loadSign[i*ns:(i+1)*ns] = syml.getLoadSign(label,loadType[:5])
 
     os.system('rm ' + nameEllipseData.format(labelSnaps))    
     myhd.savehd5(nameEllipseData.format(labelSnaps) , [ellipseData, loadSign],  ['ellipseData','load_sign'], mode = 'w')
@@ -195,3 +202,15 @@ if(op == 7):
     os.system('rm ' + nameYlist.format(labelSnaps))
     myhd.merge([nameYlist.format(i) for i in range(Npartitions)], nameYlist.format(labelSnaps), 
                 InputLabels = ['Ylist'], OutputLabels = ['Ylist'], axis = 0, mode = 'w-')
+
+
+# ======================== Transforming Stress Output ==================================================
+if(op == 9):
+    print('merging Y')
+    Y = myhd.loadhd5(nameSnaps,'sigma')
+    # X = myhd.loadhd5(nameEllipseData,'ellipseData')[:,:,2]
+    X = myhd.loadhd5(nameXYlist,'X')
+
+
+    os.system('rm ' + nameXYlist_stress)  
+    myhd.savehd5(nameXYlist_stress, [Y,X], ['Y','X'], mode='w')

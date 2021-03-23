@@ -20,25 +20,42 @@ import tensorflow as tf
 
 from tensorflow_for_training import *
 
+def exportScale(filenameIn, filenameOut, nX, nY):
+    scalerX, scalerY = syml.getDatasetsXY(nX, nY, filenameIn)[2:4]
+    scalerLimits = np.zeros((max(nX,nY),4))
+    scalerLimits[:nX,0] = scalerX.data_min_
+    scalerLimits[:nX,1] = scalerX.data_max_
+    scalerLimits[:nY,2] = scalerY.data_min_
+    scalerLimits[:nY,3] = scalerY.data_max_
 
-folder = './models/dataset_new5/'
+    np.savetxt(filenameOut, scalerLimits)
+
+def importScale(filenameIn, nX, nY):
+    scalerX = myMinMaxScaler()
+    scalerY = myMinMaxScaler()
+    scalerX.fit_limits(np.loadtxt(filenameIn)[:,0:2])
+    scalerY.fit_limits(np.loadtxt(filenameIn)[:,2:4])
+    scalerX.set_n(nX)
+    scalerY.set_n(Nrb)
+    
+    return scalerX, scalerY
+
+
+folder = './models/dataset_axial1/'
 nameXY = folder +  'XY.h5'
+nameScaleXY = folder +  'scaler.txt'
+exportScale(nameXY, nameScaleXY, 36, 160)
 
-folderVal = './models/dataset_newTest3/'
-nameXY_val = folderVal +  'XY_Wbasis5.h5'
+folderVal = './models/dataset_axial2/'
+nameXY_val = folderVal +  'XY_Wbasis1.h5'
 
-
-Nrb = int(sys.argv[1])
-epochs = int(sys.argv[2])
-archId = int(sys.argv[3])
+# Nrb = int(sys.argv[1])
+Nrb = int(input("Nrb="))
+archId = 1
+epochs = 1
 nX = 36
-
-print('Nrb is ', Nrb, 'epochs ', epochs)
-
-net300 = {'Neurons': 3*[300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
-net1000 = {'Neurons': 3*[1000], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-7}
-
-net=[net300,net1000][archId-1]
+# 
+net = {'Neurons': 3*[300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
 
 net['epochs'] = int(epochs)
 net['nY'] = Nrb
@@ -47,20 +64,13 @@ net['archId'] = archId
 net['nsTrain'] = int(51200) 
 net['nsVal'] = int(5120)
 net['stepEpochs'] = 1
-net['file_weights'] = './models/newArchitectures_cluster/new5/weights_ny{0}_arch{1}.hdf5'.format(Nrb,archId)
-net['file_net'] = './models/newArchitectures_cluster/new5/net_ny{0}_arch{1}.txt'.format(Nrb,archId)
-net['file_prediction'] = './models/newArchitectures_cluster/new5_testingInOrderBase/prediction_ny{0}_arch{1}.txt'.format(Nrb,archId)
+net['file_weights'] = folder + 'models/weights_ny{0}_arch{1}.hdf5'.format(Nrb,archId)
+net['file_net'] = folder + 'models/net_ny{0}_arch{1}.txt'.format(Nrb,archId)
+net['file_prediction'] = folder + 'models/prediction_ny{0}_arch{1}.txt'.format(Nrb,archId)
 net['file_XY'] = [nameXY, nameXY_val]
-
-scalerX, scalerY = syml.getDatasetsXY(nX, Nrb, net['file_XY'][0])[2:4]
-
-net['Y_data_max'] = scalerY.data_max_ 
-net['Y_data_min'] = scalerY.data_min_
-net['X_data_max'] = scalerX.data_max_
-net['X_data_min'] = scalerX.data_min_
-net['scalerX'] = scalerX
-net['scalerY'] = scalerY
 net['routine'] = 'generalModel_dropReg'
+
+scalerX, scalerY  = importScale(nameScaleXY, nX, Nrb)
 
 XY_train = syml.getDatasetsXY(nX, Nrb, net['file_XY'][0], scalerX, scalerY)[0:2]
 XY_val = syml.getDatasetsXY(nX, Nrb, net['file_XY'][1], scalerX, scalerY)[0:2]
@@ -74,8 +84,7 @@ X_scaled = []; Y_scaled = []
 X_scaled.append(X[:nsTrain,:]); Y_scaled.append(Y[:nsTrain,:])
 X_scaled.append(X[nsTrain:,:]); Y_scaled.append(Y[nsTrain:,:])
 
-
-nameXYlist = ['./models/dataset_new4/XY_Wbasis5.h5','./models/dataset_newTest2/XY_Wbasis5.h5','./models/dataset_test/XY_Wbasis5.h5']
+nameXYlist = ['./models/dataset_axial3/XY_Wbasis1.h5']
 
 for nameXY in nameXYlist:
     Xtemp, Ytemp = syml.getDatasetsXY(nX, Nrb, nameXY, scalerX, scalerY)[0:2]

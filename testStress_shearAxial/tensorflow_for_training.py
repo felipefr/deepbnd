@@ -17,8 +17,67 @@ import tensorflow as tf
 
 ker = tf.keras.layers
 
+def exportScale(filenameIn, filenameOut, nX, nY):
+    scalerX, scalerY = syml.getDatasetsXY(nX, nY, filenameIn)[2:4]
+    scalerLimits = np.zeros((max(nX,nY),4))
+    scalerLimits[:nX,0] = scalerX.data_min_
+    scalerLimits[:nX,1] = scalerX.data_max_
+    scalerLimits[:nY,2] = scalerY.data_min_
+    scalerLimits[:nY,3] = scalerY.data_max_
+
+    np.savetxt(filenameOut, scalerLimits)
+
+def importScale(filenameIn, nX, nY):
+    scalerX = myMinMaxScaler()
+    scalerY = myMinMaxScaler()
+    scalerX.fit_limits(np.loadtxt(filenameIn)[:,0:2])
+    scalerY.fit_limits(np.loadtxt(filenameIn)[:,2:4])
+    scalerX.set_n(nX)
+    scalerY.set_n(nY)
+    
+    return scalerX, scalerY
+
+class myMinMaxScaler:
+    def __init__(self):
+        self.data_min_ = []
+        self.data_max_ = []
+        self.n = 0
+        
+    def set_n(self,n):
+        self.n = n
+
+        self.data_min_ = self.data_min_[:self.n]
+        self.data_max_ = self.data_max_[:self.n]
+
+    
+    def fit_limits(self,limits):
+        self.n = limits.shape[0]
+                
+        self.data_min_ = limits[:,0]
+        self.data_max_ = limits[:,1]
+
+        self.scaler = lambda x,i : (x - self.data_min_[i])/(self.data_max_[i]-self.data_min_[i])
+        self.inv_scaler = lambda x,i : (self.data_max_[i]-self.data_min_[i])*x + self.data_min_[i]
+                
+    def fit(self,x):
+        self.n = x.shape[1]
+        
+        for i in range(n):
+            self.data_min_.append(x[:,i].min())
+            self.data_max_.append(x[:,i].max())
+        
+        self.data_min_ = np.array(self.data_min_)
+        self.data_max_ = np.array(self.data_max_)
+
+        self.scaler = lambda x,i : (x - self.data_min_[i])/(self.data_max_[i]-self.data_min_[i])
+        self.inv_scaler = lambda x,i : (self.data_max_[i]-self.data_min_[i])*x + self.data_min_[i]
 
 
+    def transform(self,x):
+        return np.array( [self.scaler(x[:,i],i) for i in range(self.n)] ).T
+            
+    def inverse_transform(self,x):
+        return np.array( [self.inv_scaler(x[:,i],i) for i in range(self.n)] ).T
 
 def simpleGeneralModel(Nin, Nout, net):
     Neurons, actLabels = net['Neurons'] , net['activations']
