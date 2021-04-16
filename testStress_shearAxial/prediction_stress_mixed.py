@@ -4,7 +4,7 @@ sys.path.insert(0,'../utils/')
 import matplotlib.pyplot as plt
 import numpy as np
 
-import myTensorflow as mytf
+# import myTensorflow as mytf
 from timeit import default_timer as timer
 
 from dolfin import *
@@ -166,20 +166,20 @@ epsAxial = np.zeros((2,2))
 epsAxial[0,0] = 1.0
 
 ns = len(S_p_shear)
-ns_max = 100
+ns_max = 2
 np.random.seed(1)
 randInd = np.arange(ns,dtype='int') 
 np.random.shuffle(randInd)
 randInd =  randInd[:ns_max]
 
-os.system('rm sigma_prediction_ny{0}_mixed_eps2.hd5'.format(Nrb))
-fields, f = myhd.zeros_openFile('sigma_prediction_ny{0}_mixed_eps2.hd5'.format(Nrb),
+os.system('rm sigma_prediction_ny{0}_mixed_eps2_justAtestBugTensorflow.hd5'.format(Nrb))
+fields, f = myhd.zeros_openFile('sigma_prediction_ny{0}_mixed_eps2_justAtestBugTensorflow.hd5'.format(Nrb),
                                 [(ns_max,3),(ns_max,3),(ns_max,3),(ns_max,3),(ns_max,3),(ns_max,3)], 
                                 ['sigma','sigma_per','sigma_lin','sigma_ref','error','error_rel'])
 
 sigma, sigma_per, sigma_lin, sigma_ref, error, error_rel = fields  
 
-normStress = lambda s : np.sqrt(s[0]**2 + s[1]**2 + 4*s[2]**2)
+normStress = lambda s : np.sqrt(s[0]**2 + s[1]**2 + 2*s[2]**2)
 
 exx = 0.1
 exy = 0.2

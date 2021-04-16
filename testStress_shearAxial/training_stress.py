@@ -20,28 +20,38 @@ import tensorflow as tf
 
 from tensorflow_for_training import *
 
-typeModel = 'axial'
+typeModel = sys.argv[1]
 
 folder = './models/dataset_{0}1/'.format(typeModel)
 nameXY = folder +  'XY_stress.h5'
+nameScalerXY = folder +  'scaler_stress.txt'
 
 folderVal = './models/dataset_{0}2/'.format(typeModel)
 nameXY_val = folderVal +  'XY_stress.h5'
 
+
+# exportScale(nameXY, nameScalerXY, 36, 3)
+
+# input()
+
 # epochs = 10
 # archId = 1
 
-epochs = int(sys.argv[1])
-archId = int(sys.argv[2])
+epochs = int(sys.argv[2])
+archFlag = int(sys.argv[3])
+archId = sys.argv[4]
+
 nX = 36
 nY = 3 # number of stresses
 
 print('epochs ', epochs)
 
-# net = {'Neurons': 3*[300, 300, 300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
-net = {'Neurons': [40], 'activations': 1*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : 3*[0.0], 'reg' : 0.0}
-# net = {'Neurons': 3*[300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
+nets={}
+nets[3] = {'Neurons': 2*[50], 'activations': 2*['swish'] + ['linear'], 'lr': 5.0e-3, 'decay' : 0.1, 'drps' : [0.0] + 2*[0.005] + [0.0], 'reg' : 1.0e-8}
+nets[2] = {'Neurons': [40], 'activations': 1*['swish'] + ['linear'], 'lr': 5.0e-3, 'decay' : 0.1, 'drps' : 3*[0.0], 'reg' : 0.0}
+nets[1] = {'Neurons': 3*[300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-3, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
 
+net = nets[archFlag]
 
 net['epochs'] = int(epochs)
 net['nY'] = nY
@@ -53,6 +63,7 @@ net['stepEpochs'] = 1
 net['file_weights'] = './models/dataset_{0}1/models/stress/weights_arch{1}.hdf5'.format(typeModel,archId)
 net['file_net'] = './models/dataset_{0}1/models/stress/net_arch{1}.txt'.format(typeModel,archId)
 net['file_prediction'] = './models/dataset_{0}1/models/stress/prediction_arch{1}.txt'.format(typeModel,archId)
+net['file_scaler'] = './models/dataset_{0}1/models/stress/scaler.txt'.format(typeModel)
 net['file_XY'] = [nameXY, nameXY_val]
 
 scalerX, scalerY = syml.getDatasetsXY(nX, nY, net['file_XY'][0])[2:4]

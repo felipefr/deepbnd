@@ -2,6 +2,9 @@ import dolfin as df
 import numpy as np
 import meshUtils as meut
 
+symgrad = lambda v: 0.5*(df.grad(v) + df.grad(v).T)
+symgrad_voigt = lambda v: df.as_vector([v[0].dx(0), v[1].dx(1), v[0].dx(1) + v[1].dx(0) ])
+
 def Integral(u,dx,shape):
     
     n = len(shape)
@@ -30,7 +33,7 @@ def Integral(u,dx,shape):
 getMesh = lambda a,b,c,d : meut.getMesh(meshGMSH = a, file = c + b + '.xml', create = d)
 
 
-def affineTransformationExpession(a,B, mesh):
+def affineTransformationExpression(a,B, mesh):
     return df.Expression(('a0 + B00*x[0] + B01*x[1]','a1 + B10*x[0] + B11*x[1]'), a0 = a[0], a1 = a[1],
                B00=B[0,0], B01 = B[0,1], B10 = B[1,0], B11= B[1,1] ,degree = 1, domain = mesh)
 

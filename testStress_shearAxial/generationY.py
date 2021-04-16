@@ -12,8 +12,8 @@ import meshUtils as meut
 import fenicsUtils as feut
 import symmetryLib as syml
 
-folder = './models/dataset_axial1/'
-folderBasis = './models/dataset_axial1/'
+folder = './models/dataset_shear3/'
+folderBasis = './models/dataset_shear3/'
 
 
 loadType = 'shear'
@@ -208,8 +208,8 @@ if(op == 7):
 if(op == 9):
     print('merging Y')
     Y = myhd.loadhd5(nameSnaps,'sigma')
-    # X = myhd.loadhd5(nameEllipseData,'ellipseData')[:,:,2]
-    X = myhd.loadhd5(nameXYlist,'X')
+    X = myhd.loadhd5(nameEllipseData,'ellipseData')[:,:,2]
+    # X = myhd.loadhd5(nameXYlist,'X')
 
 
     os.system('rm ' + nameXYlist_stress)  

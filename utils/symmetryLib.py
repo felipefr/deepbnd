@@ -1,10 +1,10 @@
 import os, sys
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler #
-import myHDF5 as myhd ##
+# import myHDF5 as myhd ##
 import copy 
-# import fenicsUtils as feut
-# from dolfin import * 
+import fenicsUtils as feut
+import dolfin as df 
 
 # order 0 : matrix order
 # order 1 : internal to external layer order (matrix convention ortherwise)
@@ -34,7 +34,7 @@ inverse_T = lambda pairs, T: ind2pairs( np.argsort( pairs2ind(T(pairs)) ) )
 
 def  getPermutation(op, N = 36, NL = 4):
     T = {'horiz': T_horiz,'vert': T_vert, 'diag': T_diag , 'id': T_id ,  
-         'halfPi': T_halfpi, 'pi': T_pi , 'mHalfPi': T_mhalfpi}[op]    
+          'halfPi': T_halfpi, 'pi': T_pi , 'mHalfPi': T_mhalfpi}[op]    
 
     return perm_with_order1(T, N, NL)
     
@@ -42,7 +42,7 @@ def  getPermutation(op, N = 36, NL = 4):
 def getLoadSign(op, loadType):
     
     table = {'shear': {'id': 1, 'horiz': -1,'vert': -1, 'diag':1, 'halfPi': -1,'pi': 1 , 'mHalfPi': -1},
-             'axial' : {'id': 1, 'horiz': 1,'vert':1, 'diag':1, 'halfPi': -1,'pi': 1 , 'mHalfPi': -1} }
+              'axial' : {'id': 1, 'horiz': 1,'vert':1, 'diag':1, 'halfPi': -1,'pi': 1 , 'mHalfPi': -1} }
     
     return table[loadType][op] 
 
@@ -63,10 +63,10 @@ def PiolaTransform(op, Vref): #only detB = pm 1 in our context
     else:
         B = np.eye(2)
 
-    Finv = feut.affineTransformationExpession(np.zeros(2), B.T, Mref)
-    Bmultiplication = feut.affineTransformationExpession(np.zeros(2), B, Mref)
+    Finv = feut.affineTransformationExpression(np.zeros(2), B.T, Mref)
+    Bmultiplication = feut.affineTransformationExpression(np.zeros(2), B, Mref)
     
-    return lambda sol: interpolate( feut.myfog_expression(Bmultiplication, feut.myfog(sol,Finv)), Vref) #
+    return lambda sol: df.interpolate( feut.myfog_expression(Bmultiplication, feut.myfog(sol,Finv)), Vref) #
 
 
 def PiolaTransform_matricial(op, Vref): #only detB = pm 1 in our context
@@ -74,7 +74,7 @@ def PiolaTransform_matricial(op, Vref): #only detB = pm 1 in our context
     Piola = PiolaTransform(op,Vref)
     Pmat = np.zeros((Nh,Nh))
     
-    phi_j = Function(Vref)
+    phi_j = df.Function(Vref)
     ej = np.zeros(Nh) 
     
     for j in range(Nh):

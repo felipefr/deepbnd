@@ -20,26 +20,6 @@ import tensorflow as tf
 
 from tensorflow_for_training import *
 
-def exportScale(filenameIn, filenameOut, nX, nY):
-    scalerX, scalerY = syml.getDatasetsXY(nX, nY, filenameIn)[2:4]
-    scalerLimits = np.zeros((max(nX,nY),4))
-    scalerLimits[:nX,0] = scalerX.data_min_
-    scalerLimits[:nX,1] = scalerX.data_max_
-    scalerLimits[:nY,2] = scalerY.data_min_
-    scalerLimits[:nY,3] = scalerY.data_max_
-
-    np.savetxt(filenameOut, scalerLimits)
-
-def importScale(filenameIn, nX, nY):
-    scalerX = myMinMaxScaler()
-    scalerY = myMinMaxScaler()
-    scalerX.fit_limits(np.loadtxt(filenameIn)[:,0:2])
-    scalerY.fit_limits(np.loadtxt(filenameIn)[:,2:4])
-    scalerX.set_n(nX)
-    scalerY.set_n(Nrb)
-    
-    return scalerX, scalerY
-
 
 folder = './models/dataset_axial1/'
 nameXY = folder +  'XY.h5'

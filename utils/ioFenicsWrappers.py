@@ -32,19 +32,19 @@ def local_project(v,V):
 
 
 
-def readXDMF_with_markers(meshFile, mesh):
+def readXDMF_with_markers(meshFile, mesh, comm = MPI.comm_world):
 
-    with XDMFFile(MPI.comm_world,meshFile) as infile:
+    with XDMFFile(comm,meshFile) as infile:
         infile.read(mesh)
     
     mvc = MeshValueCollection("size_t", mesh, 1)
-    with XDMFFile(MPI.comm_world, "{0}_faces.xdmf".format(meshFile[:-5])) as infile:
+    with XDMFFile(comm, "{0}_faces.xdmf".format(meshFile[:-5])) as infile:
         infile.read(mvc, "faces")
                 
     mf  = MeshFunction("size_t", mesh, mvc)
   
     mvc = MeshValueCollection("size_t", mesh, 2)
-    with XDMFFile(MPI.comm_world, "{0}_regions.xdmf".format(meshFile[:-5])) as infile:
+    with XDMFFile(comm, "{0}_regions.xdmf".format(meshFile[:-5])) as infile:
         infile.read(mvc, "regions")
     
     mt  = MeshFunction("size_t", mesh, mvc)

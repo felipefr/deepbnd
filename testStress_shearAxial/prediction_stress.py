@@ -144,13 +144,14 @@ np.random.seed(1)
 randInd = np.arange(ns,dtype='int') 
 np.random.shuffle(randInd)
 randInd =  randInd[:ns_max]
+np.savetxt('randomIndicesTest_axial.txt', randInd)
 
 os.system('rm sigma_prediction_ny{0}.hd5'.format(Nrb))
 fields, f = myhd.zeros_openFile('sigma_prediction_ny{0}.hd5'.format(Nrb),
                                 [(ns_max,3),(ns_max,3),(ns_max,1)], ['sigma','sigma_ref','error'])
 sigma, sigma_ref, error = fields  
 
-normStress = lambda s : np.sqrt(s[0]**2 + s[1]**2 + 4*s[2]**2)
+normStress = lambda s : np.sqrt(s[0]**2 + s[1]**2 + 2*s[2]**2)
 
 for i, ii in enumerate(randInd):  
     print("snaptshots i, ii = ", i, ii)

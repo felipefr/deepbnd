@@ -4,10 +4,12 @@ import pygmsh
 import ioFenicsWrappers as iofe
 import os
 import dolfin as df
+from functools import reduce
+
 
 class EnrichedMesh(df.Mesh):
-    def __init__(self, meshFile):
-        super(EnrichedMesh,self).__init__()
+    def __init__(self, meshFile, comm = df.MPI.comm_world):
+        super(EnrichedMesh,self).__init__(comm)
         
         if(meshFile[-3:] == 'xml'):
             df.File(meshFile) >> self            
@@ -15,7 +17,7 @@ class EnrichedMesh(df.Mesh):
             self.boundaries = df.MeshFunction("size_t", self, meshFile[:-4] + "_facet_region.xml")
             
         elif(meshFile[-4:] == 'xdmf'):
-            self.subdomains, self.boundaries = iofe.readXDMF_with_markers(meshFile, self)
+            self.subdomains, self.boundaries = iofe.readXDMF_with_markers(meshFile, self, comm)
                 
         self.ds = df.Measure('ds', domain=self, subdomain_data=self.boundaries)
         self.dx = df.Measure('dx', domain=self, subdomain_data=self.subdomains)
@@ -112,7 +114,9 @@ class myGmsh(pygmsh.built_in.Geometry):
         return EnrichedMesh(savefile)
     
     def setNameMesh(self,nameMesh):
-        self.radFileMesh , self.format = nameMesh.split('.')
+        nameMeshSplit = nameMesh.split('.')
+        self.format = nameMeshSplit[-1]
+        self.radFileMesh = reduce(lambda x,y : x + '.' + y, nameMeshSplit[:-1])
         self.radFileMesh += ".{0}"
         
 
