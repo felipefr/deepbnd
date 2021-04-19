@@ -40,21 +40,10 @@ class myChom(df.UserExpression):
         super().__init__(**kwargs)
         
     def eval_cell(self, values, x, cell):
-        # print('rank, cell', rank, cell.index)
         values[:] = self.microModels[cell.index].getTangent().flatten()
         
     def value_shape(self):
         return (3,3,)
-
-class dummyExp(df.UserExpression):
-    def eval_cell(self, values, x, cell):
-        print('rank, cell', rank, cell.index, x)
-        values[0] = 1.0
-
-# 1.6680634885388987
-# 1.6680634885388987
-# 1.6680634885388987
-
 
 class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
     
@@ -135,18 +124,19 @@ Mref = meut.EnrichedMesh(nameMeshRefBnd,comm_self)
 Vref = df.VectorFunctionSpace(Mref,"CG", 1)
 
 dxRef = df.Measure('dx', Mref) 
-    
-
 
 
 Lx = 2.0
 Ly = 0.5
-Nx = 2
-Ny = 2
+Nx = 10
+Ny = 4
 ty = -0.01
 
 # Create mesh and define function space
-mesh = df.RectangleMesh(MPI.COMM_WORLD,df.Point(0.0, 0.0), df.Point(Lx, Ly), Nx, Ny, "right/left")
+mesh = df.RectangleMesh(comm,df.Point(0.0, 0.0), df.Point(Lx, Ly), Nx, Ny, "right/left")
+with df.XDMFFile(comm, "meshBarMacro.xdmf") as file:
+    file.write(mesh)
+    
 Uh = df.VectorFunctionSpace(mesh, "Lagrange", 1)
 
 leftBnd = df.CompiledSubDomain('near(x[0], 0.0) && on_boundary')
@@ -170,9 +160,11 @@ param = [nu,E2*contrast,nu,E2]
 
 microModelList = []
 
+
+print(mesh.num_cells())
 for cell in df.cells(mesh):
     i = cell.global_index()
-    meshMicroName = './meshes/mesh_micro_{0}_reduced.xdmf'.format(i)
+    meshMicroName = './meshes/mesh_micro_{0}_full.xdmf'.format(i)
     microModelList.append( MicroConstitutiveModelDNN(meshMicroName, param, 'per') )
     microModelList[-1].others['uD'] = df.Function(Vref) 
     microModelList[-1].others['uD0_'] = myhd.loadhd5(BCname, 'u0')[i,:] 
@@ -201,3 +193,12 @@ b = df.inner(traction,vh)*ds(2)
 # # Compute solution
 uh = df.Function(Uh)
 df.solve(a == b,uh, bcs = bcL, solver_parameters={"linear_solver": "mumps"})
+
+
+with df.XDMFFile(comm, "barMultiscale_per_full_vtk.xdmf") as file:
+    uh.rename('u','name')
+    file.write(uh)
+
+with df.XDMFFile(comm, "barMultiscale_per_full.xdmf") as file:
+    file.write_checkpoint(uh,'u',0)
+    

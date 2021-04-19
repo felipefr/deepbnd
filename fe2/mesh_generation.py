@@ -89,9 +89,9 @@ ellipseData = myhd.loadhd5(folder +  'ellipseData.h5', 'ellipseData')
 
 # defining the micro model
 i = 0
-nCells = 20
+nCells = 80
 
 # meshMicro = get_mesh(ellipseData[i], './meshes/mesh_micro.xml', 'reduced')
-for i in range(nCells):
+for i in range(20,nCells):
     if(i%num_ranks == rank):
-        write_mesh(ellipseData[i], './meshes/mesh_micro_{0}_reduced.xdmf'.format(i), 'reduced')
+        write_mesh(ellipseData[i], './meshes/mesh_micro_{0}_full.xdmf'.format(i), 'full')
