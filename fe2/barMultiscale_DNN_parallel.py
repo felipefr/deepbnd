@@ -89,6 +89,7 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
         
         dy = self.mesh.dx # specially for the case of enriched mesh, otherwise it does not work
         vol = df.assemble(df.Constant(1.0)*dy(0)) + df.assemble(df.Constant(1.0)*dy(1))
+        
         y = df.SpatialCoordinate(self.mesh)
         Eps = df.Constant(((0.,0.),(0.,0.))) # just placeholder
         
