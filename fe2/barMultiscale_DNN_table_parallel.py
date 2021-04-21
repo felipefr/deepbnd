@@ -45,7 +45,7 @@ class myChom(df.UserExpression):
     def value_shape(self):
         return (3,3,)
     
-caseType = 'reduced_lin'
+caseType = 'reduced_dnn_medium_40'
 # loading boundary reference mesh
 Lx = 2.0
 Ly = 0.5
@@ -67,7 +67,7 @@ boundary_markers = df.MeshFunction("size_t", mesh, dim=1, value=0)
 leftBnd.mark(boundary_markers, 1)
 rightBnd.mark(boundary_markers, 2)
 
-tangentName = './meshes/tangent_{0}_all.hd5'.format(caseType)
+tangentName = '../../tangents/tangent_{0}.hd5'.format(caseType)
 tangent = myhd.loadhd5(tangentName, 'tangent')
 ids = myhd.loadhd5(tangentName, 'id')
 sortIndex = np.argsort(ids)
