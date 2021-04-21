@@ -8,13 +8,12 @@ import h5py
 import pickle
 import dataManipMisc as dman 
 import myHDF5 as myhd
-import symmetryLib as syml
 import tensorflow as tf
 
 ker = tf.keras.layers
 
 def exportScale(filenameIn, filenameOut, nX, nY):
-    scalerX, scalerY = syml.getDatasetsXY(nX, nY, filenameIn)[2:4]
+    scalerX, scalerY = getDatasetsXY(nX, nY, filenameIn)[2:4]
     scalerLimits = np.zeros((max(nX,nY),4))
     scalerLimits[:nX,0] = scalerX.data_min_
     scalerLimits[:nX,1] = scalerX.data_max_
@@ -58,7 +57,7 @@ class myMinMaxScaler:
     def fit(self,x):
         self.n = x.shape[1]
         
-        for i in range(n):
+        for i in range(self.n):
             self.data_min_.append(x[:,i].min())
             self.data_max_.append(x[:,i].max())
         
@@ -217,3 +216,71 @@ def writeDict(d):
         f.write("{0}: {1}\n".format(keys,value))
         
     f.close()
+    
+    
+def getTraining(ns_start, ns_end, nX, nY, Xdatafile, Ydatafile, scalerX = None, scalerY = None):
+    X = np.zeros((ns_end - ns_start,nX))
+    Y = np.zeros((ns_end - ns_start,nY))
+    
+    X = myhd.loadhd5(Xdatafile, 'ellipseData')[ns_start:ns_end,:nX,2]
+    Y = myhd.loadhd5(Ydatafile, 'Ylist')[ns_start:ns_end,:nY]
+
+    if(type(scalerX) == type(None)):
+        scalerX = MinMaxScaler()
+        scalerX.fit(X)
+    
+    if(type(scalerY) == type(None)):
+        scalerY = MinMaxScaler()
+        scalerY.fit(Y)
+            
+    return scalerX.transform(X), scalerY.transform(Y), scalerX, scalerY
+
+
+def getDatasets(nX, nY, Xdatafile, Ydatafile, scalerX = None, scalerY = None):
+    Xlist = []
+    Ylist = []
+    
+    if(type(Xdatafile) != type([])):
+        Xdatafile = [Xdatafile]
+        Ydatafile = [Ydatafile]
+    
+    for Xdatafile_i, Ydatafile_i in zip(Xdatafile,Ydatafile):    
+        Xlist.append(myhd.loadhd5(Xdatafile_i, 'ellipseData')[:,:nX,2])
+        Ylist.append(myhd.loadhd5(Ydatafile_i, 'Ylist')[:,:nY])
+    
+    X = np.concatenate(tuple(Xlist),axis = 0)
+    Y = np.concatenate(tuple(Ylist),axis = 0)
+    
+    if(type(scalerX) == type(None)):
+        scalerX = MinMaxScaler()
+        scalerX.fit(X)
+    
+    if(type(scalerY) == type(None)):
+        scalerY = MinMaxScaler()
+        scalerY.fit(Y)
+            
+    return scalerX.transform(X), scalerY.transform(Y), scalerX, scalerY
+
+def getDatasetsXY(nX, nY, XYdatafile, scalerX = None, scalerY = None):
+    Xlist = []
+    Ylist = []
+    
+    if(type(XYdatafile) != type([])):
+        XYdatafile = [XYdatafile]
+    
+    for XYdatafile_i in XYdatafile:    
+        Xlist.append(myhd.loadhd5(XYdatafile_i, 'X')[:,:nX])
+        Ylist.append(myhd.loadhd5(XYdatafile_i, 'Y')[:,:nY])
+    
+    X = np.concatenate(tuple(Xlist),axis = 0)
+    Y = np.concatenate(tuple(Ylist),axis = 0)
+    
+    if(type(scalerX) == type(None)):
+        scalerX = myMinMaxScaler()
+        scalerX.fit(X)
+    
+    if(type(scalerY) == type(None)):
+        scalerY = myMinMaxScaler()
+        scalerY.fit(Y)
+            
+    return scalerX.transform(X), scalerY.transform(Y), scalerX, scalerY

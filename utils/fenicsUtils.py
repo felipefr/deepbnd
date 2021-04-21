@@ -50,7 +50,21 @@ def getAffineTransformationLocal(U,mesh, domains_id = [], justTranslation = Fals
     a = -uFlucL + epsFlucL@yG 
     B = np.zeros((2,2)) if justTranslation else -epsFlucL
     
-    return affineTransformationExpession(a,B, mesh) , a, B
+    return affineTransformationExpression(a,B, mesh) , a, B
+
+def getAffineTransformationLocal_bndIntegral(U,mesh, domains_id = [], justTranslation = False):
+    omegaL = df.assemble(df.Constant(1.0)*mesh.dx)
+    
+    yG = Integral(df.Expression(('x[0]','x[1]'), degree = 1) , mesh.dx, (2,))/omegaL
+
+    n = df.FacetNormal(mesh)
+    uFlucL = Integral(U, mesh.dx, (2,))/omegaL
+    epsFlucL = Integral(df.outer(U,n), mesh.ds, (2,2))/omegaL
+    
+    a = -uFlucL + epsFlucL@yG 
+    B = np.zeros((2,2)) if justTranslation else -epsFlucL
+    
+    return affineTransformationExpression(a,B, mesh) , a, B
 
 class myfog(df.UserExpression): # fog f,g : R2 -> R2, generalise 
     def __init__(self, f, g, **kwargs):

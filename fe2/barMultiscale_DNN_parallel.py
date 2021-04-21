@@ -164,7 +164,7 @@ microModelList = []
 print(mesh.num_cells())
 for cell in df.cells(mesh):
     i = cell.global_index()
-    meshMicroName = './meshes/mesh_micro_{0}_full.xdmf'.format(i)
+    meshMicroName = './meshes/mesh_micro_{0}_reduced.xdmf'.format(i)
     microModelList.append( MicroConstitutiveModelDNN(meshMicroName, param, 'per') )
     microModelList[-1].others['uD'] = df.Function(Vref) 
     microModelList[-1].others['uD0_'] = myhd.loadhd5(BCname, 'u0')[i,:] 

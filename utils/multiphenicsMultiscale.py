@@ -71,9 +71,12 @@ def solveMultiscale(param, M, eps, op, others = {}):
     
     # condNumber = np.linalg.cond(A.array())
     
-    method = 'mumps' if 'method' not in others.keys() else others['method']
+    # method = 'superlu' if 'method' not in others.keys() else others['method']
+    method = 'superlu'
     sol = mp.BlockFunction(W)
-    mp.block_solve(A, sol.block_vector(), F, method)
+    solver = df.PETScLUSolver(method)
+    solver.solve(A, sol.block_vector(), F)
+    sol.block_vector().block_function().apply("to subfunctions")
 
     end = timer()
     print('time in solving system', end - start) # Time in seconds, e.g. 5.38091952400282
@@ -83,6 +86,7 @@ def solveMultiscale(param, M, eps, op, others = {}):
     # f.write(str(condNumber) + '\n')
 
     # f.close()
+    
     return sol
 
 def formulationMultiscaleMR(M, sigma, sigmaEps, polyorder):
