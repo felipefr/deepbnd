@@ -74,11 +74,22 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
         solver = df.PETScLUSolver('superlu')
         sol = mp.BlockFunction(W)
              
+        Vref = self.others['uD'].function_space()
+        Mref = Vref.mesh()
+        normal = FacetNormal(Mref)
+        volMref = 4.0
+        
         for i in range(self.nvoigt):
             # start = timer()              
             self.others['uD'].vector().set_local(self.others['uD{0}_'.format(i)])
+        
+            B = -feut.Integral(outer(self.others['uD'],normal), Mref.ds, (2,2))/volMref
+            T = feut.affineTransformationExpression(np.zeros(2),B, Mref) # ignore a, since the basis is already translated
+            self.others['uD'].vector().set_local(self.others['uD'].vector().get_local()[:] + 
+                                                 interpolate(T,Vref).vector().get_local()[:])
             
-            Eps.assign(df.Constant(mscm.macro_strain(i)))    
+            Eps.assign(df.Constant(mscm.macro_strain(i) - B))   
+        
             F = mp.block_assemble(f)
             if(len(bcs) > 0):
                 bcs.apply(F)
@@ -97,3 +108,5 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
         self.getTangent = self.getTangent_ # from the second run onwards, just returns  
         
         return self.Chom_
+        
+

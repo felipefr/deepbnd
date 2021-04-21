@@ -3,7 +3,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import dolfin as df 
 import matplotlib.pyplot as plt
 from ufl import nabla_div
-sys.path.insert(0, '/home/felipefr/github/micmacsFenics/utils/')
+sys.path.insert(0, '/home/rocha/github/micmacsFenics/utils/')
 sys.path.insert(0,'../utils/')
 
 import multiscaleModels as mscm
@@ -26,6 +26,10 @@ comm_self = MPI.COMM_SELF
 rank = comm.Get_rank()
 num_ranks = comm.Get_size()
 
+model = 'lin'
+modelBnd = 'lin'
+
+start = timer()
     
 # loading boundary reference mesh
 nameMeshRefBnd = 'boundaryMesh.xdmf'
@@ -39,10 +43,10 @@ dxRef = df.Measure('dx', Mref)
 BCname = 'BCsPrediction.hd5'
 
 
-nCells = 20
+nCells = 10240
 ns = int(np.ceil(nCells/num_ranks))
 
-tangentFile = './meshes/tangent_{0}.hd5'.format(rank)
+tangentFile = './meshes/tangent_reduced_{0}_{1}.hd5'.format(model,rank)
 os.system('rm ' + tangentFile)
 
 Iid_tangent, f = myhd.zeros_openFile(tangentFile, [(ns,), (ns,3,3)],
@@ -51,9 +55,10 @@ Iid_tangent, f = myhd.zeros_openFile(tangentFile, [(ns,), (ns,3,3)],
 Iid, Itangent = Iid_tangent
 k = 0
     
-u0_p = myhd.loadhd5(BCname, 'u0')[rank::num_ranks,:]
-u1_p = myhd.loadhd5(BCname, 'u1')[rank::num_ranks,:]
-u2_p = myhd.loadhd5(BCname, 'u2')[rank::num_ranks,:]
+if(model == 'dnn'):
+    u0_p = myhd.loadhd5(BCname, 'u0')[rank::num_ranks,:]
+    u1_p = myhd.loadhd5(BCname, 'u1')[rank::num_ranks,:]
+    u2_p = myhd.loadhd5(BCname, 'u2')[rank::num_ranks,:]
 
 for i in range(nCells):
     if(i%num_ranks == rank):
@@ -62,14 +67,19 @@ for i in range(nCells):
         nu = 0.3
         param = [nu,E2*contrast,nu,E2]
         meshMicroName = './meshes/mesh_micro_{0}_reduced.xdmf'.format(i)
-        
 
-        microModel = MicroConstitutiveModelDNN(meshMicroName, param, 'per') 
-        microModel.others['uD'] = df.Function(Vref) 
-        microModel.others['uD0_'] = u0_p[k]
-        microModel.others['uD1_'] = u1_p[k]
-        microModel.others['uD2_'] = u2_p[k]
-          
+        microModel = MicroConstitutiveModelDNN(meshMicroName, param, modelBnd) 
+        if(model == 'dnn'):
+            microModel.others['uD'] = df.Function(Vref) 
+            microModel.others['uD0_'] = u0_p[k]
+            microModel.others['uD1_'] = u1_p[k]
+            microModel.others['uD2_'] = u2_p[k]
+        elif(model == 'lin'):
+            microModel.others['uD'] = df.Function(Vref) 
+            microModel.others['uD0_'] = np.zeros(Vref.dim())
+            microModel.others['uD1_'] = np.zeros(Vref.dim())
+            microModel.others['uD2_'] = np.zeros(Vref.dim())
+            
         
         Iid[k] = i
         Itangent[k,:,:] = microModel.getTangent()
@@ -82,9 +92,12 @@ f.close()
 comm.Barrier()
 
 if(rank == 0):
-    tangentFile = './meshes/tangent_{0}.hd5'
-    os.system('rm ' + tangentFile.format('all'))
-    myhd.merge([tangentFile.format(i) for i in range(num_ranks)], tangentFile.format('all'), 
+    tangentFile = './meshes/tangent_reduced_{0}_{1}.hd5'
+    os.system('rm ' + tangentFile.format(model,'all'))
+    myhd.merge([tangentFile.format(model,i) for i in range(num_ranks)], tangentFile.format(model,'all'), 
                 InputLabels = ['id','tangent'], OutputLabels = ['id','tangent'], axis = 0, mode = 'w-')
     
-    [os.system('rm ' + tangentFile.format(i)) for i in range(num_ranks)]
+    [os.system('rm ' + tangentFile.format(model,i)) for i in range(num_ranks)]
+    
+    end = timer()
+    np.savetxt("time_elapsed_reduced_{0}.txt".format(model), np.array([end-start]))
