@@ -17,6 +17,7 @@ import elasticity_utils as elut
 import symmetryLib as symlpy
 from timeit import default_timer as timer
 import multiphenics as mp
+import fenicsUtils as feut
 
 from mpi4py import MPI
 
@@ -76,17 +77,17 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
              
         Vref = self.others['uD'].function_space()
         Mref = Vref.mesh()
-        normal = FacetNormal(Mref)
+        normal = df.FacetNormal(Mref)
         volMref = 4.0
         
         for i in range(self.nvoigt):
             # start = timer()              
             self.others['uD'].vector().set_local(self.others['uD{0}_'.format(i)])
         
-            B = -feut.Integral(outer(self.others['uD'],normal), Mref.ds, (2,2))/volMref
+            B = -feut.Integral(df.outer(self.others['uD'],normal), Mref.ds, (2,2))/volMref
             T = feut.affineTransformationExpression(np.zeros(2),B, Mref) # ignore a, since the basis is already translated
             self.others['uD'].vector().set_local(self.others['uD'].vector().get_local()[:] + 
-                                                 interpolate(T,Vref).vector().get_local()[:])
+                                                 df.interpolate(T,Vref).vector().get_local()[:])
             
             Eps.assign(df.Constant(mscm.macro_strain(i) - B))   
         

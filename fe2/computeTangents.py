@@ -26,9 +26,14 @@ comm_self = MPI.COMM_SELF
 rank = comm.Get_rank()
 num_ranks = comm.Get_size()
 
-model = 'lin'
+model = 'dnn'
 modelBnd = 'lin'
-
+if(model == 'dnn'):
+    modelDNN = '_medium_40' # underscore included before
+    BCname = './tangents/BCsPrediction{0}.hd5'.format(modelDNN)
+else:
+    modelDNN = ''
+    
 start = timer()
     
 # loading boundary reference mesh
@@ -40,13 +45,10 @@ dxRef = df.Measure('dx', Mref)
 
 # defining the micro model
 
-BCname = 'BCsPrediction.hd5'
-
-
 nCells = 10240
 ns = int(np.ceil(nCells/num_ranks))
 
-tangentFile = './meshes/tangent_reduced_{0}_{1}.hd5'.format(model,rank)
+tangentFile = './tangents/tangent_reduced_{0}_{1}.hd5'.format(model,rank)
 os.system('rm ' + tangentFile)
 
 Iid_tangent, f = myhd.zeros_openFile(tangentFile, [(ns,), (ns,3,3)],
@@ -92,12 +94,13 @@ f.close()
 comm.Barrier()
 
 if(rank == 0):
-    tangentFile = './meshes/tangent_reduced_{0}_{1}.hd5'
-    os.system('rm ' + tangentFile.format(model,'all'))
-    myhd.merge([tangentFile.format(model,i) for i in range(num_ranks)], tangentFile.format(model,'all'), 
+    tangentFile = './tangents/tangent_reduced_{0}_{1}.hd5'
+    tangentFileMerged = './tangents/tangent_reduced_{0}.hd5'.format(model + modelDNN)
+    os.system('rm ' + tangentFileMerged)
+    myhd.merge([tangentFile.format(model,i) for i in range(num_ranks)], tangentFileMerged, 
                 InputLabels = ['id','tangent'], OutputLabels = ['id','tangent'], axis = 0, mode = 'w-')
     
     [os.system('rm ' + tangentFile.format(model,i)) for i in range(num_ranks)]
     
     end = timer()
-    np.savetxt("time_elapsed_reduced_{0}.txt".format(model), np.array([end-start]))
+    np.savetxt("time_elapsed_reduced_{0}.txt".format(model + modelDNN), np.array([end-start]))
