@@ -4,10 +4,12 @@ import pygmsh
 import ioFenicsWrappers as iofe
 import os
 import dolfin as df
+from functools import reduce
+
 
 class EnrichedMesh(df.Mesh):
-    def __init__(self, meshFile):
-        super(EnrichedMesh,self).__init__()
+    def __init__(self, meshFile, comm = df.MPI.comm_world):
+        super(EnrichedMesh,self).__init__(comm)
         
         if(meshFile[-3:] == 'xml'):
             df.File(meshFile) >> self            
@@ -15,7 +17,7 @@ class EnrichedMesh(df.Mesh):
             self.boundaries = df.MeshFunction("size_t", self, meshFile[:-4] + "_facet_region.xml")
             
         elif(meshFile[-4:] == 'xdmf'):
-            self.subdomains, self.boundaries = iofe.readXDMF_with_markers(meshFile, self)
+            self.subdomains, self.boundaries = iofe.readXDMF_with_markers(meshFile, self, comm)
                 
         self.ds = df.Measure('ds', domain=self, subdomain_data=self.boundaries)
         self.dx = df.Measure('dx', domain=self, subdomain_data=self.subdomains)
@@ -50,8 +52,7 @@ class EnrichedMesh(df.Mesh):
         self.dxR[name] = reduce(lambda x,y: x+y, [self.dx(r) for r in regionMarker] )
         
       
-class myGmsh(pygmsh.geo.Geometry): 
-# class myGmsh(pygmsh.built_in.Geometry): pygmsh.geo.Geometry
+class myGmsh(pygmsh.built_in.Geometry):
     def __init__(self):
         super().__init__()    
         self.mesh = None
@@ -75,12 +76,12 @@ class myGmsh(pygmsh.geo.Geometry):
         meshGeoFile = self.radFileMesh.format('geo')
         meshMshFile = self.radFileMesh.format('msh')
         self.writeGeo(meshGeoFile)
-        os.system('gmsh -2 -algo del2d -format msh2 ' + meshGeoFile)
+        os.system('gmsh -2 -format msh2 ' + meshGeoFile) # before with -algo del2d, but noticed mesh distortions
         os.system('dolfin-convert {0} {1}'.format(meshMshFile, savefile))    
     
     def write(self,savefile = '', opt = 'meshio'):
         if(type(self.mesh) == type(None)):
-            self.generate(gmsh_opt=['-algo','del2d'])
+            self.generate(gmsh_opt=['-bin','-v','0']) # before with -algo del2d, but noticed mesh distortions
         
         if(len(savefile) == 0):
             savefile = self.radFileMesh.format('xdmf')
@@ -89,11 +90,15 @@ class myGmsh(pygmsh.geo.Geometry):
             meshio.write(savefile, self.mesh)
         elif(opt == 'fenics'):
             iofe.exportMeshHDF5_fromGMSH(self.mesh, savefile)
+        
+        # return self.mesh
 
             
     def generate(self , gmsh_opt = ['']):
-        self.mesh = pygmsh.generate_mesh(self, extra_gmsh_arguments = gmsh_opt, dim = 2,mesh_file_type = 'msh2')
-    
+        self.mesh = pygmsh.generate_mesh(self, extra_gmsh_arguments = gmsh_opt, dim = 2,mesh_file_type = 'msh2') # it should be msh2 cause of tags    
+        # self.mesh = pygmsh.generate_mesh(self, verbose=False, dim=2, prune_vertices=True, prune_z_0=True,
+                                          # remove_faces=False, extra_gmsh_arguments=gmsh_opt,  mesh_file_type='msh4') # it should be msh2 cause of tags
+
     def getEnrichedMesh(self, savefile = ''):
         
         if(len(savefile) == 0):
@@ -109,7 +114,9 @@ class myGmsh(pygmsh.geo.Geometry):
         return EnrichedMesh(savefile)
     
     def setNameMesh(self,nameMesh):
-        self.radFileMesh , self.format = nameMesh.split('.')
+        nameMeshSplit = nameMesh.split('.')
+        self.format = nameMeshSplit[-1]
+        self.radFileMesh = reduce(lambda x,y : x + '.' + y, nameMeshSplit[:-1])
         self.radFileMesh += ".{0}"
         
 
@@ -173,17 +180,22 @@ class degeneratedBoundaryRectangleMesh(myGmsh): # Used for implementation of L2b
 
 class ellipseMesh(myGmsh):
     def __init__(self, ellipseData, Lx, Ly , lcar):
-        super().__init__()    
+        super().__init__()  
+        
+        self.lcar = lcar   
 
+        if(type(self.lcar) is not type([])):
+            self.lcar = len(ellipseData)*[self.lcar]
+            
         self.Lx = Lx
         self.Ly = Ly
-        self.lcar = lcar    
-        self.eList = self.createEllipses(ellipseData,lcar)
+ 
+        self.eList = self.createEllipses(ellipseData,self.lcar)
         self.createSurfaces()
         self.physicalNaming()
 
     def createSurfaces(self):
-        self.rec = self.add_rectangle(0.0,self.Lx,0.0,self.Ly, 0.0, lcar=self.lcar, holes = self.eList)
+        self.rec = self.add_rectangle(0.0,self.Lx,0.0,self.Ly, 0.0, lcar=self.lcar[-1], holes = self.eList)
     
     def physicalNaming(self):
         self.add_physical(self.rec.surface, 'vol')
@@ -193,15 +205,17 @@ class ellipseMesh(myGmsh):
         
     def createEllipses(self, ellipseData, lcar):
         eList = []
-        
+            
+        ilcar_current = 0
         angles = [0.0, 0.5*np.pi, np.pi, 1.5*np.pi]
         for cx, cy, l, e, t in ellipseData: # center, major axis length, excentricity, theta
             lenghts = [l,e*l,l,e*l]
-            pc = self.add_point([cx,cy,0.0], lcar = lcar)
-            pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar) for li, ti in zip(lenghts,angles)]
+            pc = self.add_point([cx,cy,0.0], lcar = lcar[ilcar_current])
+            pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar[ilcar_current]) for li, ti in zip(lenghts,angles)]
             ai = [self.add_ellipse_arc(pi[i],pc,pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
             a = self.add_line_loop(lines = ai)
             eList.append(self.add_surface(a))
+            ilcar_current+=1
         
         return eList
     
@@ -218,14 +232,16 @@ class ellipseMesh2Domains(ellipseMesh):
         self.LxL = LxL
         self.LyL = LyL
         self.NL = NL
+
+            
         super().__init__(ellipseData, Lx, Ly , lcar)    
         
     def createSurfaces(self):        
-        self.recL = self.add_rectangle(self.x0L, self.x0L + self.LxL, self.y0L , self.y0L + self.LyL, 0.0, lcar=self.lcar, holes = self.eList[:self.NL])                 
-        self.rec = self.add_rectangle(self.x0,self.x0 + self.Lx, self.y0, self.y0 + self.Ly, 0.0, lcar=self.lcar, holes = self.eList[self.NL:] + [self.recL])
+        self.recL = self.add_rectangle(self.x0L, self.x0L + self.LxL, self.y0L , self.y0L + self.LyL, 0.0, lcar=self.lcar[0], holes = self.eList[:self.NL])                 
+        self.rec = self.add_rectangle(self.x0,self.x0 + self.Lx, self.y0, self.y0 + self.Ly, 0.0, lcar=self.lcar[-1], holes = self.eList[self.NL:] + [self.recL])
     
     def physicalNaming(self):
-        # self.add_physical(self.recL.surface, 'volL')
+        # self.add_physical(self.recL.surface, 'volL''
         # super().physicalNaming()
 
         self.add_physical(self.eList[:self.NL],0)    
@@ -303,8 +319,8 @@ class ellipseMesh2(myGmsh):
         angles = [0.0, 0.5*np.pi, np.pi, 1.5*np.pi]
         for cx, cy, l, e, t in ellipseData: # center, major axis length, excentricity, theta
             lenghts = [l,e*l,l,e*l]
-            pc = self.add_point([cx,cy,0.0], self.lcar)
-            pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t),0.0], self.lcar) for li, ti in zip(lenghts,angles)]
+            pc = self.add_point([cx,cy,0.0], lcar = lcar)
+            pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar) for li, ti in zip(lenghts,angles)]
             ai = [self.add_ellipse_arc(pi[i],pc,pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
             a = self.add_line_loop(lines = ai)
             eList.append(self.add_surface(a))
@@ -313,4 +329,81 @@ class ellipseMesh2(myGmsh):
     
     def setTransfiniteBoundary(self,n):
         self.set_transfinite_lines(self.rec.lines, n)
+        
+        
+# class ellipseMeshBar(ellipseMesh2):
+    
+#     def physicalNaming(self):
+#         self.add_physical(self.rec.surface, 1)
+#         self.add_physical(self.eList[:],0)
+#         [self.add_physical(self.rec.lines[i],2+i) for i in range(4)]  #bottom, right, top, left
+    
+
+            
+# class ellipseMeshBarAdaptative(myGmsh):
+#     def __init__(self, ellipseData, x0, y0, Lx, Ly , lcar): # lcar[1]<lcar[0]<lcar[2]
+#         super().__init__()    
+        
+#         self.x0 = x0
+#         self.y0 = y0
+#         self.Lx = Lx
+#         self.Ly = Ly
+#         self.lcar = lcar    
+#         self.eList = self.createEllipses(ellipseData)
+#         self.createSurfaces()
+#         self.physicalNaming()
+
+#     def createSurfaces(self):
+#         self.rec = self.add_rectangle(self.x0,self.x0 + self.Lx,self.y0,self.y0 + self.Ly, 0.0, lcar=self.lcar[0], holes = self.eList)
+    
+#     def physicalNaming(self):
+#         self.add_physical(self.rec.surface, 1)
+#         self.add_physical(self.eList[:],0)
+#         [self.add_physical(self.rec.lines[i],2+i) for i in range(4)]  #bottom, right, top, left
+        
+#     def createEllipses(self, ellipseData):
+#         eList = []
+        
+#         lcar = self.lcar
+#         angles = [0.0, 0.5*np.pi, np.pi, 1.5*np.pi]
+#         for cx, cy, l, e, t in ellipseData: # center, major axis length, excentricity, theta
+#             lenghts = [l,e*l,l,e*l]
+#             pc = self.add_point([cx,cy,0.0], lcar = lcar[2])
+#             pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar[1]) for li, ti in zip(lenghts,angles)]
+#             ai = [self.add_ellipse_arc(pi[i],pc,pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
+#             a = self.add_line_loop(lines = ai)
+#             eList.append(self.add_surface(a))
+            
+#         return eList
+        
+#     def setTransfiniteBoundary(self,n, direction = 'horiz'):
+#         if(direction == 'horiz'):
+#             self.set_transfinite_lines(self.rec.lines[0::2], n)
+#         else:
+#             self.set_transfinite_lines(self.rec.lines[1::2], n)
                 
+
+            
+    # def addMeshConstraints(self):
+    #     field0 = self.add_boundary_layer(
+    #         edges_list=[self.eList[0].line_loop.lines[0]],
+    #         hfar=0.1,
+    #         hwall_n=0.01,
+    #         # hwall_t=0.01,
+    #         ratio=1.1,
+    #         thickness=0.2,
+    #         # anisomax=100.0
+    #         )
+     
+    #     # field1 = geom.add_boundary_layer(
+    #     #     nodes_list=[p2],
+    #     #     hfar=0.1,
+    #     #     hwall_n=0.01,
+    #     #     hwall_t=0.01,
+    #     #     ratio=1.1,
+    #     #     thickness=0.2,
+    #     #     anisomax=100.0
+    #     #     )
+     
+    #     self.add_background_field([field0])
+    

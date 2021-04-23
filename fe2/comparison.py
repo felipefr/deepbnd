@@ -93,4 +93,18 @@ plt.xticks([0,1,2,3,4,5,6],labels = norms_label)
 plt.xlabel('Norms')
 plt.grid()
 plt.legend(loc = 'best')
-plt.savefig(suptitle + '.png')
+plt.savefig(folderImages + suptitle + '.png')
+
+suptitle = 'Error_rel_bar_vertical_load_on_tip' 
+
+plt.figure(2)
+plt.title(suptitle)
+for i in range(6):
+    plt.plot(errors[i,1::2], '-o', label = tangent_labels[i])
+plt.yscale('log')
+plt.xticks([0,1,2,3,4,5,6],labels = norms_label)
+plt.xlabel('Relative Norms')
+plt.grid()
+plt.legend(loc = 'best')
+plt.savefig(folderImages + suptitle + '.png')
+

@@ -67,28 +67,35 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
         form = self.multiscaleModel(self.mesh, sigmaLaw, Eps, self.others)
         a,f,bcs,W = form()
 
-        # start = timer()        
+        start = timer()        
         A = mp.block_assemble(a)
         if(len(bcs) > 0): 
             bcs.apply(A)
         
         solver = df.PETScLUSolver('superlu')
         sol = mp.BlockFunction(W)
-             
-        Vref = self.others['uD'].function_space()
-        Mref = Vref.mesh()
-        normal = df.FacetNormal(Mref)
-        volMref = 4.0
+        
+        if(self.model == 'lin' or self.model == 'dnn'):
+            Vref = self.others['uD'].function_space()
+            Mref = Vref.mesh()
+            normal = df.FacetNormal(Mref)
+            volMref = 4.0
+        
+        B = np.zeros((2,2))
         
         for i in range(self.nvoigt):
-            # start = timer()              
-            self.others['uD'].vector().set_local(self.others['uD{0}_'.format(i)])
-        
-            B = -feut.Integral(df.outer(self.others['uD'],normal), Mref.ds, (2,2))/volMref
-            T = feut.affineTransformationExpression(np.zeros(2),B, Mref) # ignore a, since the basis is already translated
-            self.others['uD'].vector().set_local(self.others['uD'].vector().get_local()[:] + 
-                                                 df.interpolate(T,Vref).vector().get_local()[:])
             
+            
+            start = timer()              
+            if(self.model == 'lin' or self.model == 'dnn'):
+                self.others['uD'].vector().set_local(self.others['uD{0}_'.format(i)])
+            
+                B = -feut.Integral(df.outer(self.others['uD'],normal), Mref.ds, (2,2))/volMref
+                T = feut.affineTransformationExpression(np.zeros(2),B, Mref) # ignore a, since the basis is already translated
+                self.others['uD'].vector().set_local(self.others['uD'].vector().get_local()[:] + 
+                                                     df.interpolate(T,Vref).vector().get_local()[:])
+                
+                
             Eps.assign(df.Constant(mscm.macro_strain(i) - B))   
         
             F = mp.block_assemble(f)
@@ -103,8 +110,8 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
             
             self.Chom_[:,i] = sigma_hom.flatten()[[0,3,1]]
             
-            # end = timer()
-            # print('time in solving system', end - start) # Time in seconds
+            end = timer()
+            print('time in solving system', end - start) # Time in seconds
         
         self.getTangent = self.getTangent_ # from the second run onwards, just returns  
         
