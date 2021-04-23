@@ -34,7 +34,7 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
         self.param = param
         self.model = model
         # it should be modified before computing tangent (if needed) 
-        self.others = {'polyorder' : 1} 
+        self.others = {'polyorder' : 2} 
         
         self.multiscaleModel = mscm.listMultiscaleModels[model]              
         self.ndim = 2
