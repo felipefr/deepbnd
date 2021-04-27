@@ -1,8 +1,20 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Availabel in: https://github.com/felipefr/micmacsFenics.git
+@author: Felipe Figueredo Rocha, f.rocha.felipe@gmail.com, felipe.figueredorocha@epfl.ch
+   
+"""
+
 import sys, os
+import dolfin as df 
+sys.path.insert(0, '/home/felipefr/github/micmacsFenics/utils/')
 sys.path.insert(0,'../../utils/')
 import numpy as np
 import myHDF5 as myhd
 import meshUtils as meut
+import elasticity_utils as elut
+import symmetryLib as symlpy
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
@@ -19,7 +31,6 @@ def write_mesh(ellipseData, nameMesh, size = 'reduced'):
     NL = NxL*NyL
     x0L = y0L = -H 
     LxL = LyL = 2*H
-    # lcar = (2/30)*H
     lcar = (2/30)*H
     Nx = (NxL+2*maxOffset)
     Ny = (NyL+2*maxOffset)
@@ -47,7 +58,10 @@ def write_mesh(ellipseData, nameMesh, size = 'reduced'):
     meshGMSH.write(nameMesh, opt = 'fenics')
     
 # loading the DNN model
+# folder = '../models/dataset_axial3/'
+# ellipseData = myhd.loadhd5(folder +  'ellipseData.h5', 'ellipseData')
 ellipseData = myhd.loadhd5('ellipseData_RVEs.hd5', 'ellipseData')
+
 
 # defining the micro model
 i = 0
@@ -55,4 +69,4 @@ nCells = len(ellipseData)
 
 for i in range(nCells):
     if(i%num_ranks == rank):
-        write_mesh(ellipseData[i], './meshes/mesh_micro_{0}_reduced.xdmf'.format(i), 'reduced')
+        write_mesh(ellipseData[i], './meshes/mesh_micro_{0}_full.xdmf'.format(i), 'full')

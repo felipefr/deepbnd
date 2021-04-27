@@ -11,7 +11,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import dolfin as df 
 import matplotlib.pyplot as plt
 from ufl import nabla_div
-sys.path.insert(0, '/home/felipefr/github/micmacsFenics/utils/')
+sys.path.insert(0, '/home/rocha/github/micmacsFenics/utils/')
 sys.path.insert(0,'../utils/')
 
 import multiscaleModels as mscm
@@ -52,7 +52,7 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
         self.param = param
         self.model = model
         # it should be modified before computing tangent (if needed) 
-        self.others = {'polyorder' : 1} 
+        self.others = {'polyorder' : 2} 
         
         self.multiscaleModel = mscm.listMultiscaleModels[model]              
         self.ndim = 2
@@ -85,7 +85,7 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
         form = self.multiscaleModel(self.mesh, sigmaLaw, Eps, self.others)
         a,f,bcs,W = form()
 
-        start = timer()        
+        # start = timer()        
         A = mp.block_assemble(a)
         if(len(bcs) > 0): 
             bcs.apply(A)
@@ -95,7 +95,7 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
              
         for i in range(self.nvoigt):
             start = timer()              
-            self.others['uD'].vector().set_local(self.others['uD{0}_'.format(i)])
+            # self.others['uD'].vector().set_local(self.others['uD{0}_'.format(i)])
             
             Eps.assign(df.Constant(mscm.macro_strain(i)))    
             F = mp.block_assemble(f)
@@ -128,8 +128,8 @@ dxRef = df.Measure('dx', Mref)
 
 Lx = 2.0
 Ly = 0.5
-Nx = 10
-Ny = 4
+Ny = 5
+Nx = 4*Ny
 ty = -0.01
 
 # Create mesh and define function space
@@ -165,11 +165,11 @@ print(mesh.num_cells())
 for cell in df.cells(mesh):
     i = cell.global_index()
     meshMicroName = './meshes/mesh_micro_{0}_reduced.xdmf'.format(i)
-    microModelList.append( MicroConstitutiveModelDNN(meshMicroName, param, 'per') )
-    microModelList[-1].others['uD'] = df.Function(Vref) 
-    microModelList[-1].others['uD0_'] = myhd.loadhd5(BCname, 'u0')[i,:] 
-    microModelList[-1].others['uD1_'] = myhd.loadhd5(BCname, 'u1')[i,:]
-    microModelList[-1].others['uD2_'] = myhd.loadhd5(BCname, 'u2')[i,:]
+    microModelList.append( MicroConstitutiveModelDNN(meshMicroName, param, 'lin') )
+    # microModelList[-1].others['uD'] = df.Function(Vref) 
+    # microModelList[-1].others['uD0_'] = myhd.loadhd5(BCname, 'u0')[i,:] 
+    # microModelList[-1].others['uD1_'] = myhd.loadhd5(BCname, 'u1')[i,:]
+    # microModelList[-1].others['uD2_'] = myhd.loadhd5(BCname, 'u2')[i,:]
 
 
 Chom = myChom(microModelList, degree = 0)
@@ -195,10 +195,9 @@ uh = df.Function(Uh)
 df.solve(a == b,uh, bcs = bcL, solver_parameters={"linear_solver": "mumps"})
 
 
-with df.XDMFFile(comm, "barMultiscale_per_full_vtk.xdmf") as file:
+with df.XDMFFile(comm, "barMultiscale_per_reduced_vtk.xdmf") as file:
     uh.rename('u','name')
     file.write(uh)
 
-with df.XDMFFile(comm, "barMultiscale_per_full.xdmf") as file:
+with df.XDMFFile(comm, "barMultiscale_per_reduced.xdmf") as file:
     file.write_checkpoint(uh,'u',0)
-    
