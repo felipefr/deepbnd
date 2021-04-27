@@ -76,13 +76,12 @@ class myGmsh(pygmsh.built_in.Geometry):
         meshGeoFile = self.radFileMesh.format('geo')
         meshMshFile = self.radFileMesh.format('msh')
         self.writeGeo(meshGeoFile)
-        os.system('gmsh -2 -format msh2 ' + meshGeoFile) # before with -algo del2d, but noticed mesh distortions
+        os.system('gmsh -2 -format msh2 -algo del2d' + meshGeoFile) # with del2d, noticed less distortions
         os.system('dolfin-convert {0} {1}'.format(meshMshFile, savefile))    
     
     def write(self,savefile = '', opt = 'meshio'):
         if(type(self.mesh) == type(None)):
-            self.generate(gmsh_opt=['-bin','-v','0']) # before with -algo del2d, but noticed mesh distortions
-        
+            self.generate(gmsh_opt=['-bin','-v','0', '-algo', 'del2d']) # with del2d, noticed less distortions       
         if(len(savefile) == 0):
             savefile = self.radFileMesh.format('xdmf')
         
@@ -331,56 +330,56 @@ class ellipseMesh2(myGmsh):
         self.set_transfinite_lines(self.rec.lines, n)
         
         
-# class ellipseMeshBar(ellipseMesh2):
+class ellipseMeshBar(ellipseMesh2):
     
-#     def physicalNaming(self):
-#         self.add_physical(self.rec.surface, 1)
-#         self.add_physical(self.eList[:],0)
-#         [self.add_physical(self.rec.lines[i],2+i) for i in range(4)]  #bottom, right, top, left
+    def physicalNaming(self):
+        self.add_physical(self.rec.surface, 1)
+        self.add_physical(self.eList[:],0)
+        [self.add_physical(self.rec.lines[i],2+i) for i in range(4)]  #bottom, right, top, left
     
 
             
-# class ellipseMeshBarAdaptative(myGmsh):
-#     def __init__(self, ellipseData, x0, y0, Lx, Ly , lcar): # lcar[1]<lcar[0]<lcar[2]
-#         super().__init__()    
+class ellipseMeshBarAdaptative(myGmsh):
+    def __init__(self, ellipseData, x0, y0, Lx, Ly , lcar): # lcar[1]<lcar[0]<lcar[2]
+        super().__init__()    
         
-#         self.x0 = x0
-#         self.y0 = y0
-#         self.Lx = Lx
-#         self.Ly = Ly
-#         self.lcar = lcar    
-#         self.eList = self.createEllipses(ellipseData)
-#         self.createSurfaces()
-#         self.physicalNaming()
+        self.x0 = x0
+        self.y0 = y0
+        self.Lx = Lx
+        self.Ly = Ly
+        self.lcar = lcar    
+        self.eList = self.createEllipses(ellipseData)
+        self.createSurfaces()
+        self.physicalNaming()
 
-#     def createSurfaces(self):
-#         self.rec = self.add_rectangle(self.x0,self.x0 + self.Lx,self.y0,self.y0 + self.Ly, 0.0, lcar=self.lcar[0], holes = self.eList)
+    def createSurfaces(self):
+        self.rec = self.add_rectangle(self.x0,self.x0 + self.Lx,self.y0,self.y0 + self.Ly, 0.0, lcar=self.lcar[0], holes = self.eList)
     
-#     def physicalNaming(self):
-#         self.add_physical(self.rec.surface, 1)
-#         self.add_physical(self.eList[:],0)
-#         [self.add_physical(self.rec.lines[i],2+i) for i in range(4)]  #bottom, right, top, left
+    def physicalNaming(self):
+        self.add_physical(self.rec.surface, 1)
+        self.add_physical(self.eList[:],0)
+        [self.add_physical(self.rec.lines[i],2+i) for i in range(4)]  #bottom, right, top, left
         
-#     def createEllipses(self, ellipseData):
-#         eList = []
+    def createEllipses(self, ellipseData):
+        eList = []
         
-#         lcar = self.lcar
-#         angles = [0.0, 0.5*np.pi, np.pi, 1.5*np.pi]
-#         for cx, cy, l, e, t in ellipseData: # center, major axis length, excentricity, theta
-#             lenghts = [l,e*l,l,e*l]
-#             pc = self.add_point([cx,cy,0.0], lcar = lcar[2])
-#             pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar[1]) for li, ti in zip(lenghts,angles)]
-#             ai = [self.add_ellipse_arc(pi[i],pc,pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
-#             a = self.add_line_loop(lines = ai)
-#             eList.append(self.add_surface(a))
+        lcar = self.lcar
+        angles = [0.0, 0.5*np.pi, np.pi, 1.5*np.pi]
+        for cx, cy, l, e, t in ellipseData: # center, major axis length, excentricity, theta
+            lenghts = [l,e*l,l,e*l]
+            pc = self.add_point([cx,cy,0.0], lcar = lcar[2])
+            pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar[1]) for li, ti in zip(lenghts,angles)]
+            ai = [self.add_ellipse_arc(pi[i],pc,pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
+            a = self.add_line_loop(lines = ai)
+            eList.append(self.add_surface(a))
             
-#         return eList
+        return eList
         
-#     def setTransfiniteBoundary(self,n, direction = 'horiz'):
-#         if(direction == 'horiz'):
-#             self.set_transfinite_lines(self.rec.lines[0::2], n)
-#         else:
-#             self.set_transfinite_lines(self.rec.lines[1::2], n)
+    def setTransfiniteBoundary(self,n, direction = 'horiz'):
+        if(direction == 'horiz'):
+            self.set_transfinite_lines(self.rec.lines[0::2], n)
+        else:
+            self.set_transfinite_lines(self.rec.lines[1::2], n)
                 
 
             
