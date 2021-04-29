@@ -21,10 +21,11 @@ def get_indexes_ring(Nx, Ny, Nx_w, Ny_w, Nx_0, Ny_0):
     foo = lambda i: get_indexes_window(Nx, Ny, Nx_w-2*i, Ny_w-2*i, Nx_0+i, Ny_0+i)
     return np.array(list(set(foo(0)) - set(foo(1)))) 
 
-fac = 2
+
+fac = 4
 Ly = 0.5
 Lx = fac*Ly
-Ny = 1
+Ny = int(input("type Ny : "))
 Nx = fac*Ny
 H = Lx/Nx # same as Ly/Ny
 x0 = y0 = 0.0
@@ -58,8 +59,8 @@ meshGMSH = meut.ellipseMeshBarAdaptative_3circles(ellipseData, x0, y0, Lx, Ly, l
 meshGMSH.setTransfiniteBoundary(NpLx, direction = 'horiz')
 meshGMSH.setTransfiniteBoundary(NpLy, direction = 'vert')
 # meshGMSH.addMeshConstraints()
-meshGMSH.writeGeo('./DNS_test/DNS.geo')
-meshGMSH.write('./DNS_test/mesh.xdmf'.format(Ny), opt = 'fenics')
-os.system('rm ' + './DNS_test/ellipseData_DNS.hd5'.format(Ny))
-myhd.savehd5('./DNS_test/ellipseData_DNS.hd5'.format(Ny), ellipseData, 'ellipseData', 'w-') 
+# meshGMSH.writeGeo('./DNS_{0}_light/DNS.geo')
+meshGMSH.write('./DNS_{0}_light/mesh.xdmf'.format(Ny), opt = 'fenics')
+os.system('rm ' + './DNS_{0}_light/ellipseData_DNS.hd5'.format(Ny))
+myhd.savehd5('./DNS_{0}_light/ellipseData_DNS.hd5'.format(Ny), ellipseData, 'ellipseData', 'w-') 
 

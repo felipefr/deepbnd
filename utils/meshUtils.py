@@ -401,8 +401,8 @@ class ellipseMeshBarAdaptative_3circles(myGmsh):
         self.rec = self.add_rectangle(self.x0,self.x0 + self.Lx,self.y0,self.y0 + self.Ly, 0.0, lcar=self.lcar[0], holes = self.eList2)
     
     def physicalNaming(self):
-        self.add_physical(self.rec.surface, 1)
-        self.add_physical(self.eList0[:] + self.eList1[:] + self.eList2[:],0)
+        self.add_physical(self.rec.surface + self.eList2[:], 1)
+        self.add_physical(self.eList0[:] + self.eList1[:],0)
         [self.add_physical(self.rec.lines[i],2+i) for i in range(4)]  #bottom, right, top, left
         
     def createEllipses(self, ellipseData):
