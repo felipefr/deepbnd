@@ -382,6 +382,82 @@ class ellipseMeshBarAdaptative(myGmsh):
             self.set_transfinite_lines(self.rec.lines[1::2], n)
                 
 
+
+class ellipseMeshBarAdaptative_3circles(myGmsh):
+    def __init__(self, ellipseData, x0, y0, Lx, Ly , lcar, he): # lcar[0]<lcar[1]<lcar[2]
+        super().__init__()    
+        
+        self.x0 = x0
+        self.y0 = y0
+        self.Lx = Lx
+        self.Ly = Ly
+        self.lcar = lcar  
+        self.he = he
+        self.eList0, self.eList1, self.eList2 = self.createEllipses(ellipseData)
+        self.createSurfaces()
+        self.physicalNaming()
+
+    def createSurfaces(self):
+        self.rec = self.add_rectangle(self.x0,self.x0 + self.Lx,self.y0,self.y0 + self.Ly, 0.0, lcar=self.lcar[0], holes = self.eList2)
+    
+    def physicalNaming(self):
+        self.add_physical(self.rec.surface, 1)
+        self.add_physical(self.eList0[:] + self.eList1[:] + self.eList2[:],0)
+        [self.add_physical(self.rec.lines[i],2+i) for i in range(4)]  #bottom, right, top, left
+        
+    def createEllipses(self, ellipseData):
+        eList0 = []
+        eList1 = [] 
+        eList2 = []
+        
+        lcar = self.lcar
+        angles = [0.0, 0.5*np.pi, np.pi, 1.5*np.pi]
+        
+        he = self.he
+        
+        for cx, cy, l, e, t in ellipseData: # center, major axis length, excentricity, theta
+            lenghts = [l-he,e*l-he,l-he,e*l-he]
+            pc = self.add_point([cx,cy,0.0], lcar = lcar[2])
+            pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar[2]) for li, ti in zip(lenghts,angles)]
+            ai = [self.add_ellipse_arc(pi[i],pc,pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
+            a = self.add_line_loop(lines = ai)
+            eList0.append(self.add_surface(a))
+        
+        k = 0
+        for cx, cy, l, e, t in ellipseData: # center, major axis length, excentricity, theta
+            lenghts = [l,e*l,l,e*l]
+            pc = self.add_point([cx,cy,0.0], lcar = lcar[2])
+            pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar[1]) for li, ti in zip(lenghts,angles)]
+            ai = [self.add_ellipse_arc(pi[i],pc,pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
+            a = self.add_line_loop(lines = ai)
+            eList1.append(self.add_plane_surface(a, holes = [eList0[k]]))
+            
+            k = k + 1
+
+
+        k = 0
+        for cx, cy, l, e, t in ellipseData: # center, major axis length, excentricity, theta
+            lenghts = [l+he,e*l + he,l + he,e*l + he]
+            pc = self.add_point([cx,cy,0.0], lcar = lcar[2])
+            pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar[0]) for li, ti in zip(lenghts,angles)]
+            ai = [self.add_ellipse_arc(pi[i],pc,pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
+            a = self.add_line_loop(lines = ai)
+            eList2.append(self.add_plane_surface(a, holes = [eList1[k]]))
+            k = k + 1
+
+        
+            
+        return eList0, eList1, eList2
+
+
+
+        
+    def setTransfiniteBoundary(self,n, direction = 'horiz'):
+        if(direction == 'horiz'):
+            self.set_transfinite_lines(self.rec.lines[0::2], n)
+        else:
+            self.set_transfinite_lines(self.rec.lines[1::2], n)
+                
             
     # def addMeshConstraints(self):
     #     field0 = self.add_boundary_layer(

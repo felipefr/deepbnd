@@ -94,13 +94,14 @@ b = df.inner(traction,vh)*ds(2)
 
 # # Compute solution
 uh = df.Function(Uh)
-df.solve(a == b,uh, bcs = bcL, solver_parameters={"linear_solver": "superlu"})
+df.solve(a == b,uh, bcs = bcL, solver_parameters={"linear_solver": "superlu_dist"})
+# df.solve(a == b,uh, bcs = bcL, solver_parameters={"linear_solver": "cg", "preconditioner" : 'hypre_parasails' })
 
 
-with df.XDMFFile(comm, "barMacro_{0}_vtk.xdmf".format(caseType)) as file:
+with df.XDMFFile(comm, "barMacro_{0}_vtk_test.xdmf".format(caseType)) as file:
     uh.rename('u','name')
     file.write(uh)
 
-with df.XDMFFile(comm, "barMacro_{0}.xdmf".format(caseType)) as file:
+with df.XDMFFile(comm, "barMacro_{0}_test.xdmf".format(caseType)) as file:
     file.write_checkpoint(uh,'u',0)
     
