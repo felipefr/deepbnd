@@ -29,33 +29,38 @@ Ny = int(input("type Ny : "))
 Nx = fac*Ny
 H = Lx/Nx # same as Ly/Ny
 x0 = y0 = 0.0
-lcar = (1/10)*H # more less the same order than the RVE
+lcar = (1/9)*H # more less the same order than the RVE
 r0 = 0.2*H
 r1 = 0.4*H
 Vfrac = 0.282743
 rm = H*np.sqrt(Vfrac/np.pi)
-he = 0.07*H
+he = 0.075*H
 
 NpLx = int(Lx/lcar) + 1 # affine boundary
 NpLy = int(Ly/lcar) + 1 # affine boundary
 
-np.random.seed(1)
+np.random.seed(5)
 ellipseData = geni.circularRegular2Regions(r0, r1, Nx, Ny, Lx, Ly, offset = 0, ordered = False, x0 = x0, y0 = y0)[0]
 Nx_W = Ny_W = 6
 Nx_w = Ny_w = 2
 
 
-for i in range(0,Nx - Nx_W + 1, Nx_W):
-    for j in range(0, Ny - Ny_W + 1, Ny_W):
-        enforceVfrac_indexes(ellipseData[:,2], get_indexes_window(Nx,Ny,Nx_w,Ny_w,i+2,j+2), H, Vfrac)
-        enforceVfrac_indexes(ellipseData[:,2], get_indexes_ring(Nx,Ny,Nx_W,Ny_W,i,j), H, Vfrac)
-        enforceVfrac_indexes(ellipseData[:,2], get_indexes_ring(Nx,Ny,Nx_W-2,Ny_W-2,i+1,j+1), H, Vfrac)
+for n in range(4):
+
+    ellipseData[ellipseData[:,2]<r0,2] = r0
+    ellipseData[ellipseData[:,2]>r1,2] = r1
+
+    for i in range(0,Nx - Nx_W + 1, Nx_W):
+        for j in range(0, Ny - Ny_W + 1, Ny_W):
+            enforceVfrac_indexes(ellipseData[:,2], get_indexes_window(Nx,Ny,Nx_w,Ny_w,i+2,j+2), H, Vfrac)
+            enforceVfrac_indexes(ellipseData[:,2], get_indexes_ring(Nx,Ny,Nx_W,Ny_W,i,j), H, Vfrac)
+            enforceVfrac_indexes(ellipseData[:,2], get_indexes_ring(Nx,Ny,Nx_W-2,Ny_W-2,i+1,j+1), H, Vfrac)
 
 
 print(np.pi*np.sum(ellipseData[:,2]**2))
 print(np.max(ellipseData[:,2]), np.min(ellipseData[:,2]), r1, r0)
 
-meshGMSH = meut.ellipseMeshBarAdaptative_3circles(ellipseData, x0, y0, Lx, Ly, lcar = [lcar,0.3*lcar,1.2*lcar], he = he)
+meshGMSH = meut.ellipseMeshBarAdaptative_3circles(ellipseData, x0, y0, Lx, Ly, lcar = [lcar,0.35*lcar,lcar], he = [he,he])
 meshGMSH.setTransfiniteBoundary(NpLx, direction = 'horiz')
 meshGMSH.setTransfiniteBoundary(NpLy, direction = 'vert')
 # meshGMSH.addMeshConstraints()

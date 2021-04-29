@@ -401,8 +401,8 @@ class ellipseMeshBarAdaptative_3circles(myGmsh):
         self.rec = self.add_rectangle(self.x0,self.x0 + self.Lx,self.y0,self.y0 + self.Ly, 0.0, lcar=self.lcar[0], holes = self.eList2)
     
     def physicalNaming(self):
-        self.add_physical(self.rec.surface + self.eList2[:], 1)
         self.add_physical(self.eList0[:] + self.eList1[:],0)
+        self.add_physical(self.eList2[:] + [self.rec.surface], 1)
         [self.add_physical(self.rec.lines[i],2+i) for i in range(4)]  #bottom, right, top, left
         
     def createEllipses(self, ellipseData):
@@ -413,40 +413,44 @@ class ellipseMeshBarAdaptative_3circles(myGmsh):
         lcar = self.lcar
         angles = [0.0, 0.5*np.pi, np.pi, 1.5*np.pi]
         
-        he = self.he
-        
+        he0, he1 = self.he
+        pc = []
+
         for cx, cy, l, e, t in ellipseData: # center, major axis length, excentricity, theta
-            lenghts = [l-he,e*l-he,l-he,e*l-he]
-            pc = self.add_point([cx,cy,0.0], lcar = lcar[2])
-            pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar[2]) for li, ti in zip(lenghts,angles)]
-            ai = [self.add_ellipse_arc(pi[i],pc,pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
-            a = self.add_line_loop(lines = ai)
-            eList0.append(self.add_surface(a))
+            pc.append(self.add_point([cx,cy,0.0], lcar = 0.5*l))
         
         k = 0
         for cx, cy, l, e, t in ellipseData: # center, major axis length, excentricity, theta
             lenghts = [l,e*l,l,e*l]
-            pc = self.add_point([cx,cy,0.0], lcar = lcar[2])
+            lenghts = [li - he0 for li in lenghts]
+            pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar[2]) for li, ti in zip(lenghts,angles)]
+            ai = [self.add_ellipse_arc(pi[i],pc[k],pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
+            a = self.add_line_loop(lines = ai)
+            eList0.append(self.add_surface(a))
+            k = k + 1
+        
+        k = 0
+        for cx, cy, l, e, t in ellipseData: # center, major axis length, excentricity, theta
+            lenghts = [l,e*l,l,e*l]
             pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar[1]) for li, ti in zip(lenghts,angles)]
-            ai = [self.add_ellipse_arc(pi[i],pc,pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
+            ai = [self.add_ellipse_arc(pi[i],pc[k],pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
             a = self.add_line_loop(lines = ai)
             eList1.append(self.add_plane_surface(a, holes = [eList0[k]]))
-            
             k = k + 1
 
 
         k = 0
         for cx, cy, l, e, t in ellipseData: # center, major axis length, excentricity, theta
-            lenghts = [l+he,e*l + he,l + he,e*l + he]
-            pc = self.add_point([cx,cy,0.0], lcar = lcar[2])
+            lenghts = [l,e*l,l,e*l]
+            lenghts = [ li + he1 for li in lenghts]
             pi =  [ self.add_point([cx + li*np.cos(ti + t), cy + li*np.sin(ti + t), 0.0], lcar = lcar[0]) for li, ti in zip(lenghts,angles)]
-            ai = [self.add_ellipse_arc(pi[i],pc,pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
+            ai = [self.add_ellipse_arc(pi[i],pc[k],pi[i], pi[(i+1)%4]) for i in range(4)] # start, center, major axis, end
             a = self.add_line_loop(lines = ai)
             eList2.append(self.add_plane_surface(a, holes = [eList1[k]]))
             k = k + 1
 
         
-            
+        print(len(eList0),len(eList1),len(eList2))    
         return eList0, eList1, eList2
 
 

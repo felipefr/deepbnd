@@ -1,4 +1,3 @@
-
 import sys, os
 from dolfin import *
 import numpy as np
@@ -21,16 +20,19 @@ num_ranks = comm.Get_size()
 Lx = 2.0
 Ly = 0.5
 ty = -0.01
-Ny = '12'
+Ny = int(input("type Ny : "))
 
 start = timer()
 # Create mesh and define function space
 mesh = meut.EnrichedMesh('./DNS_{0}_light/mesh.xdmf'.format(Ny), comm)
-Uh = VectorFunctionSpace(mesh, "CG", 1)
+Uh = VectorFunctionSpace(mesh, "CG", 2)
 
-V0 = assemble(Constant(1.0)*mesh.dx(0))
-V1 = assemble(Constant(1.0)*mesh.dx(1))
-print(V0/(V1+V0), V1 + V0)
+if(num_ranks == 1):
+    V0 = assemble(Constant(1.0)*mesh.dx(0))
+    V1 = assemble(Constant(1.0)*mesh.dx(1))
+    print("sanitity check: ", V0/(V1+V0), V1 + V0)
+    
+    input()
 
 bcL = DirichletBC(Uh, Constant((0.0,0.0)), mesh.boundaries, 5) # 5 is left face
 
@@ -56,23 +58,8 @@ uh = Function(Uh)
 
 print(Uh.dim())
 
-# problem = LinearVariationalProblem(a, b, uh, bcs = bcL)
-# solver = LinearVariationalSolver(problem)
-# solver.parameters["linear_solver"] = 'gmres'
-# solver.parameters["preconditioner"] = "hypre_amg"
-# solver.parameters["krylov_solver"]["relative_tolerance"] = 1e-5
-# solver.parameters["krylov_solver"]["absolute_tolerance"] = 1e-6
-# solver.parameters["krylov_solver"]["nonzero_initial_guess"] = True
-# solver.parameters["krylov_solver"]["error_on_nonconvergence"] = False
-# solver.parameters["krylov_solver"]["maximum_iterations"] = 15
-# solver.parameters["krylov_solver"]["monitor_convergence"] = True
-# solver.parameters["krylov_solver"]["report"] = True
-# solver.parameters["preconditioner"]["ilu"]["fill_level"] = 1 # 
-
-
 # solver.solve()
 A, F = assemble_system(a, b, bcL)
-
 
 solver = PETScKrylovSolver('gmres','hypre_amg')
 solver.parameters["relative_tolerance"] = 1e-5
@@ -86,30 +73,7 @@ solver.parameters["monitor_convergence"] = True
 solver.set_operator(A)
 solver.solve(uh.vector(), F)    
 
-
-# parms = parameters["krylov_solver"]
-# parms["relative_tolerance"]=1.e-1
-# parms["absolute_tolerance"]=1.e-2
-# parms["monitor_convergence"] = True
-# parms["relative_tolerance"]=1.e-5   
-# parms["absolute_tolerance"]=1.e-6
-# parms["nonzero_initial_guess"] = True
-# parms["error_on_nonconvergence"] = False
-# parms["maximum_iterations"] = 15
-
-# gmres_param = parms["gmres"]
-# gmres_param['restart'] = 10
-
-# solve(a == b, uh, bcs = bcL,
-# solver_parameters={"linear_solver": "gmres",
-# "preconditioner": "hypre_amg",
-# "krylov_solver": parms})
-
-# Compute solution
-# solve(a == b, uh, bcs = bcL, solver_parameters={"linear_solver": "gmres", "preconditioner" : "hypre_amg"}) # best for distributed 
-
-
-with XDMFFile(comm, "./DNS_{0}_light/barMacro_DNS_P1.xdmf".format(Ny)) as file:
+with XDMFFile(comm, "./DNS_{0}_light/barMacro_DNS.xdmf".format(Ny)) as file:
     file.write_checkpoint(uh,'u',0)
 
 end = timer()
