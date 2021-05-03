@@ -28,7 +28,10 @@ from mpi4py import MPI
 
 # Test Loading 
 
-folder = './DNS_72/'
+rootDataPath = open('../../../rootDataPath.txt','r').readline()[:-1]
+print(rootDataPath)
+
+folder = rootDataPath + '/fe2/big_DNS/DNS_72/'
 jump = '_jump'
 Ny_mesh = '48'
 
@@ -42,9 +45,11 @@ Ny_mesh = '48'
 # Create mesh and define function space
 
 
-tangent_labels = ['DNS', 'dnn', 'full_per']
-solutions = [ 'barMacro_DNS_P2_interp_ny{0}.xdmf'.format(Ny_mesh), 'multiscale{0}/barMacro_Multiscale_dnn_ny{1}.xdmf'.format(jump,Ny_mesh), 
-          'multiscale{0}/barMacro_Multiscale_full_per_ny{1}.xdmf'.format(jump, Ny_mesh)] # temporary
+tangent_labels = ['DNS', 'dnn', 'full_per', 'reduced_per']
+solutions = [ 'barMacro_DNS_P2_interp_ny{0}.xdmf'.format(Ny_mesh), 
+             'multiscale{0}/barMacro_Multiscale_dnn_ny{1}.xdmf'.format(jump,Ny_mesh), 
+             'multiscale{0}/barMacro_Multiscale_full_per_ny{1}.xdmf'.format(jump, Ny_mesh),
+             'multiscale{0}/barMacro_Multiscale_reduced_per_ny{1}.xdmf'.format(jump, Ny_mesh)] # temporary
          
 solutions = [folder + f for f in solutions]
 
@@ -86,7 +91,7 @@ for i in range(n):
     for j, N in enumerate(norms):
         errors[i,j] = N(e)
  
-# np.savetxt(folder + 'errors.txt', errors)
+np.savetxt(folder + 'errors.txt', errors)
 
 suptitle = 'Error_DNS_72_bar_nyMesh{1}_vs_DNS{0}'.format(jump,Ny_mesh) 
 

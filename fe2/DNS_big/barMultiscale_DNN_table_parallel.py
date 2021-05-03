@@ -37,12 +37,15 @@ class myChom(df.UserExpression):
     def value_shape(self):
         return (3,3,)
     
-caseType = 'dnn'
+caseType = 'reduced_per'
 volFrac = ''
-jump = ''
+jump = '_jump'
+
+rootDataPath = open('../../../rootDataPath.txt','r').readline()[:-1]
+print(rootDataPath)
 
 Ny_DNS = 72
-folder = "./DNS_{0}/".format(Ny_DNS)
+folder = rootDataPath + "/fe2/big_DNS/DNS_{0}/".format(Ny_DNS)
 
 # loading boundary reference mesh
 Lx = 2.0
@@ -50,7 +53,6 @@ Ly = 0.5
 Ny = 48
 Nx = 4*Ny
 ty = -0.01
-
 
 # Create mesh and define function space
 # mesh = df.RectangleMesh(comm,df.Point(0.0, 0.0), df.Point(Lx, Ly), Nx, Ny, "right/left")
@@ -62,8 +64,6 @@ mesh = df.Mesh(comm)
 with df.XDMFFile(comm, folder + "multiscale{1}/meshBarMacro_Multiscale_ny{0}.xdmf".format(Ny,jump)) as file:
     file.read(mesh)
 
-
-    
 Uh = df.VectorFunctionSpace(mesh, "CG", 2)
 
 leftBnd = df.CompiledSubDomain('near(x[0], 0.0) && on_boundary')
@@ -100,7 +100,6 @@ bcL = df.DirichletBC(Uh, df.Constant((0.0,0.0)), boundary_markers, 1) # leftBnd 
 ds = df.Measure('ds', domain=mesh, subdomain_data=boundary_markers)
 dx = df.Measure('dx', domain=mesh)
 traction = df.Constant((0.0,ty ))
-
 
 # # Define variational problem
 uh = df.TrialFunction(Uh) 
