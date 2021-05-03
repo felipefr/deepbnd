@@ -56,7 +56,13 @@ dxRef = df.Measure('dx', Mref)
 # defining the micro model
 
 ellipseDataName = folder + 'ellipseData_RVEs{0}.hd5'.format(volFrac)
-Centers = myhd.loadhd5(ellipseDataName, 'center')[rank::num_ranks,:]
+size_ids = len(myhd.loadhd5(ellipseDataName, 'center')) # idMax + 1 
+
+
+ids = np.loadtxt(folderTangent + "other_ids.txt").astype('int')
+
+ids = ids[rank::num_ranks]
+Centers = myhd.loadhd5(ellipseDataName, 'center')[ids,:]
 
 ns = len(Centers) # per rank
 
@@ -75,7 +81,7 @@ if(model == 'dnn'):
 
 startTotal = timer()
 for i in range(ns):
-    Iid[i] = rank + i*num_ranks
+    Iid[i] = ids[i]
    
     contrast = 10.0
     E2 = 1.0

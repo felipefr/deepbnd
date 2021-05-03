@@ -31,7 +31,7 @@ Vref = df.VectorFunctionSpace(Mref,"CG", 1)
 # volMref = 4.0
     
 # loading the DNN model
-ellipseData = myhd.loadhd5('ellipseData_RVEs_volFrac.hd5', 'ellipseData') 
+ellipseData = myhd.loadhd5('./DNS_72/ellipseData_RVEs_volFrac.hd5', 'ellipseData') 
 
 modelDNN = 'big_140'
 Nrb = 140
@@ -81,5 +81,5 @@ S_p_axial = Y_p_axial @ Wbasis_axial[:Nrb,:]
 piola_mat = syml.PiolaTransform_matricial('mHalfPi', Vref)
 S_p_axialY = Y_p_axialY @ Wbasis_axial[:Nrb,:] @ piola_mat.T #changed
 
-myhd.savehd5('BCsPrediction_RVEs_volFrac.hd5'.format(modelDNN), 
+myhd.savehd5('./DNS_72/BCsPrediction_RVEs_volFrac.hd5'.format(modelDNN), 
              [S_p_axial,S_p_axialY, S_p_shear], ['u0','u1','u2'], mode = 'w')

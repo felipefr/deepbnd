@@ -1,12 +1,9 @@
 import sys, os
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import dolfin as df 
 import matplotlib.pyplot as plt
 from ufl import nabla_div
 sys.path.insert(0, '/home/rocha/github/micmacsFenics/utils')
 sys.path.insert(0,'../../utils/')
-
-
 
 import multiscaleModels as mscm
 from fenicsUtils import symgrad, symgrad_voigt, Integral
@@ -20,17 +17,15 @@ import symmetryLib as symlpy
 from timeit import default_timer as timer
 import multiphenics as mp
 
-
 from MicroConstitutiveModelDNN import *
 
-from mpi4py import MPI
+# for i in {0..19}; do nohup python computeTangents_serial.py 24 $i 20 > log_ny24_full_per_run$i.py & done
 
-comm = MPI.COMM_WORLD
-comm_self = MPI.COMM_SELF
-rank = comm.Get_rank()
-num_ranks = comm.Get_size()
+Ny = int(sys.argv[1])
+run = int(sys.argv[2])
+num_runs = int(sys.argv[3])
+read_indexes = int(sys.argv[4])
 
-Ny = 72
 folder = "/home/rocha/switchdrive/scratch/fe2/DNS_big/DNS_{0}/".format(Ny)
 volFrac = ''
 folderTangent = folder + 'tangents{0}/'.format(volFrac)
@@ -56,11 +51,19 @@ dxRef = df.Measure('dx', Mref)
 # defining the micro model
 
 ellipseDataName = folder + 'ellipseData_RVEs{0}.hd5'.format(volFrac)
-Centers = myhd.loadhd5(ellipseDataName, 'center')[rank::num_ranks,:]
+size_ids = len(myhd.loadhd5(ellipseDataName, 'center')) # idMax + 1 
+
+if(read_indexes>0):
+    ids = np.loadtxt(folderTangent + "other_ids.txt").astype('int')
+else:
+    ids = np.arange(size_ids).astype('int')
+
+ids = ids[run::num_runs]
+Centers = myhd.loadhd5(ellipseDataName, 'center')[ids,:]
 
 ns = len(Centers) # per rank
 
-tangentFile = folderTangent + 'tangent_{0}_{1}.hd5'.format(model,rank)
+tangentFile = folderTangent + 'tangent_{0}_{1}.hd5'.format(model,run)
 os.system('rm ' + tangentFile)
 Iid_tangent_center, f = myhd.zeros_openFile(tangentFile, [(ns,), (ns,3,3), (ns,2)],
                                        ['id', 'tangent','center'], mode = 'w')
@@ -68,20 +71,18 @@ Iid_tangent_center, f = myhd.zeros_openFile(tangentFile, [(ns,), (ns,3,3), (ns,2
 Iid, Itangent, Icenter = Iid_tangent_center
 
 if(model == 'dnn'):
-    u0_p = myhd.loadhd5(BCname, 'u0')[rank::num_ranks,:]
-    u1_p = myhd.loadhd5(BCname, 'u1')[rank::num_ranks,:]
-    u2_p = myhd.loadhd5(BCname, 'u2')[rank::num_ranks,:]
+    u0_p = myhd.loadhd5(BCname, 'u0')[run::num_runs,:]
+    u1_p = myhd.loadhd5(BCname, 'u1')[run::num_runs,:]
+    u2_p = myhd.loadhd5(BCname, 'u2')[run::num_runs,:]
 
-
-startTotal = timer()
 for i in range(ns):
-    Iid[i] = rank + i*num_ranks
-   
+    Iid[i] = ids[i]
+    
     contrast = 10.0
     E2 = 1.0
     nu = 0.3
     param = [nu,E2*contrast,nu,E2]
-    
+    print(run, i, ids[i])
     meshMicroName = folderMesh + 'mesh_micro_{0}_{1}.xdmf'.format(int(Iid[i]), meshSize)
 
     microModel = MicroConstitutiveModelDNN(meshMicroName, param, modelBnd) 
@@ -98,38 +99,11 @@ for i in range(ns):
         
     
     Icenter[i,:] = Centers[i,:]
-    
-    start = timer() 
     Itangent[i,:,:] = microModel.getTangent()
-    end = timer() 
-    print("time elapsed: ", end - start, i, rank )
-
-    
-    f.flush()    
     
     if(i%10 == 0):
+        f.flush()    
         sys.stdout.flush()
         
-
-f.flush()    
-sys.stdout.flush()
-
 f.close()
 
-endTotal = timer()
-print("time elapsed total: " , endTotal-startTotal, rank)
-
-# comm.Barrier()
-
-# if(rank == 0):
-#     tangentFile = folderTangent + 'tangent_{0}_{1}.hd5'
-#     tangentFileMerged = folderTangent + 'tangent_{0}.hd5'.format(model)
-#     os.system('rm ' + tangentFileMerged)
-#     myhd.merge([tangentFile.format(model,i) for i in range(num_ranks)], tangentFileMerged, 
-#                 InputLabels = ['id','tangent', 'center'], OutputLabels = ['id','tangent', 'center'], axis = 0, mode = 'w-')
-    
-#     [os.system('rm ' + tangentFile.format(model,i)) for i in range(num_ranks)]
-    
-    
-    
-    # np.savetxt("time_elapsed_reduced_{0}.txt".format(model), np.array([end-start]))
