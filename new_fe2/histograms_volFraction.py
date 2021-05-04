@@ -12,7 +12,6 @@ from scipy.stats import norm
 # Test Loading 
 Ny = 24
 
-
 fac = 4
 Ly = 0.5
 Lx = fac*Ly
@@ -28,10 +27,12 @@ rm = H*np.sqrt(Vfrac/np.pi)
 rootDataPath = open('../../rootDataPath.txt','r').readline()[:-1]
 print(rootDataPath)
 
-folder = rootDataPath + '/fe2/big_DNS/DNS_{0}/'.format(Ny)
+folder = rootDataPath + '/new_fe2/DNS/DNS_{0}/'.format(Ny)
+# folder = rootDataPath + '/new_fe2/dataset/'
 
 
-ellipseData = myhd.loadhd5(folder + 'ellipseData_RVEs.hd5', 'ellipseData')
+ellipseData = myhd.loadhd5(folder + 'param_RVEs_from_DNS.hd5', 'param')
+# ellipseData = myhd.loadhd5(folder + 'paramRVEdataset_validation.hd5', 'param')
 
 
 volFracs = np.zeros(len(ellipseData)) 
@@ -48,13 +49,15 @@ p = norm.pdf(x, mu, std)
 
 plt.figure(1)
 plt.title('Histogram for DNS Ny %d'%(Ny))
+# plt.title('Histogram for Dataset Validation')
 plt.hist(volFracs, bins=25, density=True, alpha=0.6, color='g', label = 'histogram')
 plt.plot(x, p, 'k', linewidth=2, label = 'N(%.6f, %.6f)'%(mu, std))
-plt.plot(2*[Vfrac] , [0, 38], '--', label = 'Vf = %.6f'%(Vfrac) )
+# plt.plot(2*[Vfrac] , [0, 38], '--', label = 'Vf = %.6f'%(Vfrac) )
 plt.xlabel('Volume Fraction')
 plt.ylabel('Probability Density')
 plt.legend()
-plt.savefig('histogramsVolFracs_ny{0}.png'.format(Ny))
+plt.savefig('histogramsVolFracs_ny{0}_new.png'.format(Ny))
+# plt.savefig('histogramsVolFracs_dataset_validation.png')
 plt.show()
 
 

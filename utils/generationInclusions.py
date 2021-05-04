@@ -1,13 +1,47 @@
 import numpy as np
+from skopt.space import Space
+from skopt.sampler import Lhs
 
-def circularRegular(r0, r1, Nx,Ny,Lx = 1.0, Ly=1.0, x0 = 0.0, y0 = 0.0):
-    N = Nx*Ny
-    mu = 0.5*np.log(r1*r0)
-    sig = 0.5*np.log(r1/r0)
+
+class paramRVE:
+    def __init__(self, NxL = 2, NyL = 2, maxOffset = 2, Vfrac = 0.282743):
+        self.Vfrac = Vfrac    
+        self.maxOffset = maxOffset
+        self.NxL = NxL
+        self.NyL = NyL
+        self.H = 1.0 # size of each square
+        self.NL = self.NxL*self.NyL
+        self.x0L = self.y0L = -self.H 
+        self.LxL = self.LyL = 2*self.H
+        self.lcar = (2/30)*self.H
+        self.Nx = (self.NxL+2*self.maxOffset)
+        self.Ny = (self.NyL+2*self.maxOffset)
+        self.Lxt = self.Nx*self.H
+        self.Lyt = self.Ny*self.H
+        self.NpLxt = int(self.Lxt/self.lcar) + 1
+        self.NpLxL = int(self.LxL/self.lcar) + 1
+        self.x0 = -self.Lxt/2.0
+        self.y0 = -self.Lyt/2.0
+        self.r0 = 0.2*self.H
+        self.r1 = 0.4*self.H
+        self.rm = self.H*np.sqrt(self.Vfrac/np.pi)
+
+
+def getScikitoptSample(NR,ns,r0,r1, seed, op = 'lhs'):
+    space = Space(NR*[(r0, r1)])
+    if(op == 'lhs'):
+        sampler = Lhs(lhs_type="centered", criterion=None)
+    elif(op == 'lhs_maxmin'):
+        sampler = Lhs(criterion="maximin", iterations=100)
+    elif(op == 'sobol'):
+        sampler = Sobol()
     
-    theta = 2.0*np.random.rand(N) - 1.0
-    r = np.exp(mu + sig*theta)
-        
+    np.random.seed(seed)
+    
+    return np.array(sampler.generate(space.dimensions, ns))
+
+def getEllipse_emptyRadius(Nx,Ny,Lx = 1.0, Ly=1.0, x0 = 0.0, y0 = 0.0):
+    N = Nx*Ny
     angle = 0.0
     e = 1.0
     
@@ -21,7 +55,28 @@ def circularRegular(r0, r1, Nx,Ny,Lx = 1.0, Ly=1.0, x0 = 0.0, y0 = 0.0):
     cx = cx.flatten()
     cy = cy.flatten()
 
-    return np.array([[cx[i],cy[i],r[i],e,angle] for i in range(N)])
+    return np.array([[cx[i],cy[i],0.0,e,angle] for i in range(N)])
+
+
+def getRadiusExponential(r0, r1, theta = None, N = 0): # N is only used if theta is not supplied
+    mu = 0.5*np.log(r1*r0)
+    sig = 0.5*np.log(r1/r0)
+    
+    if(type(theta) == type(None)):
+        theta = 2.0*np.random.rand(N) - 1.0
+    
+    r = np.exp(mu + sig*theta)
+
+    return r 
+
+def circularRegular(r0, r1, Nx,Ny,Lx = 1.0, Ly=1.0, x0 = 0.0, y0 = 0.0, theta = None):
+
+    ellipseData = getEllipse_emptyRadius(Nx,Ny,Lx = 1.0, Ly=1.0, x0 = 0.0, y0 = 0.0)
+    N = len(ellipseData)
+    
+    ellipseData[:,2] = getRadiusExponential(r0, r1, theta, N)
+        
+    return ellipseData
 
 
 # Returns the permutation for to turn the standard numeration (per rows and columns) to the internal to external
