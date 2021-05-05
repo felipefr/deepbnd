@@ -12,8 +12,8 @@ import tensorflow as tf
 
 ker = tf.keras.layers
 
-def exportScale(filenameIn, filenameOut, nX, nY):
-    scalerX, scalerY = getDatasetsXY(nX, nY, filenameIn)[2:4]
+def exportScale(filenameIn, filenameOut, nX, nY, Ylabel = 'Y'):
+    scalerX, scalerY = getDatasetsXY(nX, nY, filenameIn, Ylabel = Ylabel)[2:4]
     scalerLimits = np.zeros((max(nX,nY),4))
     scalerLimits[:nX,0] = scalerX.data_min_
     scalerLimits[:nX,1] = scalerX.data_max_
@@ -261,7 +261,7 @@ def getDatasets(nX, nY, Xdatafile, Ydatafile, scalerX = None, scalerY = None):
             
     return scalerX.transform(X), scalerY.transform(Y), scalerX, scalerY
 
-def getDatasetsXY(nX, nY, XYdatafile, scalerX = None, scalerY = None):
+def getDatasetsXY(nX, nY, XYdatafile, scalerX = None, scalerY = None, Ylabel = 'Y'):
     Xlist = []
     Ylist = []
     
@@ -270,7 +270,7 @@ def getDatasetsXY(nX, nY, XYdatafile, scalerX = None, scalerY = None):
     
     for XYdatafile_i in XYdatafile:    
         Xlist.append(myhd.loadhd5(XYdatafile_i, 'X')[:,:nX])
-        Ylist.append(myhd.loadhd5(XYdatafile_i, 'Y')[:,:nY])
+        Ylist.append(myhd.loadhd5(XYdatafile_i, Ylabel)[:,:nY])
     
     X = np.concatenate(tuple(Xlist),axis = 0)
     Y = np.concatenate(tuple(Ylist),axis = 0)

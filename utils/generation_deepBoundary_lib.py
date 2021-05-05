@@ -203,6 +203,7 @@ def computingBasis_svd(Wbasis,M,Isol,Nmax, Vref,dxRef,dotProduct):
         print("computing basis " , i )
         Wbasis[i,:] = (U[:,i]/sig[i]).reshape((1,ns))@Isol
         
+        
     return sig**2, U    
 
 
