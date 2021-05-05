@@ -25,8 +25,11 @@ from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF
-run = comm.Get_rank()
-num_runs = comm.Get_size()
+#run = comm.Get_rank()
+#num_runs = comm.Get_size()
+
+run = int(sys.argv[1])
+num_runs = int(sys.argv[2])
 
 f = open("../../../rootDataPath.txt")
 rootData = f.read()[:-1]
@@ -34,7 +37,7 @@ f.close()
 
 folder = rootData + "/new_fe2/dataset/"
 
-suffix = "_validation"
+suffix = "_train"
 opModel = 'per'
 createMesh = True
 
@@ -56,7 +59,7 @@ ns = len(myhd.loadhd5(folder +  'paramRVEdataset{0}.hd5'.format(suffix), 'param'
 
 # ns = 2
 # ids_run = np.arange(run,ns,num_runs).astype('int')
-ids_run = np.arange(1408 + :run,ns,num_runs).astype('int')
+ids_run = np.arange(run,ns,num_runs).astype('int')
 nrun = len(ids_run)
 
 os.system('rm ' + folder +  'snapshots{0}_{1}.h5'.format(suffix,run))
