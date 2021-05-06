@@ -1,122 +1,99 @@
 import sys, os
-import dolfin as df 
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+import dolfin as df
 import matplotlib.pyplot as plt
 from ufl import nabla_div
-# sys.path.insert(0, '/home/rocha/github/micmacsFenics/utils')
-sys.path.insert(0, '/home/felipefr/github/micmacsFenics/utils')
+sys.path.insert(0, '/home/felipefr/github/micmacsFenics/utils/')
+# sys.path.insert(0, '/home/rocha/github/micmacsFenics/utils/')
 sys.path.insert(0,'../../utils/')
 
 import multiscaleModels as mscm
 from fenicsUtils import symgrad, symgrad_voigt, Integral
 import numpy as np
 
+
 import fenicsMultiscale as fmts
 import myHDF5 as myhd
 import meshUtils as meut
 import elasticity_utils as elut
-import symmetryLib as symlpy
+from tensorflow_for_training import *
+import tensorflow as tf
+import symmetryLib as syml
 from timeit import default_timer as timer
 import multiphenics as mp
-
-from MicroConstitutiveModelDNN import *
-
-# for i in {0..19}; do nohup python computeTangents_serial.py 24 $i 20 > log_ny24_full_per_run$i.py & done
-
-comm = MPI.COMM_WORLD
-comm_self = MPI.COMM_SELF
-
-# Ny = int(sys.argv[1])
-Ny = 24
-
-if(len(sys.argv)>2):
-    run = int(sys.argv[2])
-    num_runs = int(sys.argv[3])
-else:
-    run = comm.Get_rank()
-    num_runs = comm.Get_size()
-
-print('run, num_runs ', run, num_runs)
 
 
 f = open("../../../rootDataPath.txt")
 rootData = f.read()[:-1]
 f.close()
 
-folder = rootData + "/new_fe2/DNS/DNS_{0}_old/".format(Ny)
-folderTangent = folder + 'tangents/'
-folderMesh = folder + 'meshes/'
-folderDataset = rootData + '/new_fe2/dataset/'
+Ny_DNS = 72
 
+folder = rootData + "/new_fe2/"
+folderTrain = folder + 'training/'
+folderBasis = folder + 'dataset/'
+folderDNS = folder + "DNS/DNS_%d_old/"%Ny_DNS
 
-model = 'dnn'
-modelBnd = 'lin'
-meshSize = 'reduced'
-if(model == 'dnn'):
-    modelDNN = '_small_Nrb80' # underscore included before
-    BCname = folderTangent + 'BCsPrediction_RVEs_dnn_small_Nrb80.hd5'
-else:
-    modelDNN = ''
-    
-start = timer()
-    
+## it may be chaged (permY)
+# the permY below is only valid for the ordenated radius (inside to outsid)
+# permY = np.array([2,0,3,1,12,10,8,4,13,5,14,6,15,11,9,7,30,28,26,24,22,16,31,17,32,18,33,19,34,20,35,29,27,25,23,21])
+# the permY below is only valid for the radius ordenated by rows and columns (below to top {left to right})
+permY = np.array([[(5-j)*6 + i for j in range(6)] for i in range(6)]).flatten() # note that (i,j) -> (Nx-j-1,i)
+
 # loading boundary reference mesh
-nameMeshRefBnd = folderDataset + '/boundaryMesh.xdmf'
-Mref = meut.EnrichedMesh(nameMeshRefBnd,comm_self)
+nameMeshRefBnd = folderBasis + 'boundaryMesh.xdmf'
+Mref = meut.EnrichedMesh(nameMeshRefBnd)
 Vref = df.VectorFunctionSpace(Mref,"CG", 1)
+# normal = FacetNormal(Mref)
+# volMref = 4.0
 
-dxRef = df.Measure('dx', Mref) 
+# loading the DNN model
+paramRVEdata = myhd.loadhd5(folderDNS + 'param_RVEs_from_DNS.hd5', 'param')
 
-# defining the micro model
+modelDNN = 'big'
+Nrb = 140
+archId = 1
+nX = 36
+nameWbasis = folderBasis +  'Wbasis.h5'
+nameScaleXY_shear = folderTrain +  'scalers/scaler_S_{0}.txt'.format(Nrb) # chaged
+nameScaleXY_axial = folderTrain +  'scalers/scaler_A_{0}.txt'.format(Nrb) # chaged
 
-nameParamRVEdata = folder + 'ellipseData_RVEs.hd5'
-size_ids = len(myhd.loadhd5(nameParamRVEdata, 'center')) # idMax + 1 
+nets = {}
+nets['big'] = {'Neurons': [300, 300, 300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
+nets['small'] = {'Neurons': [40, 40, 40], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
+nets['medium'] = {'Neurons': [100, 100, 100], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.01, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
 
-ids = np.arange(run, size_ids, num_runs).astype('int')
-Centers = myhd.loadhd5(nameParamRVEdata, 'center')[ids,:]
+net = nets[modelDNN.split('_')[0]]
 
-ns = len(Centers) # per rank
+net['nY'] = Nrb
+net['nX'] = nX
+net['file_weights_shear'] = folderTrain + 'models/weights_{0}_S_{1}.hdf5'.format(modelDNN,Nrb)
+net['file_weights_axial'] = folderTrain + 'models/weights_{0}_A_{1}.hdf5'.format(modelDNN,Nrb)
 
-tangentFile = folderTangent + 'tangent_{0}_{1}.hd5'.format(model,run)
-os.system('rm ' + tangentFile)
-Iid_tangent_center, f = myhd.zeros_openFile(tangentFile, [(ns,), (ns,3,3), (ns,2)],
-                                       ['id', 'tangent','center'], mode = 'w')
+scalerX_shear, scalerY_shear  = importScale(nameScaleXY_shear, nX, Nrb)
+scalerX_axial, scalerY_axial  = importScale(nameScaleXY_axial, nX, Nrb)
 
-Iid, Itangent, Icenter = Iid_tangent_center
+Wbasis_shear, Wbasis_axial = myhd.loadhd5(nameWbasis, ['Wbasis_S','Wbasis_A'])
 
-if(model == 'dnn'):
-    u0_p = myhd.loadhd5(BCname, 'u0')[run::num_runs,:]
-    u1_p = myhd.loadhd5(BCname, 'u1')[run::num_runs,:]
-    u2_p = myhd.loadhd5(BCname, 'u2')[run::num_runs,:]
+X_shear_s = scalerX_shear.transform(paramRVEdata[:,:,2])
+X_axial_s = scalerX_axial.transform(paramRVEdata[:,:,2])
+X_axialY_s = scalerX_axial.transform(paramRVEdata[:,permY,2]) ### permY performs a counterclockwise rotation
 
-for i in range(ns):
-    Iid[i] = ids[i]
-    
-    contrast = 10.0
-    E2 = 1.0
-    nu = 0.3
-    param = [nu,E2*contrast,nu,E2]
-    print(run, i, ids[i])
-    meshMicroName = folderMesh + 'mesh_micro_{0}_{1}.xdmf'.format(int(Iid[i]), meshSize)
+modelShear = generalModel_dropReg(nX, Nrb, net)
+modelAxial = generalModel_dropReg(nX, Nrb, net)
 
-    microModel = MicroConstitutiveModelDNN(meshMicroName, param, modelBnd) 
-    if(model == 'dnn'):
-        microModel.others['uD'] = df.Function(Vref) 
-        microModel.others['uD0_'] = u0_p[i] # it was already picked correctly
-        microModel.others['uD1_'] = u1_p[i] 
-        microModel.others['uD2_'] = u2_p[i]
-    elif(model == 'lin'):
-        microModel.others['uD'] = df.Function(Vref) 
-        microModel.others['uD0_'] = np.zeros(Vref.dim())
-        microModel.others['uD1_'] = np.zeros(Vref.dim())
-        microModel.others['uD2_'] = np.zeros(Vref.dim())
-        
-    
-    Icenter[i,:] = Centers[i,:]
-    Itangent[i,:,:] = microModel.getTangent()
-    
-    if(i%10 == 0):
-        f.flush()    
-        sys.stdout.flush()
-        
-f.close()
+modelShear.load_weights(net['file_weights_shear'])
+modelAxial.load_weights(net['file_weights_axial'])
 
+Y_p_shear = scalerY_shear.inverse_transform(modelShear.predict(X_shear_s))
+Y_p_axial = scalerY_axial.inverse_transform(modelAxial.predict(X_axial_s))
+Y_p_axialY = scalerY_axial.inverse_transform(modelAxial.predict(X_axialY_s))
+
+S_p_shear = Y_p_shear @ Wbasis_shear[:Nrb,:]
+S_p_axial = Y_p_axial @ Wbasis_axial[:Nrb,:]
+piola_mat = syml.PiolaTransform_matricial('mHalfPi', Vref)
+S_p_axialY = Y_p_axialY @ Wbasis_axial[:Nrb,:] @ piola_mat.T #changed
+
+myhd.savehd5(folder + 'DNS/DNS_{2}_old/BCsPrediction_RVEs_{0}_{1}.hd5'.format(modelDNN,Nrb,Ny_DNS),
+             [S_p_axial,S_p_axialY, S_p_shear], ['u0','u1','u2'], mode = 'w')
+                                                                               

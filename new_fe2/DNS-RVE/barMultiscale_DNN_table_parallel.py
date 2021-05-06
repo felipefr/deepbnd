@@ -1,18 +1,15 @@
 import sys, os
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import dolfin as df 
 import matplotlib.pyplot as plt
 from ufl import nabla_div
 sys.path.insert(0,'../../utils/')
 
-from fenicsUtils import symgrad, symgrad_voigt, Integral
+from fenicsUtils import symgrad, symgrad_voigt
 import numpy as np
 
 import fenicsMultiscale as fmts
 import myHDF5 as myhd
 import meshUtils as meut
-import elasticity_utils as elut
-import symmetryLib as symlpy
 from timeit import default_timer as timer
 import multiphenics as mp
 
@@ -22,6 +19,9 @@ comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF
 rank = comm.Get_rank()
 num_ranks = comm.Get_size()
+
+rootDataPath = open('../../../rootDataPath.txt','r').readline()[:-1]
+
 
 class myChom(df.UserExpression):
     def __init__(self, tangent, center,  **kwargs):
@@ -37,15 +37,11 @@ class myChom(df.UserExpression):
     def value_shape(self):
         return (3,3,)
     
-caseType = 'reduced_per'
-volFrac = ''
-jump = '_jump'
+caseType = 'dnn_big'
 
-rootDataPath = open('../../../rootDataPath.txt','r').readline()[:-1]
-print(rootDataPath)
 
 Ny_DNS = 72
-folder = rootDataPath + "/fe2/big_DNS/DNS_{0}/".format(Ny_DNS)
+folder = rootDataPath + "/new_fe2/DNS/DNS_%d_old/"%Ny_DNS
 
 # loading boundary reference mesh
 Lx = 2.0
@@ -56,12 +52,12 @@ ty = -0.01
 
 # Create mesh and define function space
 # mesh = df.RectangleMesh(comm,df.Point(0.0, 0.0), df.Point(Lx, Ly), Nx, Ny, "right/left")
-# with df.XDMFFile(comm, folder + "multiscale{1}/meshBarMacro_Multiscale_ny{0}.xdmf".format(Ny,jump)) as file:
+# with df.XDMFFile(comm, folder + "multiscale/meshBarMacro_Multiscale.xdmf") as file:
 #     file.write(mesh)
     
 # Create mesh and define function space
 mesh = df.Mesh(comm)
-with df.XDMFFile(comm, folder + "multiscale{1}/meshBarMacro_Multiscale_ny{0}.xdmf".format(Ny,jump)) as file:
+with df.XDMFFile(comm, folder + "multiscale/meshBarMacro_Multiscale.xdmf") as file:
     file.read(mesh)
 
 Uh = df.VectorFunctionSpace(mesh, "CG", 2)
@@ -73,7 +69,7 @@ boundary_markers = df.MeshFunction("size_t", mesh, dim=1, value=0)
 leftBnd.mark(boundary_markers, 1)
 rightBnd.mark(boundary_markers, 2)
 
-tangentName = folder + 'tangents{0}/tangent_{1}.hd5'.format(volFrac,caseType)
+tangentName = folder + 'tangents/tangent_%s.hd5'%caseType
 tangent = myhd.loadhd5(tangentName, 'tangent')
 ids = myhd.loadhd5(tangentName, 'id')
 center = myhd.loadhd5(tangentName, 'center')
@@ -84,12 +80,6 @@ sortIndex = np.argsort(ids)
 tangent = tangent[sortIndex,:,:]
 center = center[sortIndex,:] # temporary commented
 ids = ids[sortIndex]
-
-if(jump == "_jump"):
-    print("jumping some cells")
-    ids = ids[::6]
-    center = center[::6]
-    tangent = tangent[::6]
 
 Chom = myChom(tangent, center, degree = 0)
 
@@ -112,10 +102,10 @@ uh = df.Function(Uh)
 df.solve(a == b,uh, bcs = bcL, solver_parameters={"linear_solver": "superlu"})
 
 
-with df.XDMFFile(comm, folder + "multiscale{3}/barMacro_Multiscale{0}_{1}_ny{2}_vtk.xdmf".format(volFrac,caseType,Ny,jump)) as file:
+with df.XDMFFile(comm, folder + "multiscale/barMacro_Multiscale_%s_vtk.xdmf"%caseType) as file:
     uh.rename('u','name')
     file.write(uh)
 
-with df.XDMFFile(comm, folder + "multiscale{3}/barMacro_Multiscale{0}_{1}_ny{2}.xdmf".format(volFrac,caseType,Ny,jump)) as file:
+with df.XDMFFile(comm, folder + "multiscale/barMacro_Multiscale_%s.xdmf"%caseType) as file:
     file.write_checkpoint(uh,'u',0)
     

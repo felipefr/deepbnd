@@ -18,10 +18,10 @@ f.close()
 
 folder = rootData + "/new_fe2/dataset/"
 
-suffix = '_validation'
+suffix = '_test'
 nameSnaps = folder + 'snapshots%s.h5'%suffix
 nameMeshRefBnd = folder + 'boundaryMesh.xdmf'
-nameWbasis = folder + 'Wbasis_train.h5'
+nameWbasis = folder + 'Wbasis.h5'
 nameYlist = folder + 'Y%s.h5'%suffix
 nameXYlist = folder + 'XY%s.hd5'%suffix
 nameParamRVEdataset = folder + 'paramRVEdataset%s.hd5'%suffix
