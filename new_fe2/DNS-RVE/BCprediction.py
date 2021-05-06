@@ -1,9 +1,10 @@
 import sys, os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
-import dolfin as df 
+import dolfin as df
 import matplotlib.pyplot as plt
 from ufl import nabla_div
 sys.path.insert(0, '/home/felipefr/github/micmacsFenics/utils/')
+# sys.path.insert(0, '/home/rocha/github/micmacsFenics/utils/')
 sys.path.insert(0,'../../utils/')
 
 import multiscaleModels as mscm
@@ -26,12 +27,12 @@ f = open("../../../rootDataPath.txt")
 rootData = f.read()[:-1]
 f.close()
 
-Ny_DNS = 24
+Ny_DNS = 72
 
 folder = rootData + "/new_fe2/"
 folderTrain = folder + 'training/'
 folderBasis = folder + 'dataset/'
-folderDNS = rootData + "/fe2/big_DNS/DNS_%d/"%Ny_DNS
+folderDNS = folder + "DNS/DNS_%d_old/"%Ny_DNS
 
 ## it may be chaged (permY)
 # the permY below is only valid for the ordenated radius (inside to outsid)
@@ -45,17 +46,17 @@ Mref = meut.EnrichedMesh(nameMeshRefBnd)
 Vref = df.VectorFunctionSpace(Mref,"CG", 1)
 # normal = FacetNormal(Mref)
 # volMref = 4.0
-    
-# loading the DNN model
-paramRVEdata = myhd.loadhd5(folderDNS + 'ellipseData_RVEs.hd5', 'ellipseData') 
 
-modelDNN = 'small'
-Nrb = 80
+# loading the DNN model
+paramRVEdata = myhd.loadhd5(folderDNS + 'param_RVEs_from_DNS.hd5', 'param')
+
+modelDNN = 'big'
+Nrb = 140
 archId = 1
 nX = 36
 nameWbasis = folderBasis +  'Wbasis.h5'
-nameScaleXY_shear = folderTrain +  'scaler_S_{0}.txt'.format(Nrb) # chaged
-nameScaleXY_axial = folderTrain +  'scaler_A_{0}.txt'.format(Nrb) # chaged
+nameScaleXY_shear = folderTrain +  'scalers/scaler_S_{0}.txt'.format(Nrb) # chaged
+nameScaleXY_axial = folderTrain +  'scalers/scaler_A_{0}.txt'.format(Nrb) # chaged
 
 nets = {}
 nets['big'] = {'Neurons': [300, 300, 300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
@@ -78,8 +79,8 @@ X_shear_s = scalerX_shear.transform(paramRVEdata[:,:,2])
 X_axial_s = scalerX_axial.transform(paramRVEdata[:,:,2])
 X_axialY_s = scalerX_axial.transform(paramRVEdata[:,permY,2]) ### permY performs a counterclockwise rotation
 
-modelShear = generalModel_dropReg(nX, Nrb, net)   
-modelAxial = generalModel_dropReg(nX, Nrb, net)   
+modelShear = generalModel_dropReg(nX, Nrb, net)
+modelAxial = generalModel_dropReg(nX, Nrb, net)
 
 modelShear.load_weights(net['file_weights_shear'])
 modelAxial.load_weights(net['file_weights_axial'])
@@ -93,5 +94,6 @@ S_p_axial = Y_p_axial @ Wbasis_axial[:Nrb,:]
 piola_mat = syml.PiolaTransform_matricial('mHalfPi', Vref)
 S_p_axialY = Y_p_axialY @ Wbasis_axial[:Nrb,:] @ piola_mat.T #changed
 
-myhd.savehd5(folder + 'DNS/DNS_{2}_old/BCsPrediction_RVEs_{0}_{1}.hd5'.format(modelDNN,Nrb,Ny_DNS), 
+myhd.savehd5(folder + 'DNS/DNS_{2}_old/BCsPrediction_RVEs_{0}_{1}.hd5'.format(modelDNN,Nrb,Ny_DNS),
              [S_p_axial,S_p_axialY, S_p_shear], ['u0','u1','u2'], mode = 'w')
+                                                                               
