@@ -121,7 +121,7 @@ def getRadiusExponential(r0, r1, theta = None, N = 0): # N is only used if theta
 
 def circularRegular(r0, r1, Nx,Ny,Lx = 1.0, Ly=1.0, x0 = 0.0, y0 = 0.0, theta = None):
 
-    ellipseData = getEllipse_emptyRadius(Nx,Ny,Lx = 1.0, Ly=1.0, x0 = 0.0, y0 = 0.0)
+    ellipseData = getEllipse_emptyRadius(Nx,Ny,Lx, Ly, x0, y0)
     N = len(ellipseData)
     
     ellipseData[:,2] = getRadiusExponential(r0, r1, theta, N)

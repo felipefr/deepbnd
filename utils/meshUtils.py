@@ -81,7 +81,9 @@ class myGmsh(pygmsh.built_in.Geometry):
     
     def write(self,savefile = '', opt = 'meshio'):
         if(type(self.mesh) == type(None)):
-            self.generate(gmsh_opt=['-bin','-v','0', '-algo', 'del2d']) # with del2d, noticed less distortions       
+            # self.generate(gmsh_opt=['-bin','-v','1', '-algo', 'del2d']) # with del2d, noticed less distortions      
+            self.generate(gmsh_opt=['-bin','-v','1', '-algo', 'front2d', 
+                                    '-smooth', '2',  '-anisoMax', '1000.0']) # with del2d, noticed less distortions      
         if(len(savefile) == 0):
             savefile = self.radFileMesh.format('xdmf')
         
