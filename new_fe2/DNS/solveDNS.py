@@ -23,11 +23,37 @@ f.close()
 
 Lx = 2.0
 Ly = 0.5
-ty = -0.01
-Ny = 24
-suffix = int(sys.argv[2]) if len(sys.argv)>2 else ''
+
+Ny = int(sys.argv[1])
+suffix = sys.argv[2] if len(sys.argv)>2 else ''
+problemType = sys.argv[3] if len(sys.argv)>3 else ''
 
 folder = rootData + '/new_fe2/DNS/DNS_%d%s/'%(Ny,suffix)
+
+if(problemType == 'bending'):
+    FaceTraction = 4
+    ty = -0.1
+    tx = 0.0
+    FacesClamped = [3,5]
+    
+elif(problemType == 'rightClamped'):
+    FaceTraction = 5
+    ty = -0.01
+    tx = 0.0
+    FacesClamped = [3]
+    
+elif(problemType == 'pulling'):
+    FaceTraction = 3
+    ty = 0.0
+    tx = 0.1
+    FacesClamped = [5]
+        
+else: ## standard shear on right clamped on left
+    FaceTraction = 3    
+    ty = -0.01
+    tx = 0.0    
+    FacesClamped = [5]
+    
 
 start = timer()
 # Create mesh and define function space
@@ -39,12 +65,11 @@ if(num_ranks == 1):
     V1 = assemble(Constant(1.0)*mesh.dx(1))
     print("sanitity check: ", V0/(V1+V0), V1 + V0)
     
-    input()
 
-bcL = DirichletBC(Uh, Constant((0.0,0.0)), mesh.boundaries, 5) # 5 is left face
+bcL = [ DirichletBC(Uh, Constant((0.0,0.0)), mesh.boundaries, i) for i in FacesClamped] 
 
 # ds = Measure('ds', domain=mesh, subdomain_data=boundary_markers)
-traction = Constant((0.0,ty ))
+traction = Constant((tx,ty))
 
 contrast = 10.0
 E2 = 1.0
@@ -59,7 +84,7 @@ def sigma(u):
 uh = TrialFunction(Uh) 
 vh = TestFunction(Uh)
 a = inner(sigma(uh), symgrad(vh))*mesh.dx
-b = inner(traction,vh)*mesh.ds(3) # 3 is right face
+b = inner(traction,vh)*mesh.ds(FaceTraction) # 3 is right face
 
 uh = Function(Uh)
 
@@ -80,7 +105,7 @@ solver.parameters["monitor_convergence"] = True
 solver.set_operator(A)
 solver.solve(uh.vector(), F)    
 
-with XDMFFile(comm, folder + "barMacro_DNS.xdmf".format(Ny)) as file:
+with XDMFFile(comm, folder + "barMacro_DNS%s.xdmf"%problemType) as file:
     file.write_checkpoint(uh,'u',0)
 
 end = timer()
