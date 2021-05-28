@@ -22,6 +22,48 @@ num_ranks = comm.Get_size()
 
 rootDataPath = open('../../../rootDataPath.txt','r').readline()[:-1]
 
+Ny_DNS = int(sys.argv[1])
+problemType = sys.argv[2] if len(sys.argv)>3 else ''
+caseType = sys.argv[3] if len(sys.argv)>3 else '' 
+
+folder = rootDataPath + "/new_fe2/DNS/DNS_%d_new_bending/"%Ny_DNS
+
+Lx = 2.0
+Ly = 0.5
+
+if(problemType == '_bending'):
+    print("solving bending")
+    ty = -0.1
+    tx = 0.0
+    
+    tractionBnd = df.CompiledSubDomain('near(x[1], Ly) && on_boundary', Ly = Ly)
+    clampedBnd = df.CompiledSubDomain('(near(x[0], Lx) || near(x[0], 0.0) ) && on_boundary', Lx = Lx)
+    
+    
+elif(problemType == '_rightClamped'):
+    print("solving rightClamped")
+    ty = -0.01
+    tx = 0.0
+    
+    tractionBnd = df.CompiledSubDomain('near(x[0], 0.0) && on_boundary')
+    clampedBnd = df.CompiledSubDomain('near(x[0], Lx) && on_boundary', Lx = Lx)
+
+    
+elif(problemType == '_pulling'):
+    print("solving pulling")
+    ty = 0.0
+    tx = 0.1
+    
+    clampedBnd = df.CompiledSubDomain('near(x[0], 0.0) && on_boundary')
+    tractionBnd = df.CompiledSubDomain('near(x[0], Lx) && on_boundary', Lx = Lx)
+        
+else: ## standard shear on right clamped on left
+    print("solving leftClamped")    
+    ty = -0.01
+    tx = 0.0    
+    
+    clampedBnd = df.CompiledSubDomain('near(x[0], 0.0) && on_boundary')
+    tractionBnd = df.CompiledSubDomain('near(x[0], Lx) && on_boundary', Lx = Lx)
 
 class myChom(df.UserExpression):
     def __init__(self, tangent, center,  **kwargs):
@@ -37,18 +79,10 @@ class myChom(df.UserExpression):
     def value_shape(self):
         return (3,3,)
     
-caseType = 'dnn_big'
-
-
-Ny_DNS = 72
-folder = rootDataPath + "/new_fe2/DNS/DNS_%d_old/"%Ny_DNS
 
 # loading boundary reference mesh
-Lx = 2.0
-Ly = 0.5
-Ny = 96
-Nx = 4*Ny
-ty = -0.01
+# Ny = 96
+# Nx = 4*Ny
 
 # Create mesh and define function space
 # mesh = df.RectangleMesh(comm,df.Point(0.0, 0.0), df.Point(Lx, Ly), Nx, Ny, "right/left")
@@ -57,17 +91,14 @@ ty = -0.01
     
 # Create mesh and define function space
 mesh = df.Mesh(comm)
-with df.XDMFFile(comm, folder + "multiscale/meshBarMacro_Multiscale_96.xdmf") as file:
+with df.XDMFFile(comm, folder + "multiscale/meshBarMacro_Multiscale.xdmf") as file:
     file.read(mesh)
 
 Uh = df.VectorFunctionSpace(mesh, "CG", 2)
 
-leftBnd = df.CompiledSubDomain('near(x[0], 0.0) && on_boundary')
-rightBnd = df.CompiledSubDomain('near(x[0], Lx) && on_boundary', Lx = Lx)
-
 boundary_markers = df.MeshFunction("size_t", mesh, dim=1, value=0)
-leftBnd.mark(boundary_markers, 1)
-rightBnd.mark(boundary_markers, 2)
+clampedBnd.mark(boundary_markers, 1)
+tractionBnd.mark(boundary_markers, 2)
 
 tangentName = folder + 'tangents/tangent_%s.hd5'%caseType
 tangent = myhd.loadhd5(tangentName, 'tangent')
@@ -102,10 +133,10 @@ uh = df.Function(Uh)
 df.solve(a == b,uh, bcs = bcL, solver_parameters={"linear_solver": "superlu"})
 
 
-with df.XDMFFile(comm, folder + "multiscale/barMacro_Multiscale_%s_vtk.xdmf"%caseType) as file:
+with df.XDMFFile(comm, folder + "multiscale/barMacro_Multiscale_%s_vtk.xdmf"%(caseType)) as file:
     uh.rename('u','name')
     file.write(uh)
 
-with df.XDMFFile(comm, folder + "multiscale/barMacro_Multiscale_%s.xdmf"%caseType) as file:
+with df.XDMFFile(comm, folder + "multiscale/barMacro_Multiscale_%s.xdmf"%(caseType)) as file:
     file.write_checkpoint(uh,'u',0)
     

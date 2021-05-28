@@ -20,9 +20,10 @@ from dolfin import *
 rootDataPath = open('../../../rootDataPath.txt','r').readline()[:-1]
 print(rootDataPath)
 
-Ny_DNS = 24
+Ny_DNS = 72
+typeProblem = 'bending'
 
-folder = rootDataPath + '/new_fe2/DNS/DNS_%d_old/'%Ny_DNS
+folder = rootDataPath + '/new_fe2/DNS/DNS_%d_new_bending/'%Ny_DNS
 
 tangent_labels = ['DNS', 'dnn_big', 'reduced_per', 'full_per']
 solutions = [ 'barMacro_DNS.xdmf', 
@@ -50,31 +51,39 @@ for f in solutions:
         infile.read_checkpoint(uh, 'u', 0)
         uhs.append(uh)
 
-uhs[0] = interpolate(uhs[0],Uh_mult)
+# uhs[0] = interpolate(uhs[0],Uh_mult)
 
-pA = Point(2.0,0.0)
-pB = Point(2.0,0.5)
-
+if(typeProblem == 'rightClamped'):
+    pA = Point(0.0,0.0)
+    pB = Point(0.0,0.5)
+elif(typeProblem == 'bending'):
+    pA = Point(0.5,0.0)
+    pB = Point(0.5,0.5)
+else: 
+    pA = Point(2.0,0.0)
+    pB = Point(2.0,0.5)
 
 norms_label = ['L2', '||u(A)||', '||u(B)||', '|u_1(A)|', '|u_1(B)|', '|u_2(A)|', '|u_2(B)|']
 norms = [lambda x: norm(x), lambda x: np.linalg.norm(x(pA)), lambda x: np.linalg.norm(x(pB)), 
           lambda x: abs(x(pA)[0]), lambda x: abs(x(pB)[0]), lambda x: abs(x(pA)[1]), lambda x: abs(x(pB)[1])]
 norms_ref = np.array([N(uhs[0]) for N in norms]) 
+ 
 
 e = Function(Uh_mult)
 n = len(solutions) - 1
 errors = np.zeros((n,len(norms)))
 errors_rel = np.zeros((n,len(norms)))
 
+
 for i in range(n):
     e.vector().set_local(uhs[i+1].vector().get_local()[:]-uhs[0].vector().get_local()[:])
     for j, N in enumerate(norms):
         errors[i,j] = N(e)
     
-for i in range(n):
     errors_rel[i,:] = errors[i,:]/norms_ref[:]
-        
+    
 
+np.savetxt(folder + 'errors.txt', errors)
 
 suptitle = 'Error_DNS_%d_bar_vs_DNS'%Ny_DNS 
 
@@ -89,19 +98,20 @@ plt.xticks([0,1,2,3,4,5,6],labels = norms_label)
 plt.xlabel('Norms')
 plt.grid()
 plt.legend(loc = 'best')
-# plt.savefig(folder + suptitle + '.png')
+plt.savefig(folder + suptitle + '.png')
 
 suptitle = 'Error_DNS_%d_rel_vs_DNS'%Ny_DNS 
 
 plt.figure(2)
 plt.title(suptitle)
 for i in range(n):
-    plt.plot(errors[i,:], '-o', label = tangent_labels[i+1]) # jump tangent_label 0 (reference)
+    plt.plot(errors_rel[i,:], '-o', label = tangent_labels[i+1]) # jump tangent_label 0 (reference)
 plt.yscale('log')
 plt.xticks([0,1,2,3,4,5,6],labels = norms_label)
 plt.xlabel('Relative Norms')
 plt.grid()
 plt.legend(loc = 'best')
-# plt.savefig(folder + suptitle + '.png')
+plt.savefig(folder + suptitle + '.png')
 
+plt.show()
 

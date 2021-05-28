@@ -21,19 +21,20 @@ rootDataPath = open('../../../rootDataPath.txt','r').readline()[:-1]
 print(rootDataPath)
 
 Ny_DNS = 24
+problemType = ''
 
 folder = rootDataPath + '/new_fe2/DNS/DNS_%d_old/'%Ny_DNS
 
 tangent_labels = ['DNS', 'dnn_big', 'reduced_per', 'full_per']
-solutions = [ 'barMacro_DNS.xdmf', 
-             'multiscale/barMacro_Multiscale_dnn_big.xdmf', 
-             'multiscale/barMacro_Multiscale_reduced_per.xdmf',
-              'multiscale/barMacro_Multiscale_full.xdmf'] # temporary
+solutions = [ 'barMacro_DNS%s_interp.xdmf'%problemType, 
+             'multiscale%s/barMacro_Multiscale_dnn_big.xdmf'%problemType, 
+             'multiscale%s/barMacro_Multiscale_reduced_per.xdmf'%problemType,
+              'multiscale%s/barMacro_Multiscale_full.xdmf'%problemType] # temporary
          
 solutions = [folder + f for f in solutions]
 
 meshDNSfile =  folder + 'mesh.xdmf'
-meshMultiscaleFile = folder + 'multiscale/meshBarMacro_Multiscale.xdmf'
+meshMultiscaleFile = folder + 'multiscale/meshBarMacro_Multiscale_96.xdmf'
 
 meshMultiscale = Mesh()
 with XDMFFile(meshMultiscaleFile) as infile:
@@ -50,7 +51,7 @@ for f in solutions:
         infile.read_checkpoint(uh, 'u', 0)
         uhs.append(uh)
 
-uhs[0] = interpolate(uhs[0],Uh_mult)
+# uhs[0] = interpolate(uhs[0],Uh_mult)
 
 pA = Point(2.0,0.0)
 pB = Point(2.0,0.5)
