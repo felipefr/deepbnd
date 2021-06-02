@@ -4,7 +4,8 @@ import numpy as np
 
 plt.rc("text", usetex = True)
 plt.rc("font", family = 'serif')
-plt.rc('text.latex', preamble=r'\usepackage{amsmath}')
+plt.rc("font", size = 12)
+plt.rc('text.latex', preamble=r'\usepackage{amsmath,amsfonts}')
 # matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 
 palletteCounter = 0

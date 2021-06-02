@@ -7,7 +7,7 @@ sys.path.insert(0, '/home/felipefr/github/micmacsFenics/utils/')
 # sys.path.insert(0, '/home/rocha/github/micmacsFenics/utils/')
 sys.path.insert(0,'../../utils/')
 
-import multiscaleModels as mscm
+# import multiscaleModels as mscm
 from fenicsUtils import symgrad, symgrad_voigt, Integral
 import numpy as np
 
@@ -32,7 +32,7 @@ Ny_DNS = 72
 folder = rootData + "/new_fe2/"
 folderTrain = folder + 'training/'
 folderBasis = folder + 'dataset/'
-folderDNS = folder + "DNS/DNS_%d_old/"%Ny_DNS
+folderDNS = folder + "DNS/DNS_%d_2/"%Ny_DNS
 
 ## it may be chaged (permY)
 # the permY below is only valid for the ordenated radius (inside to outsid)
@@ -94,6 +94,6 @@ S_p_axial = Y_p_axial @ Wbasis_axial[:Nrb,:]
 piola_mat = syml.PiolaTransform_matricial('mHalfPi', Vref)
 S_p_axialY = Y_p_axialY @ Wbasis_axial[:Nrb,:] @ piola_mat.T #changed
 
-myhd.savehd5(folder + 'DNS/DNS_{2}_old/BCsPrediction_RVEs_{0}_{1}.hd5'.format(modelDNN,Nrb,Ny_DNS),
+myhd.savehd5(folder + 'DNS/DNS_{2}_2/BCsPrediction_RVEs_{0}_{1}.hd5'.format(modelDNN,Nrb,Ny_DNS),
              [S_p_axial,S_p_axialY, S_p_shear], ['u0','u1','u2'], mode = 'w')
                                                                                

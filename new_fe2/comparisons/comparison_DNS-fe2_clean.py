@@ -21,20 +21,20 @@ rootDataPath = open('../../../rootDataPath.txt','r').readline()[:-1]
 print(rootDataPath)
 
 Ny_DNS = 72
-typeProblem = 'bending'
+typeProblem = 'leftClamped'
 
-folder = rootDataPath + '/new_fe2/DNS/DNS_%d_new_bending/'%Ny_DNS
+folder = rootDataPath + '/new_fe2/DNS/DNS_%d_2/'%Ny_DNS
 
-tangent_labels = ['DNS', 'dnn_big', 'reduced_per', 'full_per']
-solutions = [ 'barMacro_DNS.xdmf', 
-             'multiscale/barMacro_Multiscale_dnn_big.xdmf', 
+tangent_labels = ['DNS', 'dnn', 'reduced_per', 'full']
+solutions = [ 'barMacro_DNS_interp_144.xdmf', 
+             'multiscale/barMacro_Multiscale_dnn.xdmf',
              'multiscale/barMacro_Multiscale_reduced_per.xdmf',
               'multiscale/barMacro_Multiscale_full.xdmf'] # temporary
          
 solutions = [folder + f for f in solutions]
 
 meshDNSfile =  folder + 'mesh.xdmf'
-meshMultiscaleFile = folder + 'multiscale/meshBarMacro_Multiscale.xdmf'
+meshMultiscaleFile = folder + 'multiscale/meshBarMacro_Multiscale_144.xdmf'
 
 meshMultiscale = Mesh()
 with XDMFFile(meshMultiscaleFile) as infile:
@@ -98,7 +98,7 @@ plt.xticks([0,1,2,3,4,5,6],labels = norms_label)
 plt.xlabel('Norms')
 plt.grid()
 plt.legend(loc = 'best')
-plt.savefig(folder + suptitle + '.png')
+# plt.savefig(folder + suptitle + '.png')
 
 suptitle = 'Error_DNS_%d_rel_vs_DNS'%Ny_DNS 
 
@@ -111,7 +111,7 @@ plt.xticks([0,1,2,3,4,5,6],labels = norms_label)
 plt.xlabel('Relative Norms')
 plt.grid()
 plt.legend(loc = 'best')
-plt.savefig(folder + suptitle + '.png')
+# plt.savefig(folder + suptitle + '.png')
 
 plt.show()
 
