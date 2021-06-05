@@ -23,8 +23,7 @@ print(rootDataPath)
 Ny_DNS = 72
 problemType = ''
 
-# folder = rootDataPath + '/new_fe2/DNS/DNS_%d_old/'%Ny_DNS
-folder = './meshes_%d/'
+folder = rootDataPath + '/new_fe2/cook/meshes_%d/'
 
 cases = ['full', 'dnn', 'reduced_per']
 Ny_splits = [5,10,20,40,60,80,100]
