@@ -1,3 +1,0 @@
-
-
-f = open('logDoido.txt','r')
