@@ -55,8 +55,8 @@ usol = Function(Vref)
 ns = len(myhd.loadhd5(folder +  'paramRVEdataset{0}.hd5'.format(suffix), 'param')[:,0])
 
 # ns = 2
-# ids_run = np.arange(run,ns,num_runs).astype('int')
-ids_run = np.arange(1408 + :run,ns,num_runs).astype('int')
+ids_run = np.arange(run,ns,num_runs).astype('int')
+# ids_run = np.arange(1408 + :run,ns,num_runs).astype('int')
 nrun = len(ids_run)
 
 os.system('rm ' + folder +  'snapshots{0}_{1}.h5'.format(suffix,run))

@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<Xdmf Version="3.0">
+  <Domain>
+    <Grid GridType="Collection" CollectionType="Temporal" Name="vonMises">
+      <Grid Name="vonMises_0" GridType="Uniform">
+        <Topology NumberOfElements="24" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="24 3" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:vonMises/vonMises_0/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="21 2" Format="HDF">cook_reduced_per_5.h5:vonMises/vonMises_0/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="0.000000" />
+        <Attribute ItemType="FiniteElementFunction" ElementFamily="DG" ElementDegree="0" ElementCell="triangle" Name="vonMises" Center="Other" AttributeType="Scalar">
+          <DataItem Dimensions="24 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:vonMises/vonMises_0/cell_dofs</DataItem>
+          <DataItem Dimensions="24 1" NumberType="Float" Format="HDF">cook_reduced_per_5.h5:vonMises/vonMises_0/vector</DataItem>
+          <DataItem Dimensions="25 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:vonMises/vonMises_0/x_cell_dofs</DataItem>
+          <DataItem Dimensions="24 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:vonMises/vonMises_0/cells</DataItem>
+        </Attribute>
+      </Grid>
+    </Grid>
+    <Grid GridType="Collection" CollectionType="Temporal" Name="sig_xx">
+      <Grid Name="sig_xx_0" GridType="Uniform">
+        <Topology NumberOfElements="24" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="24 3" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:sig_xx/sig_xx_0/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="21 2" Format="HDF">cook_reduced_per_5.h5:sig_xx/sig_xx_0/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="0.000000" />
+        <Attribute ItemType="FiniteElementFunction" ElementFamily="DG" ElementDegree="0" ElementCell="triangle" Name="sig_xx" Center="Other" AttributeType="Scalar">
+          <DataItem Dimensions="24 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:sig_xx/sig_xx_0/cell_dofs</DataItem>
+          <DataItem Dimensions="24 1" NumberType="Float" Format="HDF">cook_reduced_per_5.h5:sig_xx/sig_xx_0/vector</DataItem>
+          <DataItem Dimensions="25 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:sig_xx/sig_xx_0/x_cell_dofs</DataItem>
+          <DataItem Dimensions="24 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:sig_xx/sig_xx_0/cells</DataItem>
+        </Attribute>
+      </Grid>
+    </Grid>
+    <Grid GridType="Collection" CollectionType="Temporal" Name="sig_yy">
+      <Grid Name="sig_yy_0" GridType="Uniform">
+        <Topology NumberOfElements="24" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="24 3" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:sig_yy/sig_yy_0/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="21 2" Format="HDF">cook_reduced_per_5.h5:sig_yy/sig_yy_0/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="0.000000" />
+        <Attribute ItemType="FiniteElementFunction" ElementFamily="DG" ElementDegree="0" ElementCell="triangle" Name="sig_yy" Center="Other" AttributeType="Scalar">
+          <DataItem Dimensions="24 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:sig_yy/sig_yy_0/cell_dofs</DataItem>
+          <DataItem Dimensions="24 1" NumberType="Float" Format="HDF">cook_reduced_per_5.h5:sig_yy/sig_yy_0/vector</DataItem>
+          <DataItem Dimensions="25 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:sig_yy/sig_yy_0/x_cell_dofs</DataItem>
+          <DataItem Dimensions="24 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:sig_yy/sig_yy_0/cells</DataItem>
+        </Attribute>
+      </Grid>
+    </Grid>
+    <Grid GridType="Collection" CollectionType="Temporal" Name="sig_xy">
+      <Grid Name="sig_xy_0" GridType="Uniform">
+        <Topology NumberOfElements="24" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="24 3" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:sig_xy/sig_xy_0/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="21 2" Format="HDF">cook_reduced_per_5.h5:sig_xy/sig_xy_0/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="0.000000" />
+        <Attribute ItemType="FiniteElementFunction" ElementFamily="DG" ElementDegree="0" ElementCell="triangle" Name="sig_xy" Center="Other" AttributeType="Scalar">
+          <DataItem Dimensions="24 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:sig_xy/sig_xy_0/cell_dofs</DataItem>
+          <DataItem Dimensions="24 1" NumberType="Float" Format="HDF">cook_reduced_per_5.h5:sig_xy/sig_xy_0/vector</DataItem>
+          <DataItem Dimensions="25 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:sig_xy/sig_xy_0/x_cell_dofs</DataItem>
+          <DataItem Dimensions="24 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:sig_xy/sig_xy_0/cells</DataItem>
+        </Attribute>
+      </Grid>
+    </Grid>
+    <Grid GridType="Collection" CollectionType="Temporal" Name="u">
+      <Grid Name="u_0" GridType="Uniform">
+        <Topology NumberOfElements="24" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="24 3" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:u/u_0/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="21 2" Format="HDF">cook_reduced_per_5.h5:u/u_0/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="0.000000" />
+        <Attribute ItemType="FiniteElementFunction" ElementFamily="CG" ElementDegree="2" ElementCell="triangle" Name="u" Center="Other" AttributeType="Vector">
+          <DataItem Dimensions="288 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:u/u_0/cell_dofs</DataItem>
+          <DataItem Dimensions="130 1" NumberType="Float" Format="HDF">cook_reduced_per_5.h5:u/u_0/vector</DataItem>
+          <DataItem Dimensions="25 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:u/u_0/x_cell_dofs</DataItem>
+          <DataItem Dimensions="24 1" NumberType="UInt" Format="HDF">cook_reduced_per_5.h5:u/u_0/cells</DataItem>
+        </Attribute>
+      </Grid>
+    </Grid>
+  </Domain>
+</Xdmf>

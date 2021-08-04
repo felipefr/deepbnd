@@ -14,6 +14,7 @@ import myHDF5 as myhd
 import matplotlib.pyplot as plt
 import meshUtils as meut
 from dolfin import *
+import plotUtils
 
 # Test Loading 
 
@@ -26,7 +27,7 @@ problemType = ''
 folder = rootDataPath + '/new_fe2/cook/meshes_%d/'
 
 cases = ['full', 'dnn', 'reduced_per']
-Ny_splits = [5,10,20,40,60,80,100]
+Ny_splits = [5,10,20,40,80]
 
 solution = folder + 'cook_%s_%d.xdmf'
 meshfile =  folder + 'mesh_%d.xdmf'
@@ -41,13 +42,16 @@ norms = [lambda x,y: x(pA)[1], lambda x,y: y(pB)[0], lambda x,y: y(pC)[0], lambd
 
 uhs = []
 vonMises_ = []
+# listSeeds = [0,1,2,3,6,7,8,9,10]
+listSeeds = [0,1,2,3,4,5,6,7,8,9,10]
+
 
 D = {}
 for case in cases:
-    D[case] = np.zeros((5,len(norms),len(Ny_splits)))
+    D[case] = np.zeros((len(listSeeds),len(norms),len(Ny_splits)))
 
 
-for k in range(5):
+for kk, k in enumerate(listSeeds):
     for i, ny in enumerate(Ny_splits):    
     
         mesh = Mesh()
@@ -67,32 +71,39 @@ for k in range(5):
                 infile.read_checkpoint(vonMises, 'vonMises', 0)
             
             for j, norm in enumerate(norms):
-                D[case][k,j,i] = norm(uh,vonMises)     
+                D[case][kk,j,i] = norm(uh,vonMises)     
                 
 
 
-plt.figure(1)
-plt.title('Sigma Von Mises D')
-plt.plot(Ny_splits, np.mean(D['full'][:,3,:], axis = 0), '-', label='full')
-plt.plot(Ny_splits, np.mean(D['dnn'][:,3,:], axis = 0), 'o', label='dnn')
-plt.plot(Ny_splits, np.mean(D['reduced_per'][:,3,:], axis = 0), '-', label='reduced_per')
-plt.legend()
-plt.savefig('sigD_1.png')
-plt.grid()
 
+
+plt.figure(1)
+plt.title('Vertical Tip Displacement (A)')
+plt.ylabel("\Large $\mathbf{u}_{2}$")
+plt.xlabel("Number of vertical elements")
+plt.plot(Ny_splits, np.mean(D['full'][:,0,:], axis = 0), '--', label='High-Fidelity')
+plt.plot(Ny_splits, np.mean(D['dnn'][:,0,:], axis = 0), 'o', label='DeepBND')
+plt.plot(Ny_splits, np.mean(D['reduced_per'][:,0,:], axis = 0), 'x', label="Periodic")
+plt.legend()
+plt.grid()
+plt.savefig('dispA.eps')
+plt.savefig('dispA.pdf')
 
 
 E = {}
 
-E['dnn'] = np.abs(D['dnn'] - D['full'])/D['full']
-E['reduced_per'] = np.abs(D['reduced_per'] - D['full'])/D['full']
+# E['dnn'] = np.abs(D['dnn'] - D['full'])/D['full']
+# E['reduced_per'] = np.abs(D['reduced_per'] - D['full'])/D['full']
 
+# for i in range(4):
+#     print("%e \pm %e & %e \pm %e "%(np.mean(E['dnn'][:,i,-2]), np.std(E['dnn'][:,i,-2]),
+#                                     np.mean(E['reduced_per'][:,i,-2]), np.std(E['reduced_per'][:,i,-2]) ) )
 
-plt.figure(2)
-plt.title('Error Sigma Von Mises D')
-plt.plot(Ny_splits, np.mean(E['dnn'][:,3,:], axis = 0), '-', label='dnn')
-plt.plot(Ny_splits, np.mean(E['reduced_per'][:,3,:], axis = 0), '-', label='reduced_per')
-plt.yscale('log')
-plt.legend()
-plt.savefig('sigD_1_error.png')
-plt.grid()
+# plt.figure(2)
+# plt.title('Error Sigma Von Mises D')
+# plt.plot(Ny_splits, np.mean(E['dnn'][:,1,:], axis = 0), '-', label='dnn')
+# plt.plot(Ny_splits, np.mean(E['reduced_per'][:,1,:], axis = 0), '-', label='reducedper')
+# plt.yscale('log')
+# plt.legend()
+# # plt.savefig('sigD_1_error.png')
+# plt.grid()

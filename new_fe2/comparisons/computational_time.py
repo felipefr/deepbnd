@@ -32,7 +32,7 @@ list_times = []
 for i in range(3):
     times = load_times(log_val_file.format(i))
     list_times.append(times)
-    print(i, np.mean(times),np.std(times))
+    print(i,    np.mean(times),np.std(times))
 
 
 times = np.array(list_times)

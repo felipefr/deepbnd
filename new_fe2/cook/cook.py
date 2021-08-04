@@ -22,18 +22,23 @@ comm_self = MPI.COMM_SELF
 rank = comm.Get_rank()
 num_ranks = comm.Get_size()
 
-# caseType = sys.argv[2]
-# # Ny_split =  50
-# Ny_split = int(sys.argv[1])
 
-caseType = 'reduced_per'
+Ny_split = int(sys.argv[1])
+caseType = sys.argv[2]
+seed = int(sys.argv[3])
+
+# # Ny_split =  50
+
+# caseType = 'reduced_per'
 # Ny_split =  50
-Ny_split = 100
+# Ny_split = 100
 
 rootDataPath = open('../../../rootDataPath.txt','r').readline()[:-1]
 folder = rootDataPath + "/new_fe2/DNS/DNS_72_2/"
 
-folderMesh = './meshes_4/'
+
+folderMesh = rootDataPath + '/new_fe2/cook/meshes_{0}/'.format(seed)
+# folderMesh = './'
 
 tangentName = folder + 'tangents/tangent_%s.hd5'%caseType
 tangent = myhd.loadhd5(tangentName, 'tangent')
@@ -69,7 +74,7 @@ class myChom(df.UserExpression):
         return (3,3,)
     
 
-np.random.seed(4)
+np.random.seed(seed)
 mapping = np.random.randint(0,len(tangent),mesh.num_cells())
     
 Chom = myChom(tangent, mapping, degree = 0)

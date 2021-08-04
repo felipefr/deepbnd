@@ -40,6 +40,7 @@ folderDNS = folder + "DNS/DNS_%d_2/"%Ny_DNS
 # the permY below is only valid for the radius ordenated by rows and columns (below to top {left to right})
 permY = np.array([[(5-j)*6 + i for j in range(6)] for i in range(6)]).flatten() # note that (i,j) -> (Nx-j-1,i)
 
+
 # loading boundary reference mesh
 nameMeshRefBnd = folderBasis + 'boundaryMesh.xdmf'
 Mref = meut.EnrichedMesh(nameMeshRefBnd)

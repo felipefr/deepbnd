@@ -2,11 +2,11 @@ import sys, os
 import dolfin as df 
 import matplotlib.pyplot as plt
 from ufl import nabla_div
-sys.path.insert(0, '/home/felipefr/github/micmacsFenics/utils/')
+sys.path.insert(0, '/home/felipefr/github/micmacsFenics/core/')
 sys.path.insert(0,'../utils/')
 
-import multiscaleModels as mscm
-from fenicsUtils import symgrad, symgrad_voigt, Integral
+import micro_constitutive_model as mscm
+# from fenicsUtils import symgrad, symgrad_voigt, Integral
 import numpy as np
 
 import fenicsMultiscale as fmts
