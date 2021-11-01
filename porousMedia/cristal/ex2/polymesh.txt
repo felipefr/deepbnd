@@ -1,0 +1,23 @@
+Mesh Points: 4
+	 5.000000e-01, -5.000000e-01
+	 5.000000e-01,  5.000000e-01
+	-5.000000e-01, -5.000000e-01
+	-5.000000e-01,  5.000000e-01
+Mesh Facets: 4
+	1, 0
+	0, 2
+	2, 3
+	3, 1
+Facet Neighbors: 4
+	-2, 0
+	-3, 0
+	-1, 0
+	-4, 0
+Mesh Regions: 1
+	0, 1, 2, 3
+Seed Numbers: 1
+	0
+Phase Numbers: 1
+	0
+Volumes: 1
+	1.0

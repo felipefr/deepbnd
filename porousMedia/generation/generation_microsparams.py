@@ -43,6 +43,7 @@ import myHDF5 as myhd
 # I = np.mean(np.random.rand(100,100,40), axis = -1)
 mean = (1, 2)
 cov = [[1, 0], [0, 1]]
+
 I = np.random.multivariate_normal(mean, cov, (100,100))
 
 

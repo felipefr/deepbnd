@@ -23,7 +23,7 @@ import plotUtils
 rootDataPath = open('../../../rootDataPath.txt','r').readline()[:-1]
 print(rootDataPath)
 
-Ny_DNS = 72
+Ny_DNS = 24
 typeProblem = 'leftClamped'
 
 folder = rootDataPath + '/new_fe2/DNS/DNS_%d_new/'%Ny_DNS
@@ -86,11 +86,11 @@ for i in range(n):
     errors_rel[i,:] = errors[i,:]/norms_ref[:]
     
 
-np.savetxt(folder + 'errors.txt', errors)
+# np.savetxt(folder + 'errors.txt', errors)
 
 suptitle = 'Error_DNS_%d_bar_vs_DNS'%Ny_DNS 
 
-np.savetxt(folder + 'errors_{0}.txt'.format(suptitle), errors)
+# np.savetxt(folder + 'errors_{0}.txt'.format(suptitle), errors)
 
 plt.figure(1,(5.5,3.5))
 plt.title('Absolute Error against DNS solution ($N_y^{DNS} = %d$)'%Ny_DNS)
@@ -104,8 +104,8 @@ plt.grid()
 plt.legend(loc = 'best')
 plt.tight_layout()
 
-plt.savefig('errorDNS_ny{0}.pdf'.format(Ny_DNS))
-plt.savefig('errorDNS_ny{0}.eps'.format(Ny_DNS))
+# plt.savefig('errorDNS_ny{0}.pdf'.format(Ny_DNS))
+# plt.savefig('errorDNS_ny{0}.eps'.format(Ny_DNS))
 # plt.savefig(folder + suptitle + '.png')
 
 plt.figure(2,(5.5,3.5))
@@ -120,5 +120,5 @@ plt.grid()
 plt.legend(loc = 'best')
 plt.tight_layout()
 
-plt.savefig('error_rel_DNS_ny{0}.pdf'.format(Ny_DNS))
-plt.savefig('error_rel_DNS_ny{0}.eps'.format(Ny_DNS))
+# plt.savefig('error_rel_DNS_ny{0}.pdf'.format(Ny_DNS))
+# plt.savefig('error_rel_DNS_ny{0}.eps'.format(Ny_DNS))
