@@ -1,24 +1,37 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import tensorflow as tf
-
+import os
 from tensorflow.keras import datasets, layers, models
-# import matplotlib.pyplot as plt
+
+# Solves program for cuda and cnn networks
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+
+config = ConfigProto()
+config.gpu_options.allow_growth = True
+session = InteractiveSession(config=config)
+
+
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1' # solves problem with cuda and cnn networks
+
 
 (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
 
 class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',
                'dog', 'frog', 'horse', 'ship', 'truck']
 
-# plt.figure(figsize=(10,10))
-# for i in range(25):
-#     plt.subplot(5,5,i+1)
-#     plt.xticks([])
-#     plt.yticks([])
-#     plt.grid(False)
-#     plt.imshow(train_images[i])
-#     # The CIFAR labels happen to be arrays, 
-#     # which is why you need the extra index
-#     plt.xlabel(class_names[train_labels[i][0]])
-# plt.show()
+plt.figure(figsize=(10,10))
+for i in range(25):
+    plt.subplot(5,5,i+1)
+    plt.xticks([])
+    plt.yticks([])
+    plt.grid(False)
+    plt.imshow(train_images[i])
+    # The CIFAR labels happen to be arrays, 
+    # which is why you need the extra index
+    plt.xlabel(class_names[train_labels[i][0]])
+plt.show()
 
 model = models.Sequential()
 model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3), use_bias = False))
