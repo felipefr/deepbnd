@@ -1,6 +1,6 @@
 import dolfin as df
 import numpy as np
-import meshUtils as meut
+# import meshUtils as meut
 from timeit import default_timer as timer
 
 symgrad = lambda v: 0.5*(df.grad(v) + df.grad(v).T)
