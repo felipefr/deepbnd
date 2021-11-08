@@ -3,8 +3,11 @@ import numpy as np
 # import meshUtils as meut
 from timeit import default_timer as timer
 
+halfsq2 = np.sqrt(2.)/2.
+
 symgrad = lambda v: 0.5*(df.grad(v) + df.grad(v).T)
 symgrad_voigt = lambda v: df.as_vector([v[0].dx(0), v[1].dx(1), v[0].dx(1) + v[1].dx(0) ])
+symgrad_mandel = lambda v: df.as_vector([v[0].dx(0), v[1].dx(1), halfsq2*(v[0].dx(1) + v[1].dx(0)) ])
 
 def Integral(u,dx,shape):
     

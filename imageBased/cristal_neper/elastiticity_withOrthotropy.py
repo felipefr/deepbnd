@@ -9,13 +9,16 @@ Bar problem given a constitutive law (single-scale):
 Problem in [0,Lx]x[0,Ly], homogeneous dirichlet on left and traction on the
 right. We use an isotropic linear material, given two lamé parameters.
 """
+
 import sys, os
 import dolfin as df
 import numpy as np
 from ufl import nabla_div
 sys.path.insert(0, '../../utils/')
-from fenicsUtils import symgrad
+from fenicsUtils import symgrad_mandel
 from enriched_mesh import EnrichedMesh
+import elasticity_utils as elut
+
 
 resultFolder = './'
 
@@ -33,16 +36,28 @@ class myCoeff(df.UserExpression):
 
 
 class C_orth(df.UserExpression):
-    def __init__(self, markers, angles, id_0, **kwargs):
+    def __init__(self, elas_param, angles, markers , id_0, **kwargs):
+        Ex, Ey, vxy = elas_param
         self.markers = markers
         self.angles = angles
         self.id_0 = id_0
+        
+        C_temp = elut.orthotropicElasticityTensor(Ex,Ey,vxy)
+        n = len(self.angles)
+        self.C = np.zeros((n,3,3))
+        
+        for i in range(n):
+            Tm = elut.rotationInMandelNotation(self.angles[i])
+            self.C[i,:,:] = Tm@C_temp@Tm.T
+        
         super().__init__(**kwargs)
 
         
     def eval_cell(self, values, x, cell):
-        values[0] = self.coeffs[self.markers[cell.index] - self.id_0]
+        values[:] = self.C[self.markers[cell.index] - self.id_0, :, :].flatten()
 
+    def value_shape(self):
+        return (3, 3,)
 
 Lx = 1.0
 Ly = 1.0
@@ -82,14 +97,17 @@ lamb_ = myCoeff(mesh.subdomains, lamb, id_cristal_0)
 mu_ = myCoeff(mesh.subdomains, mu, id_cristal_0)
 
 
+Celas = C_orth([15.0,15.0,0.3], np.linspace(0.0, np.pi, nCristal), 
+               mesh.subdomains, id_cristal_0)
+
 def sigma(u):
-    return lamb_*nabla_div(u)*df.Identity(2) + 2*mu_*symgrad(u)
+    return Celas*symgrad_mandel(u)
 
 
 # Define variational problem
 uh = df.TrialFunction(Uh)
 vh = df.TestFunction(Uh)
-a = sum([df.inner(sigma(uh), df.grad(vh))*mesh.dx(i + id_cristal_0) for i in range(nCristal)])
+a = sum([df.inner(sigma(uh), symgrad_mandel(vh))*mesh.dx(i + id_cristal_0) for i in range(nCristal)])
 b = df.inner(traction, vh)*ds(2)
 
 # Compute solution
@@ -99,5 +117,5 @@ uh = df.Function(Uh)
 df.solve(a == b, uh, bcs=bcL, solver_parameters={"linear_solver": "mumps"})
 
 # Save solution in VTK format
-fileResults = df.XDMFFile(resultFolder + "bar_single_scale.xdmf")
+fileResults = df.XDMFFile(resultFolder + "bar_single_scale2.xdmf")
 fileResults.write(uh)
