@@ -19,20 +19,46 @@ from enriched_mesh import EnrichedMesh
 
 resultFolder = './'
 
+class myCoeff(df.UserExpression):
+    def __init__(self, markers, coeffs, id_0, **kwargs):
+        self.markers = markers
+        self.coeffs = coeffs
+        self.id_0 = id_0
+        super().__init__(**kwargs)
+
+        
+    def eval_cell(self, values, x, cell):
+        values[0] = self.coeffs[self.markers[cell.index] - self.id_0]
+
+
+
+class C_orth(df.UserExpression):
+    def __init__(self, markers, angles, id_0, **kwargs):
+        self.markers = markers
+        self.angles = angles
+        self.id_0 = id_0
+        super().__init__(**kwargs)
+
+        
+    def eval_cell(self, values, x, cell):
+        values[0] = self.coeffs[self.markers[cell.index] - self.id_0]
+
 
 Lx = 1.0
 Ly = 1.0
 
+id_cristal_0 = 5
+nCristal = 14
 
-facAvg = 4.0  # roughly chosen to approx single scale to mulsticale results
-lamb = facAvg*1.0
-mu = facAvg*0.5
-ty = -0.01
+lamb = np.linspace(3., 7., nCristal)
+mu = np.linspace(1.,3.,nCristal) 
+
+
+
+tx = 1.0
 
 # Create mesh and define function space
 mesh = EnrichedMesh('meshes/handmade_polycristal.xml')
-
-
 
 # mesh = df.RectangleMesh(df.Point(0.0, 0.0), df.Point(Lx, Ly),
                         # Nx, Ny, "right/left")
@@ -50,25 +76,28 @@ rightBnd.mark(boundary_markers, 2)
 bcL = df.DirichletBC(Uh, df.Constant((0.0, 0.0)), boundary_markers, 1)
 
 ds = df.Measure('ds', domain=mesh, subdomain_data=boundary_markers)
-traction = df.Constant((0.0, ty))
+traction = df.Constant((tx, 0.0))
+
+lamb_ = myCoeff(mesh.subdomains, lamb, id_cristal_0)
+mu_ = myCoeff(mesh.subdomains, mu, id_cristal_0)
 
 
 def sigma(u):
-    return lamb*nabla_div(u)*df.Identity(2) + 2*mu*symgrad(u)
+    return lamb_*nabla_div(u)*df.Identity(2) + 2*mu_*symgrad(u)
 
 
 # Define variational problem
 uh = df.TrialFunction(Uh)
 vh = df.TestFunction(Uh)
-a = df.inner(sigma(uh), df.grad(vh))*df.dx
+a = sum([df.inner(sigma(uh), df.grad(vh))*mesh.dx(i + id_cristal_0) for i in range(nCristal)])
 b = df.inner(traction, vh)*ds(2)
 
 # Compute solution
 uh = df.Function(Uh)
 
 # linear_solver ops: "superlu" or "mumps"
-df.solve(a == b, uh, bcs=bcL, solver_parameters={"linear_solver": "superlu"})
+df.solve(a == b, uh, bcs=bcL, solver_parameters={"linear_solver": "mumps"})
 
 # Save solution in VTK format
 fileResults = df.XDMFFile(resultFolder + "bar_single_scale.xdmf")
-fileResults.write(uh, 'u', 0)
+fileResults.write(uh)

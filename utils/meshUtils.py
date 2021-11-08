@@ -18,6 +18,9 @@ class EnrichedMesh(df.Mesh):
             
         elif(meshFile[-4:] == 'xdmf'):
             self.subdomains, self.boundaries = iofe.readXDMF_with_markers(meshFile, self, comm)
+            
+        for e in mesh.cells:
+            print(mesh.subdomain(e))
                 
         self.ds = df.Measure('ds', domain=self, subdomain_data=self.boundaries)
         self.dx = df.Measure('dx', domain=self, subdomain_data=self.subdomains)
