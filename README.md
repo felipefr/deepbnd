@@ -9,10 +9,10 @@ fenics           2019.1.0 \
 multiphenics     0.2.dev1 \
 h5py             3.2.1 \
 hdf5             1.10.6 \
-meshio           2.3.10 \
+meshio           3.3.1 \
 tensorflow       2.5.0 \
-pygmsh           5.0.0 \
-gmsh             4.8.4 \
+pygmsh           6.0.2 \
+gmsh             4.6.0 \
 scikit-optimize  0.8.1 \
 mkl              2021.2.0 \
 mpi4py           3.0.3 \

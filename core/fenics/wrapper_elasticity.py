@@ -5,7 +5,7 @@ from timeit import default_timer as timer
 import core.fenics.io_wrappers as iofe
 import core.fenics.my_coeff as coef
 import numpy as np
-from core.fenics.mesh_utils import *
+from core.fenics.enriched_mesh import EnrichedMesh
 
 def epsilon(u):
     return 0.5*(df.nabla_grad(u) + df.nabla_grad(u).T)

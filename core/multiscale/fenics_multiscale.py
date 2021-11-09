@@ -11,6 +11,20 @@ import core.multiscale.generator as gmts
 import core.fenics.utils as feut
 from core.fenics.point_expression import *
 
+class Chom_multiscale(df.UserExpression):
+    def __init__(self, tangent, mapping,  **kwargs):
+        self.tangent = tangent
+        self.map = mapping
+        
+        super().__init__(**kwargs)
+        
+    def eval_cell(self, values, x, cell):
+        values[:] = self.tangent[self.map[cell.index],:,:].flatten()
+        
+    def value_shape(self):
+        return (3,3,)
+
+
 def getBMrestriction(g,M):
     m = 2*g.npoints
     mm = m/8  

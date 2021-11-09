@@ -16,20 +16,7 @@ import h5py
 import xml.etree.ElementTree as ET
 from core.fenics.my_coeff import *
 import core.fenics.wrapper_elasticity as fela
-
-def local_project(v,V):
-    M = V.mesh()
-    dv = TrialFunction(V)
-    v_ = TestFunction(V)
-    dx = Measure('dx', M)
-    a_proj = inner(dv,v_)*dx 
-    b_proj = inner(v,v_)*dx
-    solver = LocalSolver(a_proj,b_proj) 
-    solver.factorize()
-    u = Function(V)
-    solver.solve_local_rhs(u)
-    return u
-
+from core.fenics.utils import local_project
 
 
 def readXDMF_with_markers(meshFile, mesh, comm = MPI.comm_world):
@@ -390,5 +377,64 @@ def exportMeshHDF5_fromGMSH2(gmshMesh = 'mesh.msh', meshFile = 'mesh.xdmf', labe
     root[0][0][2][0].attrib['Dimensions'] = root[0][0][3][0].attrib['Dimensions'] + ' 3'
   
     g.write("{0}_{1}.xdmf".format(meshFileRad,'regions'))
+    
+
+def export_XDMF_displacement_sigma(uh, sigma, file):
+    mesh = uh.function_space().mesh()
+    
+    file.parameters["flush_output"] = True
+    file.parameters["functions_share_mesh"] = True
+    
+    uh.rename('u','displacements at nodes')
+    file.write(uh, 0.)
+
+    voigt2ten = lambda a: as_tensor(((a[0],a[2]),(a[2],a[1])))
+    Vsig = FunctionSpace(mesh, "DG", 0)
+    von_Mises = Function(Vsig, name="vonMises")
+    sig_xx = Function(Vsig, name="sig_xx")
+    sig_yy = Function(Vsig, name="sig_yy")
+    sig_xy = Function(Vsig, name="sig_xy")
+    
+    sig = voigt2ten(sigma(uh))
+    s = sig - (1./3)*tr(sig)*Identity(2)
+    von_Mises_ = sqrt((3./2)*inner(s, s)) 
+    von_Mises.assign(local_project(von_Mises_, Vsig))
+    sig_xx.assign(local_project(sig[0,0], Vsig))
+    sig_yy.assign(local_project(sig[1,1], Vsig))
+    sig_xy.assign(local_project(sig[0,1], Vsig))
+    
+    file.write(von_Mises,0.)
+    file.write(sig_xx,0.)
+    file.write(sig_yy,0.)
+    file.write(sig_xy,0.)
+    
+def export_checkpoint_XDMF_displacement_sigma(uh, sigma, file):
+    mesh = uh.function_space().mesh()
+    
+    file.parameters["flush_output"] = True
+    file.parameters["functions_share_mesh"] = True
+    
+    voigt2ten = lambda a: as_tensor(((a[0],a[2]),(a[2],a[1])))
+    Vsig = FunctionSpace(mesh, "DG", 0)
+    von_Mises = Function(Vsig, name="vonMises")
+    sig_xx = Function(Vsig, name="sig_xx")
+    sig_yy = Function(Vsig, name="sig_yy")
+    sig_xy = Function(Vsig, name="sig_xy")
+    
+    sig = voigt2ten(sigma(uh))
+    s = sig - (1./3)*tr(sig)*Identity(2)
+    von_Mises_ = sqrt((3./2)*inner(s, s)) 
+    von_Mises.assign(local_project(von_Mises_, Vsig))
+    sig_xx.assign(local_project(sig[0,0], Vsig))
+    sig_yy.assign(local_project(sig[1,1], Vsig))
+    sig_xy.assign(local_project(sig[0,1], Vsig))
+
+    file.write_checkpoint(von_Mises,'vonMises', 0, XDMFFile.Encoding.HDF5)
+    file.write_checkpoint(sig_xx,'sig_xx', 0, XDMFFile.Encoding.HDF5, True)
+    file.write_checkpoint(sig_yy,'sig_yy', 0, XDMFFile.Encoding.HDF5, True)
+    file.write_checkpoint(sig_xy,'sig_xy', 0, XDMFFile.Encoding.HDF5, True)
+    
+    file.write_checkpoint(uh,'u', 0, XDMFFile.Encoding.HDF5, True)
+    
     
     

@@ -2,6 +2,20 @@ import dolfin as df
 import numpy as np
 from timeit import default_timer as timer
 
+def local_project(v,V):
+    M = V.mesh()
+    dv = df.TrialFunction(V)
+    v_ = df.TestFunction(V)
+    dx = df.Measure('dx', M)
+    a_proj = df.inner(dv,v_)*dx 
+    b_proj = df.inner(v,v_)*dx
+    solver = df.LocalSolver(a_proj,b_proj) 
+    solver.factorize()
+    u = df.Function(V)
+    solver.solve_local_rhs(u)
+    return u
+
+
 halfsq2 = np.sqrt(2.)/2.
 
 symgrad = lambda v: 0.5*(df.grad(v) + df.grad(v).T)
