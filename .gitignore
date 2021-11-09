@@ -129,9 +129,12 @@ dmypy.json
 .pyre/
 
 # figures, meshes and datasets
+*.txt
 *.png
 *.hd5
 *.h5
 *.xml
 *.xdmf
 *.msh
+*.eps
+*.pdf
