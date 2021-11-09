@@ -1,15 +1,15 @@
-import fenicsWrapperElasticity as fela
+import core.fenics.wrapper_elasticity as fela
 import dolfin as df
 from ufl import nabla_div
 from functools import reduce
 from timeit import default_timer as timer
-import ioFenicsWrappers as iofe
-import myCoeffClass as coef
+import core.fenics.io_wrappers as iofe
+import core.fenics.my_coeff as coef
 import numpy as np
-import fenicsUtils as feut
-import generatorMultiscale as gmts
-import fenicsUtils as feut
-from PointExpression import *
+import core.fenics.utils as feut
+import core.multiscale.generator as gmts
+import core.fenics.utils as feut
+from core.fenics.point_expression import *
 
 def getBMrestriction(g,M):
     m = 2*g.npoints

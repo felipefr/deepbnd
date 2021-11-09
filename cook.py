@@ -7,7 +7,7 @@ from timeit import default_timer as timer
 import multiphenics as mp
 from mpi4py import MPI
 
-sys.path.insert(0,'../../')
+# sys.path.insert(0,'../../core/')
 from core.fenics.utils import symgrad, symgrad_voigt
 import core.fenics.utils as feut
 import core.multiscale.fenics_multiscale as fmts

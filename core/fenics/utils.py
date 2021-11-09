@@ -1,6 +1,5 @@
 import dolfin as df
 import numpy as np
-# import meshUtils as meut
 from timeit import default_timer as timer
 
 halfsq2 = np.sqrt(2.)/2.

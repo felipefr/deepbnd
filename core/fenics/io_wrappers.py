@@ -14,8 +14,8 @@ from timeit import default_timer as timer
 import meshio
 import h5py
 import xml.etree.ElementTree as ET
-from myCoeffClass import *
-import fenicsWrapperElasticity as fela
+from core.fenics.my_coeff import *
+import core.fenics.wrapper_elasticity as fela
 
 def local_project(v,V):
     M = V.mesh()

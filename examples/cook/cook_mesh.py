@@ -9,12 +9,12 @@ Created on Tue Jun  1 13:29:05 2021
 import sys, os
 import dolfin as df 
 import matplotlib.pyplot as plt
-sys.path.insert(0,'../../utils/')
+sys.path.insert(0,'../../')
 
-import meshUtils as meut
+from core.gmsh.my_gmsh import myGmsh
 import numpy as np
 
-class CookMembrane(meut.myGmsh):
+class CookMembrane(myGmsh):
     def __init__(self, lcar = 1.0):
         super().__init__()    
               

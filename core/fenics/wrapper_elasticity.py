@@ -2,10 +2,10 @@ import dolfin as df
 from ufl import nabla_div
 from functools import reduce
 from timeit import default_timer as timer
-import ioFenicsWrappers as iofe
-import myCoeffClass as coef
+import core.fenics.io_wrappers as iofe
+import core.fenics.my_coeff as coef
 import numpy as np
-from meshUtils import *
+from core.fenics.mesh_utils import *
 
 def epsilon(u):
     return 0.5*(df.nabla_grad(u) + df.nabla_grad(u).T)

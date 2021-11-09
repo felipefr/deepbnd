@@ -1,5 +1,5 @@
 import numpy as np
-import ioFenicsWrappers as iofe
+import core.fenics.io_wrappers as iofe
 import dolfin as df
 
 class dataGenerator:
