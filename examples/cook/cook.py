@@ -8,12 +8,12 @@ import multiphenics as mp
 from mpi4py import MPI
 
 sys.path.insert(0,'../../')
-from core.fenics.utils import symgrad, symgrad_voigt
-import core.fenics.utils as feut
-import core.multiscale.fenics_multiscale as fmts
-import core.data_manipulation.my_hdf5 as myhd
-from core.fenics.enriched_mesh import EnrichedMesh 
-import core.fenics.io_wrappers as iofe
+from core.fenics_tools.wrapper_elasticity import symgrad_voigt
+from core.fenics_tools.wrapper_solvers import solver_iterative
+from core.multiscale.misc import Chom_multiscale
+import core.data_manipulation.wrapper_h5py as myhd
+from core.fenics_tools.enriched_mesh import EnrichedMesh 
+import core.fenics_tools.wrapper_io as iofe
 
 from mesh import CookMembrane
 
@@ -36,7 +36,7 @@ def solve_cook(meshfile, tangent_dataset):
     
     mapping = np.random.randint(0,len(tangent_dataset),mesh.num_cells())
         
-    Chom = fmts.Chom_multiscale(tangent_dataset, mapping, degree = 0)
+    Chom = Chom_multiscale(tangent_dataset, mapping, degree = 0)
     
     # # Define variational problem
     uh = df.TrialFunction(Uh) 
@@ -45,7 +45,7 @@ def solve_cook(meshfile, tangent_dataset):
     b = df.inner(traction,vh)*mesh.ds(LoadBndFlag)
     
     # Compute solution
-    uh = feut.solve_iterative(a, b, bcL, Uh)
+    uh = solver_iterative(a, b, bcL, Uh)
     
     return uh, Chom
 
