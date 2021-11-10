@@ -8,7 +8,7 @@ import multiphenics as mp
 from mpi4py import MPI
 
 sys.path.insert(0,'../../')
-from core.fenics_tools.wrapper_elasticity import symgrad_voigt
+from core.elasticity.fenics_utils import symgrad_voigt
 from core.fenics_tools.wrapper_solvers import solver_iterative
 from core.multiscale.misc import Chom_multiscale
 import core.data_manipulation.wrapper_h5py as myhd

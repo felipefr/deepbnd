@@ -1,8 +1,8 @@
 import numpy as np
 import meshio
 import pygmsh
-import core.fenics.io_wrappers as iofe
-from core.fenics.enriched_mesh import EnrichedMesh
+from core.fenics_tools.wrapper_io import exportMeshHDF5_fromGMSH
+from core.fenics_tools.enriched_mesh import EnrichedMesh
 import os
 import dolfin as df
 from functools import reduce
@@ -45,7 +45,7 @@ class myGmsh(pygmsh.built_in.Geometry):
         if(opt == 'meshio'):
             meshio.write(savefile, self.mesh)
         elif(opt == 'fenics'):
-            iofe.exportMeshHDF5_fromGMSH(self.mesh, savefile)
+            exportMeshHDF5_fromGMSH(self.mesh, savefile)
         
         # return self.mesh
 

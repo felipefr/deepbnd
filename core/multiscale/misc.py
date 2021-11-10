@@ -1,7 +1,7 @@
 import dolfin as df
 import numpy as np
-from core.fenics_tools.misc import Integral, VecX_expression, 
-                                    affineTransformationExpression
+from core.fenics_tools.misc import (Integral, VecX_expression,
+affineTransformationExpression)
 
 
 # Maps given tangents into the spatially varying elasticity tensor 

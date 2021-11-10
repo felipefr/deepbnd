@@ -14,9 +14,9 @@ from timeit import default_timer as timer
 import meshio
 import h5py
 import xml.etree.ElementTree as ET
-from core.fenics.my_coeff import *
-import core.fenics.wrapper_elasticity as fela
-from core.fenics.utils import local_project
+from core.fenics_tools.wrapper_expression import *
+import core.elasticity.fenics_utils as fela
+from core.fenics_tools.wrapper_solvers import local_project
 
 
 def readXDMF_with_markers(meshFile, mesh, comm = MPI.comm_world):

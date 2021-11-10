@@ -11,7 +11,7 @@ import dolfin as df
 import matplotlib.pyplot as plt
 sys.path.insert(0,'../../')
 
-from core.gmsh.my_gmsh import myGmsh
+from core.mesh.wrapper_gmsh import myGmsh
 import numpy as np
 
 class CookMembrane(myGmsh):

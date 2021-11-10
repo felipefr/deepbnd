@@ -1,6 +1,9 @@
 import dolfin as df
+import numpy as np
 from ufl import nabla_div
 from core.fenics_tools.misc import symgrad
+# from core.elasticity.misc import eng2mu, eng2lambPlane
+# from core.fenics_tools.wrapper_expression import getMyCoeff
 
 
 halfsq2 = np.sqrt(2.)/2. # useful for mandel notation
@@ -25,3 +28,19 @@ def sigmaLame(u, lame):
 def vonMises(sig):
     s = sig - (1./3)*df.tr(sig)*df.Identity(2)
     return df.sqrt((3./2)*df.inner(s, s)) 
+
+
+# REMOVE?
+# def getLameInclusions(nu1,E1,nu2,E2,M, op='cpp'):
+#     mu1 = eng2mu(nu1,E1)
+#     lamb1 = eng2lambPlane(nu1,E1)
+#     mu2 = eng2mu(nu2,E2)
+#     lamb2 = eng2lambPlane(nu2,E2)
+#     param = np.array([[lamb1, mu1], [lamb2,mu2],[lamb1,mu1], [lamb2,mu2]])
+    
+#     materials = M.subdomains.array().astype('int32')
+#     materials = materials - np.min(materials)
+    
+#     lame = getMyCoeff(materials, param, op = op)
+    
+#     return lame

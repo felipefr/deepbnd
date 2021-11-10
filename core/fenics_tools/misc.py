@@ -37,7 +37,7 @@ def affineTransformationExpression(a,B, mesh):
                B00=B[0,0], B01 = B[0,1], B10 = B[1,0], B11= B[1,1] ,degree = 1, domain = mesh)
 
 # Returns a expression (x[0], x[1])
-def VecX_expression(degree = 1)
+def VecX_expression(degree = 1):
     return df.Expression(('x[0]','x[1]'), degree = degree)
 
 
