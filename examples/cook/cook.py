@@ -14,8 +14,9 @@ from core.multiscale.misc import Chom_multiscale
 import core.data_manipulation.wrapper_h5py as myhd
 from core.fenics_tools.enriched_mesh import EnrichedMesh 
 import core.fenics_tools.wrapper_io as iofe
+import core.fenics_tools.misc as feut
 
-from mesh import CookMembrane
+from examples.cook.mesh import CookMembrane
 
 comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF
@@ -84,7 +85,9 @@ if __name__ == '__main__':
     
     uh, Chom = solve_cook(meshfile, tangent_dataset)
     
+
     sigma = lambda u: df.dot(Chom, symgrad_voigt(u))
+    
     
     with df.XDMFFile(comm, folderMesh + "cook_%s_%d_vtk.xdmf"%(caseType,Ny_split)) as file:
         iofe.export_XDMF_displacement_sigma(uh, sigma, file)
