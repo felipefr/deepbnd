@@ -7,11 +7,13 @@ import numpy as np
 from timeit import default_timer as timer
 from mpi4py import MPI
 
+
 sys.path.insert(0,'../')
+import core.fenics_tools.misc as feut
 
 def test_solve_cook():
     from core.elasticity.fenics_utils import symgrad_voigt
-    import core.fenics_tools.misc as feut
+
     import core.data_manipulation.wrapper_h5py as myhd
     
     from examples.cook.mesh import CookMembrane
@@ -53,8 +55,7 @@ def test_solve_cook():
     
     
 def test_solve_DNS():
-    import core.fenics_tools.misc as feut
-    from examples.DNS.solveDNS import solve_DNS
+    from examples.bar_DNS.solveDNS import solve_DNS
     
 
     # ========== dataset folders ================= 
@@ -76,3 +77,48 @@ def test_solve_DNS():
 
     assert np.allclose( feut.Integral(uh, mesh.dx, shape=(2,)), IntegralDisp) 
     
+    
+def test_solve_barMultiscale():    
+    from core.elasticity.fenics_utils import symgrad_voigt
+    from examples.bar_multiscale.barMultiscale import solve_barMultiscale
+    
+    
+    IntegralDisp = {'reduced_per': np.array([-7.98503130e-05, -3.31125648e-01]),
+                    'full': np.array([-9.53547037e-05, -3.31426336e-01]),
+                    'dnn_big': np.array([-9.60797298e-05, -3.31285703e-01])}
+                                     
+    IntegralStress = {'reduced_per': np.array([ 2.84999660e-08,  4.28544262e-06, -1.00000241e-02]),
+                  'full': np.array([[ 1.6871474e-08, -1.2981735e-05, -1.0000028e-02]]),
+                  'dnn_big': np.array([ 5.09102355e-08, -1.34413698e-05, -9.99989154e-03])}   
+               
+    
+    rootDataPath = open('../rootDataPath.txt','r').readline()[:-1]
+
+    Ny_DNS =  24 
+    Lx = 2.0
+    Ly = 0.5
+    
+    ty = -0.01
+    tx = 0.0    
+    
+    param = [Lx, Ly, tx, ty]
+    
+    folder = rootDataPath + "/deepBND/DNS/DNS_%d_new/"%Ny_DNS
+    meshfile = folder + "multiscale/meshBarMacro_Multiscale.xdmf"
+    
+    for caseType in ['reduced_per', 'dnn_big', 'full']:
+
+        tangentName = folder + 'tangents/tangent_%s.hd5'%caseType
+        
+        uh, Chom = solve_barMultiscale(meshfile, tangentName, param)
+    
+        sigma = lambda u: df.dot(Chom, symgrad_voigt(u))
+        
+        mesh = uh.function_space().mesh()
+        dx = df.Measure('dx', mesh)
+        
+        assert np.allclose( feut.Integral(uh, dx, shape=(2,)), IntegralDisp[caseType]) 
+        assert np.allclose( feut.Integral(sigma(uh), dx, shape=(3,)), IntegralStress[caseType])
+
+
+

@@ -49,6 +49,7 @@ pip install <name_of_the_package>==<version>
 **Testing** 
 ```
 cd tests
-pytest test_*            
+pytest test_*    
+or pytest --capture=no test_file.py::test_specific_test  (for detailed and specific test)      
 ```
 
