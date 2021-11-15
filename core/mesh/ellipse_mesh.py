@@ -1,4 +1,5 @@
-from my_gmsh import myGmsh
+from core.mesh.wrapper_gmsh import myGmsh
+import numpy as np
 
 class ellipseMesh(myGmsh):
     def __init__(self, ellipseData, Lx, Ly , lcar):
