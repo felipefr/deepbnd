@@ -1,25 +1,18 @@
 import sys
 import pytest
+import sys, os
+import dolfin as df 
+import matplotlib.pyplot as plt
+import numpy as np
+from timeit import default_timer as timer
+from mpi4py import MPI
+
 sys.path.insert(0,'../')
 
 def test_solve_cook():
-    import sys, os
-    import dolfin as df 
-    import matplotlib.pyplot as plt
-    import numpy as np
-    from ufl import nabla_div
-    from timeit import default_timer as timer
-    import multiphenics as mp
-    from mpi4py import MPI
-    
-    sys.path.insert(0,'../../')
     from core.elasticity.fenics_utils import symgrad_voigt
-    from core.fenics_tools.wrapper_solvers import solver_iterative
-    from core.multiscale.misc import Chom_multiscale
-    import core.data_manipulation.wrapper_h5py as myhd
-    from core.fenics_tools.enriched_mesh import EnrichedMesh 
-    import core.fenics_tools.wrapper_io as iofe
     import core.fenics_tools.misc as feut
+    import core.data_manipulation.wrapper_h5py as myhd
     
     from examples.cook.mesh import CookMembrane
     from examples.cook.cook import solve_cook
@@ -57,3 +50,29 @@ def test_solve_cook():
     
     assert np.allclose( feut.Integral(uh, mesh.dx, shape=(2,)), IntegralDisp) 
     assert np.allclose( feut.Integral(sigma(uh), mesh.dx, shape=(3,)), IntegralStress)
+    
+    
+def test_solve_DNS():
+    import core.fenics_tools.misc as feut
+    from examples.DNS.solveDNS import solve_DNS
+    
+
+    # ========== dataset folders ================= 
+    rootDataPath = open('../rootDataPath.txt','r').readline()[:-1]
+    
+    folder = rootDataPath + '/new_fe2/DNS/DNS_24/'
+    FaceTraction = 3    
+    ty = -0.01
+    tx = 0.0    
+    FacesClamped = [5]
+        
+    param = [FaceTraction, tx, ty, FacesClamped]
+        
+    uh = solve_DNS(folder + 'mesh.xdmf', param)
+    
+    mesh = uh.function_space().mesh()
+    
+    IntegralDisp = np.array([-1.33093136e-04, -3.38050779e-01])
+
+    assert np.allclose( feut.Integral(uh, mesh.dx, shape=(2,)), IntegralDisp) 
+    

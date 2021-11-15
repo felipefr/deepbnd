@@ -2,7 +2,7 @@ import sys, os
 import dolfin as df 
 import matplotlib.pyplot as plt
 from ufl import nabla_div
-sys.path.insert(0,'../../utils/')
+sys.path.insert(0,'../../')
 
 from fenicsUtils import symgrad, symgrad_voigt
 import numpy as np
@@ -20,7 +20,7 @@ comm_self = MPI.COMM_SELF
 rank = comm.Get_rank()
 num_ranks = comm.Get_size()
 
-rootDataPath = open('../../../rootDataPath.txt','r').readline()[:-1]
+rootDataPath = open('../../rootDataPath.txt','r').readline()[:-1]
 
 
 class myChom(df.UserExpression):

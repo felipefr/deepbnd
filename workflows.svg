@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="workflows.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="439.32519"
+     inkscape:cy="698.60708"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1044"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="opacity:0.43999999;fill:none;stroke:#000000;stroke-width:0.23168458;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect29"
+       width="49.902729"
+       height="9.9843683"
+       x="38.097099"
+       y="165.38579" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:4.50902033px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.1127255"
+       x="40.23917"
+       y="172.18852"
+       id="text33"><tspan
+         sodipodi:role="line"
+         id="tspan31"
+         x="40.23917"
+         y="172.18852"
+         style="stroke-width:0.1127255">barMacro_DNS.xdmf</tspan></text>
+    <rect
+       style="opacity:0.43999999;fill:none;stroke:#000000;stroke-width:0.23168458;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect29-3"
+       width="49.902729"
+       height="9.9843683"
+       x="37.792686"
+       y="121.16257" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:4.50902033px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.1127255"
+       x="39.934753"
+       y="127.96531"
+       id="text33-6"><tspan
+         sodipodi:role="line"
+         id="tspan31-7"
+         x="39.934753"
+         y="127.96531"
+         style="stroke-width:0.1127255">barMacro_DNS.xdmf</tspan></text>
+    <rect
+       style="opacity:0.43999999;fill:none;stroke:#000000;stroke-width:0.23168458;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect29-3-5"
+       width="49.902729"
+       height="9.9843683"
+       x="37.792683"
+       y="142.32924" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:4.50902033px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.1127255"
+       x="47.116299"
+       y="148.754"
+       id="text33-6-3"><tspan
+         sodipodi:role="line"
+         id="tspan31-7-5"
+         x="47.116299"
+         y="148.754"
+         style="stroke-width:0.1127255">SolveDNS.py</tspan><tspan
+         sodipodi:role="line"
+         x="47.116299"
+         y="154.39027"
+         style="stroke-width:0.1127255"
+         id="tspan77" /></text>
+  </g>
+</svg>

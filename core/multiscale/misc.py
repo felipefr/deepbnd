@@ -18,6 +18,32 @@ class Chom_multiscale(df.UserExpression):
         
     def value_shape(self):
         return (3,3,)
+    
+    
+# Maps given tangents into the spatially varying elasticity tensor 
+# piecewise continous: Precomputes the distance to be faster
+class Chom_precomputed_dist(df.UserExpression):
+    def __init__(self, tangent, center, mesh,  **kwargs):
+        self.tangent = tangent
+        self.center = center
+        self.map = np.zeros(mesh.num_cells()).astype('int')
+        
+        for c in df.cells(mesh):
+            midp = c.midpoint()
+            midp = np.array([midp.x(),midp.y()])
+
+            dist = np.linalg.norm(self.center - midp, axis = 1)
+            self.map[c.index()] = np.argmin(dist)
+            
+        super().__init__(**kwargs)
+        
+    def eval_cell(self, values, x, cell):
+        values[:] = self.tangent[self.map[cell.index],:,:].flatten()
+        
+    def value_shape(self):
+        return (3,3,)
+    
+    
 
 # Transform fluctuations to match zero-averages constraints (Minimally Const.)
 def getAffineTransformationLocal(U,mesh, domains_id = [], justTranslation = False):
