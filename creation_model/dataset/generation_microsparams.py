@@ -1,42 +1,41 @@
 import sys, os
-sys.path.insert(0, '../../utils/')
-
-import matplotlib.pyplot as plt
 import numpy as np
-import generationInclusions as geni
-import myHDF5 as myhd
 
-f = open("../../../rootDataPath.txt")
-rootData = f.read()[:-1]
-f.close()
+from deepBND.__init__ import *
+import deepBND.core.sampling.generation_inclusions as geni
+import deepBND.core.data_manipulation.wrapper_h5py as myhd
+from deepBND.core.multiscale.mesh_RVE import paramRVE_default 
 
-folder = rootData + "/new_fe2/dataset/"
-
-p = geni.paramRVE()
-NR = p.Nx*p.Ny # 36
-
-ns = 10240 # training
-
-# Radius Generation
-seed = 17 # for the test   
-np.random.seed(seed)
-
-os.system('rm ' + folder +  'paramRVEdataset_validation_LLHS.hd5')
-X, f = myhd.zeros_openFile(filename = folder +  'paramRVEdataset_validation_LLHS.hd5',  shape = (ns,NR,5), label = 'param', mode = 'w-')
-
-ellipseData_pattern = geni.getEllipse_emptyRadius(p.Nx,p.Ny,p.Lxt, p.Lyt, p.x0, p.y0)
-
-# thetas = geni.getScikitoptSample(NR,ns, -1.0, 1.0,  seed, op = 'lhs')
-
-thetas = geni.getScikitoptSample_LHSbyLevels(NR,ns,4,[14,15,20,21],-1., 1., seed, op = 'lhs')
-
-for i in range(ns):
-    print("inserting on ", i)
-    X[i,:,:] =  ellipseData_pattern 
-    X[i,:,2] = geni.getRadiusExponential(p.r0, p.r1, thetas[i,:])
+def build_paramRVE(paramRVEname, ns, seed):
+    p = paramRVE_default()
+    NR = p.Nx*p.Ny # 36
+    
+    # Radius Generation
+    np.random.seed(seed)
+    
+    os.system('rm ' + paramRVEname)
+    X, f = myhd.zeros_openFile(filename = paramRVEname,  shape = (ns,NR,5), label = 'param', mode = 'w')
+    
+    ellipseData_pattern = geni.getEllipse_emptyRadius(p.Nx,p.Ny,p.Lxt, p.Lyt, p.x0, p.y0)
+    
+    thetas = geni.getScikitoptSample(NR,ns, -1.0, 1.0,  seed, op = 'lhs')
+    
+    for i in range(ns):
+        print("inserting on ", i)
+        X[i,:,:] =  ellipseData_pattern 
+        X[i,:,2] = geni.getRadiusExponential(p.r0, p.r1, thetas[i,:])
+    
+    
+    f.close()
 
 
-f.close()
-
-
+if __name__ == '__main__':
+    
+    folder = rootDataPath + "/deepBND/dataset/"
+    ns = 10240 # training
+    seed = 17 # for the test   
+    paramRVEname = folder + 'paramRVEdataset_validation.hd5'
+    
+    
+    build_paramRVE(paramRVEname, ns, seed)
 

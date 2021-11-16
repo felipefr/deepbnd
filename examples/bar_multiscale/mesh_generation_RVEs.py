@@ -15,7 +15,7 @@ def buildMeshRVEs_fromDNS(run, num_runs, nameParamRVEdata, nameMesh, size = 'red
     
     for i in range(nrun):
         print("gererated ", i , ids[i], " mesh")
-            print(paramRVEdata[i,:,:])
+        print(paramRVEdata[i,:,:])
         buildRVEmesh(paramRVEdata[i,:,:], nameMesh.format(ids[i]), isOrdenated = False, size = size)
 
 
