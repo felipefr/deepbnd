@@ -1,5 +1,6 @@
 import sys, os
 from numpy import isclose
+import numpy as np
 import fenics
 from dolfin import *
 import matplotlib.pyplot as plt

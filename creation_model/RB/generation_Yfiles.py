@@ -4,8 +4,8 @@ from dolfin import *
 from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 
+from deepBND.__init__ import *
 import deepBND.creation_model.RB.RB_utils as rbut
-
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
 import deepBND.core.multiscale.misc as mtsm
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     suffix = '_github'
     nameSnaps = folder + 'snapshots%s.h5'%suffix
     nameMeshRefBnd = folder + 'boundaryMesh.xdmf'
-    nameWbasis = folder + 'Wbasis.h5'
+    nameWbasis = folder + 'Wbasis%s.h5'%suffix
     nameYlist = folder + 'Y%s.h5'%suffix
     nameXYlist = folder + 'XY%s.hd5'%suffix
     nameParamRVEdataset = folder + 'paramRVEdataset%s.hd5'%suffix
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     
     Nmax = 160
     
-    op = int(input('option'))
+    op = int(input('option (0 to 3)'))
     
     if(op==0):
         translateSolution(nameSnaps, Vref)
