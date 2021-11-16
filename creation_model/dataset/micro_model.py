@@ -1,30 +1,24 @@
 import sys, os
+import numpy as np
 import dolfin as df 
 import matplotlib.pyplot as plt
 from ufl import nabla_div
-sys.path.insert(0, '/home/felipefr/github/micmacsFenics/core/')
-sys.path.insert(0,'../utils/')
-
-import micro_constitutive_model as mscm
-# from fenicsUtils import symgrad, symgrad_voigt, Integral
-import numpy as np
-
-import fenicsMultiscale as fmts
-import myHDF5 as myhd
-import meshUtils as meut
-import elasticity_utils as elut
-import symmetryLib as symlpy
 from timeit import default_timer as timer
 import multiphenics as mp
-import fenicsUtils as feut
+sys.path.insert(0, '/home/felipefr/github/')
 
+# import micmacsfenics as mmf
+sys.path.insert(0,'../..')
+
+import micmacsfenics.core.micro_constitutive_model as mscm
+from core.fenics_tools.enriched_mesh import EnrichedMesh 
+from core.elasticity.fenics_utils import getLameInclusions
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF
 rank = comm.Get_rank()
 num_ranks = comm.Get_size()
-
 
 class MicroModel(mscm.MicroConstitutiveModel):
     
@@ -43,7 +37,7 @@ class MicroModel(mscm.MicroConstitutiveModel):
         self.readMesh()
 
     def readMesh(self):
-        self.mesh = meut.EnrichedMesh(self.nameMesh,comm_self)
+        self.mesh = EnrichedMesh(self.nameMesh,comm_self)
         self.coord_min = np.min(self.mesh.coordinates(), axis = 0)
         self.coord_max = np.max(self.mesh.coordinates(), axis = 0)
         self.others['x0'] = self.coord_min[0]
@@ -52,7 +46,7 @@ class MicroModel(mscm.MicroConstitutiveModel):
         self.others['y1'] = self.coord_max[1]
         self.y = df.SpatialCoordinate(self.mesh)
         self.dy = self.mesh.dx # specially for the case of enriched mesh, otherwise it does not work
-        self.lame = elut.getLameInclusions(*self.param, self.mesh)
+        self.lame = getLameInclusions(*self.param, self.mesh)
         self.sigmaLaw = lambda u: self.lame[0]*nabla_div(u)*df.Identity(2) + 2*self.lame[1]*symgrad(u)
 
     
