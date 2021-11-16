@@ -21,6 +21,7 @@ Among other libraries, DeepBND relies on the following ones (some of them are in
 - mpi4py           3.0.3 
 - matplotlib       3.4.1 
 - python           3.8.10 
+- lxml              4.6.4 
 
 Obs: the default repository is conda-forge, otherwise pypi from pip. Recommended versions should be understood only as guideline and sometimes the same version is not strictly necessary . 
 

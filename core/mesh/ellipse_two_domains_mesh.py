@@ -1,3 +1,7 @@
+from core.mesh.wrapper_gmsh import myGmsh
+from core.mesh.ellipse_mesh import ellipseMesh
+import numpy as np
+
 class ellipseMesh2Domains(ellipseMesh):
     def __init__(self, x0L, y0L, LxL, LyL, NL, ellipseData, Lx, Ly , lcar, x0 = 0., y0 = 0. ):        
         self.x0 = x0
