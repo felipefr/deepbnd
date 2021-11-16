@@ -1,6 +1,6 @@
 import dolfin as df
 import numpy as np
-from core.fenics_tools.misc import (Integral, VecX_expression,
+from deepBND.core.fenics_tools.misc import (Integral, VecX_expression,
 affineTransformationExpression)
 
 

@@ -1,11 +1,11 @@
 import numpy as np
 import meshio
 import pygmsh
-import core.fenics_tools.wrapper_io as iofe
 import os
 import dolfin as df
 from functools import reduce
 
+import deepBND.core.fenics_tools.wrapper_io as iofe
 
 class EnrichedMesh(df.Mesh):
     def __init__(self, meshFile, comm = df.MPI.comm_world):

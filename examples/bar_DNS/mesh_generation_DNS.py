@@ -1,12 +1,11 @@
 import sys, os
-sys.path.insert(0,'../..')
 import numpy as np
 from timeit import default_timer as timer
 import copy
 
-import core.data_manipulation.wrapper_h5py as myhd
-import core.sampling.generation_inclusions as geni
-from core.mesh.ellipse_mesh_bar import ellipseMeshBar
+import deepBND.core.data_manipulation.wrapper_h5py as myhd
+import deepBND.core.sampling.generation_inclusions as geni
+from deepBND.core.mesh.ellipse_mesh_bar import ellipseMeshBar
 
 def buildDNSmesh(Ny, paramfile, meshfile, readParam, fac_lcar, seed):
 

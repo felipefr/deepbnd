@@ -1,10 +1,11 @@
 import sys, os
-sys.path.insert(0,'../../')
 import numpy as np
-import core.data_manipulation.wrapper_h5py as myhd
-from core.fenics_tools.enriched_mesh import EnrichedMesh 
-from core.multiscale.mesh_RVE import buildRVEmesh
+import deepBND.core.data_manipulation.wrapper_h5py as myhd
+from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
+from deepBND.core.multiscale.mesh_RVE import buildRVEmesh
 from mpi4py import MPI
+
+from deepBND.__init__ import *
 
 def buildMeshRVEs_fromDNS(run, num_runs, nameParamRVEdata, nameMesh, size = 'reduced'):
     paramRVEdata = myhd.loadhd5(nameParamRVEdata, 'param')[run::num_runs,:,:]
@@ -31,8 +32,6 @@ if __name__ == '__main__':
         num_runs = comm.Get_size()
 
     print('run, num_runs ', run, num_runs)
-    
-    rootDataPath = open('../../rootDataPath.txt','r').readline()[:-1]
     
     folder = rootDataPath + "/deepBND/bar_DNS/Ny_{0}/".format(Ny_DNS)
     folderMesh = folder + 'meshes/'

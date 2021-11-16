@@ -1,11 +1,12 @@
 import numpy as np
 import meshio
 import pygmsh
-from core.fenics_tools.wrapper_io import exportMeshHDF5_fromGMSH
-from core.fenics_tools.enriched_mesh import EnrichedMesh
 import os
 import dolfin as df
 from functools import reduce
+
+from deepBND.core.fenics_tools.wrapper_io import exportMeshHDF5_fromGMSH
+from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh
 
 class myGmsh(pygmsh.built_in.Geometry):
     def __init__(self):

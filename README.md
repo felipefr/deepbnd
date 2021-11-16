@@ -1,11 +1,9 @@
 # DeepBND
 A Deep Learning-based method to enhance boundary conditions. This code has been used to simulate the numerical examples of the article "DeepBND: a Machine Learning approach to enhance Multiscale Solid Mechanics" (https://arxiv.org/abs/2110.11141).
 
-
-
 **Installation** 
 
-Among other libraries, DeepBND relies on the following ones (some of them are installed automatically in the installation of previous ones):
+Among other libraries, deepBND relies on the following ones (some of them are installed automatically in the installation of previous ones):
 
 - library          version  
 - fenics           2019.1.0 
@@ -46,6 +44,9 @@ or use pip
 ```
 pip install <name_of_the_package>==<version>
 ```
+
+- Make sure your PYTHONPATH variable contains the root directory in which you cloned deepBND. By default, the anaconda installation does not take into consideration the 
+OS path. You can add a .pth file listing the directories into ~/miniconda/envs/tf-fenics/lib/python3.8/site-packages 
 
 **Testing** 
 ```

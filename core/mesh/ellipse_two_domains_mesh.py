@@ -1,5 +1,5 @@
-from core.mesh.wrapper_gmsh import myGmsh
-from core.mesh.ellipse_mesh import ellipseMesh
+from deepBND.core.mesh.wrapper_gmsh import myGmsh
+from deepBND.core.mesh.ellipse_mesh import ellipseMesh
 import numpy as np
 
 class ellipseMesh2Domains(ellipseMesh):

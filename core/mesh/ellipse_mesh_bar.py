@@ -1,4 +1,4 @@
-from core.mesh.ellipse2_mesh import ellipseMesh2
+from deepBND.core.mesh.ellipse2_mesh import ellipseMesh2
         
 class ellipseMeshBar(ellipseMesh2):
     

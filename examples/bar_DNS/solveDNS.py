@@ -1,13 +1,14 @@
 import sys, os
 from dolfin import *
 import numpy as np
-sys.path.insert(0,'../../')
 import matplotlib.pyplot as plt
 from ufl import nabla_div
-from core.fenics_tools.misc import symgrad
-from core.fenics_tools.enriched_mesh import EnrichedMesh 
-from core.elasticity.fenics_utils import getLameInclusions
-from core.fenics_tools.wrapper_solvers import solver_iterative
+
+from deepBND.__init__ import *
+from deepBND.core.fenics_tools.misc import symgrad
+from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
+from deepBND.core.elasticity.fenics_utils import getLameInclusions
+from deepBND.core.fenics_tools.wrapper_solvers import solver_iterative
 
 from mpi4py import MPI
 from timeit import default_timer as timer
@@ -50,12 +51,6 @@ def solve_DNS(meshfile, param):
     
 if __name__ == '__main__':
     
-    f = open("../../rootDataPath.txt")
-    rootData = f.read()[:-1]
-    f.close()
-    
-
-    
     # =========== argument input =================
     if(len(sys.argv)>1):
         Ny = int(sys.argv[1])
@@ -65,7 +60,7 @@ if __name__ == '__main__':
         Ny =  24 # 24 or 72
         suffix = '' # opt: reduced_per, dnn, full
         
-    folder = rootData + '/new_fe2/DNS/DNS_%d%s/'%(Ny,suffix)
+    folder = rootDataPath + '/new_fe2/DNS/DNS_%d%s/'%(Ny,suffix)
 
     # Lx = 2.0
     # Ly = 0.5

@@ -7,16 +7,16 @@ from timeit import default_timer as timer
 import multiphenics as mp
 from mpi4py import MPI
 
-sys.path.insert(0,'../../')
-from core.elasticity.fenics_utils import symgrad_voigt
-from core.fenics_tools.wrapper_solvers import solver_iterative
-from core.multiscale.misc import Chom_multiscale
-import core.data_manipulation.wrapper_h5py as myhd
-from core.fenics_tools.enriched_mesh import EnrichedMesh 
-import core.fenics_tools.wrapper_io as iofe
-import core.fenics_tools.misc as feut
+from deepBND.__init__ import *
+from deepBND.core.elasticity.fenics_utils import symgrad_voigt
+from deepBND.core.fenics_tools.wrapper_solvers import solver_iterative
+from deepBND.core.multiscale.misc import Chom_multiscale
+import deepBND.core.data_manipulation.wrapper_h5py as myhd
+from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
+import deepBND.core.fenics_tools.wrapper_io as iofe
+import deepBND.core.fenics_tools.misc as feut
 
-from examples.cook.mesh import CookMembrane
+from deepBND.examples.cook.mesh import CookMembrane
 
 comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF
@@ -66,7 +66,6 @@ if __name__ == '__main__':
         
     
     # ========== dataset folders ================= 
-    rootDataPath = open('../../rootDataPath.txt','r').readline()[:-1]
     folder = rootDataPath + "/new_fe2/DNS/DNS_72_2/"
     folderMesh = rootDataPath + '/deepBND/cook/meshes_seed{0}/'.format(seed)
     

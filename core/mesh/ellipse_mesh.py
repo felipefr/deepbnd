@@ -1,4 +1,4 @@
-from core.mesh.wrapper_gmsh import myGmsh
+from deepBND.core.mesh.wrapper_gmsh import myGmsh
 import numpy as np
 
 class ellipseMesh(myGmsh):

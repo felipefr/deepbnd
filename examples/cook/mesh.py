@@ -1,17 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jun  1 13:29:05 2021
-
-@author: felipefr
-"""
-
 import sys, os
 import dolfin as df 
 import matplotlib.pyplot as plt
-sys.path.insert(0,'../../')
 
-from core.mesh.wrapper_gmsh import myGmsh
+from deepBND.core.mesh.wrapper_gmsh import myGmsh
 import numpy as np
 
 class CookMembrane(myGmsh):

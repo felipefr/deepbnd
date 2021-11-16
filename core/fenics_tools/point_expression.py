@@ -77,66 +77,6 @@ PYBIND11_MODULE(SIGNATURE, m) {
 }
 """
 
-# class myCoeff(UserExpression):
-#     def __init__(self, markers, coeffs, **kwargs):
-#         self.markers = markers
-#         self.coeffs = coeffs
-#         self.ncoeff = coeffs.shape[1]
-#         super().__init__(**kwargs)
-
-        
-#     def eval_cell(self, values, x, cell):
-#         values[:self.ncoeff] = self.coeffs[self.markers[cell.index]]
-        
-#     def value_shape(self):
-#         return (self.ncoeff,)
-
-
-# def getMyCoeff(materials, param, op = 'cpp'):
-    
-#     if(op == 'cpp'):
-#         myCoeffCpp = compile_cpp_code(code)
-#         lamb_ = param[:,0].astype('float64')
-#         mu_ = param[:,1].astype('float64')
-#         lamb = CompiledExpression(myCoeffCpp.myCoeff(lamb_,materials), degree = 0)
-#         mu = CompiledExpression(myCoeffCpp.myCoeff(mu_,materials), degree = 0)
-#         return [lamb, mu] 
-
-#     elif(op == 'python'):
-#         return myCoeff(materials, param, degree = 0)
-    
- 
-    
-# class myCoeffCpp:
-#     def __init__(self, materials, param):
-#         self.myCoeffCpp = compile_cpp_code(code)
-        
-#         lamb_ = param[:,0].astype('float64')
-#         mu_ = param[:,1].astype('float64')
-       
-#         lambHandler = self.myCoeffCpp.myCoeff(lamb_,materials)
-#         muHandler = self.myCoeffCpp.myCoeff(mu_,materials)
-        
-#         self.lamb = CompiledExpression(lambHandler, degree = 0)
-#         self.mu = CompiledExpression(muHandler, degree = 0)
-#         self.values = [self.lamb,self.mu]
-        
-#     def updateCoeffs(self, param):
-#         self.lamb.updateCoeffs(param[:,0].astype('float64'),param.shape[0])    
-#         self.mu.updateCoeffs(param[:,1].astype('float64'), param.shape[0])
-        
-#     def __getitem__(self, key):
-#         print(key)
-#         return self.values[key]
-
-
-            
-# def getMyCoeff(materials, param, op = 'cpp'): 
-#     if(op == 'cpp'):
-#         return myCoeffCpp(materials,param)
-#     elif(op == 'python'):
-#         return myCoeff(materials, param, degree = 0)
-
 def PointExpression(u,gen, op = 'python'):
     if(op == 'python'):
         return PointExpressionPython(u,gen)

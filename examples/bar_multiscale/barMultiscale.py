@@ -2,18 +2,18 @@ import sys, os
 import dolfin as df 
 import matplotlib.pyplot as plt
 from ufl import nabla_div
-sys.path.insert(0,'../../')
 
 import numpy as np
 from timeit import default_timer as timer
 from mpi4py import MPI
 
-from core.fenics_tools.misc import Integral 
-from core.elasticity.fenics_utils import symgrad_voigt
-from core.fenics_tools.wrapper_solvers import solver_iterative
-from core.multiscale.misc import Chom_multiscale, Chom_precomputed_dist
-import core.data_manipulation.wrapper_h5py as myhd
-from core.fenics_tools.enriched_mesh import EnrichedMesh 
+from deepBND.__init__ import *
+from deepBND.core.fenics_tools.misc import Integral 
+from deepBND.core.elasticity.fenics_utils import symgrad_voigt
+from deepBND.core.fenics_tools.wrapper_solvers import solver_iterative
+from deepBND.core.multiscale.misc import Chom_multiscale, Chom_precomputed_dist
+import deepBND.core.data_manipulation.wrapper_h5py as myhd
+from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
      
 comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF
@@ -72,8 +72,6 @@ def solve_barMultiscale(meshfile, tangentName,  param):
     
 
 if __name__ == '__main__':
-
-    rootDataPath = open('../../rootDataPath.txt','r').readline()[:-1]
     
     # =========== argument input =================
     if(len(sys.argv)>1):

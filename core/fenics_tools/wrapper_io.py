@@ -5,7 +5,6 @@ from dolfin import *
 from ufl import nabla_div
 import matplotlib.pyplot as plt
 import sys, os
-sys.path.insert(0, '..')
 import copy
 
 from functools import reduce
@@ -14,9 +13,9 @@ from timeit import default_timer as timer
 import meshio
 import h5py
 import xml.etree.ElementTree as ET
-from core.fenics_tools.wrapper_expression import *
-import core.elasticity.fenics_utils as fela
-from core.fenics_tools.wrapper_solvers import local_project
+from deepBND.core.fenics_tools.wrapper_expression import *
+import deepBND.core.elasticity.fenics_utils as fela
+from deepBND.core.fenics_tools.wrapper_solvers import local_project
 
 
 def readXDMF_with_markers(meshFile, mesh, comm = MPI.comm_world):

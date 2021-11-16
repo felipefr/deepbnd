@@ -5,15 +5,13 @@ import matplotlib.pyplot as plt
 from ufl import nabla_div
 from timeit import default_timer as timer
 import multiphenics as mp
-sys.path.insert(0, '/home/felipefr/github/')
-
-# import micmacsfenics as mmf
-sys.path.insert(0,'../..')
-
-import micmacsfenics.core.micro_constitutive_model as mscm
-from core.fenics_tools.enriched_mesh import EnrichedMesh 
-from core.elasticity.fenics_utils import getLameInclusions
 from mpi4py import MPI
+
+from deepBND.__init__ import *
+import micmacsfenics.core.micro_constitutive_model as mscm
+from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
+from deepBND.core.elasticity.fenics_utils import getLameInclusions
+from deepBND.core.fenics_tools.misc import symgrad, Integral
 
 comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF

@@ -1,10 +1,9 @@
 import dolfin as df
 import numpy as np
 from ufl import nabla_div
-from core.fenics_tools.misc import symgrad
-from core.elasticity.misc import eng2mu, eng2lambPlane
-from core.fenics_tools.wrapper_expression import getMyCoeff
-
+from deepBND.core.fenics_tools.misc import symgrad
+from deepBND.core.elasticity.misc import eng2mu, eng2lambPlane
+from deepBND.core.fenics_tools.wrapper_expression import getMyCoeff
 
 halfsq2 = np.sqrt(2.)/2. # useful for mandel notation
 

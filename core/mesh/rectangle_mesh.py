@@ -1,4 +1,4 @@
-from my_gmsh import myGmsh
+from deepBND.core.mesh.wrapper_gmsh import myGmsh
 
 class rectangleMesh(myGmsh):
     def __init__(self, x0, y0, Lx, Ly , lcar):

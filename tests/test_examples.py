@@ -7,24 +7,22 @@ import numpy as np
 from timeit import default_timer as timer
 from mpi4py import MPI
 
-
-sys.path.insert(0,'../')
-import core.fenics_tools.misc as feut
+import deepBND.__init__ import *
+import deepBND.core.fenics_tools.misc as feut
 
 def test_solve_cook():
-    from core.elasticity.fenics_utils import symgrad_voigt
+    from deepBND.core.elasticity.fenics_utils import symgrad_voigt
 
-    import core.data_manipulation.wrapper_h5py as myhd
+    import deepBND.core.data_manipulation.wrapper_h5py as myhd
     
-    from examples.cook.mesh import CookMembrane
-    from examples.cook.cook import solve_cook
+    from deepBND.examples.cook.mesh import CookMembrane
+    from deepBND.examples.cook.cook import solve_cook
     
     Ny_split =  40 # 5, 10, 20, 40, 80
     caseType = 'reduced_per' # opt: reduced_per, dnn, full
     seed = 1
         
     # ========== dataset folders ================= 
-    rootDataPath = open('../rootDataPath.txt','r').readline()[:-1]
     folder = rootDataPath + "/new_fe2/DNS/DNS_72_2/"
     folderMesh = rootDataPath + '/deepBND/cook/meshes_seed{0}/'.format(seed)
     
@@ -55,11 +53,9 @@ def test_solve_cook():
     
     
 def test_solve_DNS():
-    from examples.bar_DNS.solveDNS import solve_DNS
+    from deepBND.examples.bar_DNS.solveDNS import solve_DNS
     
-
     # ========== dataset folders ================= 
-    rootDataPath = open('../rootDataPath.txt','r').readline()[:-1]
     
     folder = rootDataPath + '/new_fe2/DNS/DNS_24/'
     FaceTraction = 3    
@@ -79,8 +75,8 @@ def test_solve_DNS():
     
     
 def test_solve_barMultiscale():    
-    from core.elasticity.fenics_utils import symgrad_voigt
-    from examples.bar_multiscale.barMultiscale import solve_barMultiscale
+    from deepBND.core.elasticity.fenics_utils import symgrad_voigt
+    from deepBND.examples.bar_multiscale.barMultiscale import solve_barMultiscale
     
     
     IntegralDisp = {'reduced_per': np.array([-7.98503130e-05, -3.31125648e-01]),
@@ -91,8 +87,6 @@ def test_solve_barMultiscale():
                   'full': np.array([[ 1.6871474e-08, -1.2981735e-05, -1.0000028e-02]]),
                   'dnn_big': np.array([ 5.09102355e-08, -1.34413698e-05, -9.99989154e-03])}   
                
-    
-    rootDataPath = open('../rootDataPath.txt','r').readline()[:-1]
 
     Ny_DNS =  24 
     Lx = 2.0

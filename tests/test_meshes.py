@@ -6,13 +6,12 @@ import numpy as np
 from timeit import default_timer as timer
 from mpi4py import MPI
 
-sys.path.insert(0,'../')
-import core.fenics_tools.misc as feut
+import deepBND.core.fenics_tools.misc as feut
 
 def test_buildDNSmesh():
-    import core.data_manipulation.wrapper_h5py as myhd    
-    from examples.bar_DNS.mesh_generation_DNS import buildDNSmesh
-    from core.fenics_tools.enriched_mesh import EnrichedMesh  
+    import deepBND.core.data_manipulation.wrapper_h5py as myhd    
+    from deepBND.examples.bar_DNS.mesh_generation_DNS import buildDNSmesh
+    from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh  
 
     Ny = 12
     readParam = False
@@ -43,8 +42,8 @@ def test_buildDNSmesh():
 
 def test_buildRVEmesh():
     
-    from core.multiscale.mesh_RVE import buildRVEmesh
-    from core.fenics_tools.enriched_mesh import EnrichedMesh  
+    from deepBND.core.multiscale.mesh_RVE import buildRVEmesh
+    from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh  
     
     meshname = 'mesh_{0}_temp.xdmf'
     vol_targets = {'reduced' : [4.000000000000001, 0.22481976337016096], 

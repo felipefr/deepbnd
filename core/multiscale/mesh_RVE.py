@@ -1,9 +1,8 @@
 import sys, os
-sys.path.insert(0,'../../')
 import numpy as np
-from core.mesh.ellipse2_mesh import ellipseMesh2
-from core.mesh.ellipse_two_domains_mesh import ellipseMesh2Domains
-import core.sampling.generation_inclusions as geni
+from deepBND.core.mesh.ellipse2_mesh import ellipseMesh2
+from deepBND.core.mesh.ellipse_two_domains_mesh import ellipseMesh2Domains
+import deepBND.core.sampling.generation_inclusions as geni
 
 
 class paramRVE_default:
