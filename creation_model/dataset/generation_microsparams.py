@@ -32,9 +32,9 @@ def build_paramRVE(paramRVEname, ns, seed):
 if __name__ == '__main__':
     
     folder = rootDataPath + "/deepBND/dataset/"
-    ns = 10240 # training
-    seed = 17 # for the test   
-    paramRVEname = folder + 'paramRVEdataset_validation.hd5'
+    ns = 200 # training
+    seed = 1 # for the test   
+    paramRVEname = folder + 'paramRVEdataset_github.hd5'
     
     
     build_paramRVE(paramRVEname, ns, seed)

@@ -9,12 +9,14 @@ from mpi4py import MPI
 
 from deepBND.__init__ import *
 from deepBND.core.multiscale.mesh_RVE import buildRVEmesh
-import deepBND.creation_model.dataset.micro_model as mscm
+import deepBND.core.multiscale.micro_model as mscm
 import deepBND.core.elasticity.fenics_utils as fela
 import deepBND.core.fenics_tools.wrapper_io as iofe
 import deepBND.core.multiscale.misc as mtsm
 from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
+from deepBND.core.mesh.degenerated_rectangle_mesh import degeneratedBoundaryRectangleMesh
+from deepBND.core.multiscale.mesh_RVE import paramRVE_default
 
 
 comm = MPI.COMM_WORLD
@@ -95,7 +97,7 @@ if __name__ == '__main__':
     
     folder = rootDataPath + "/deepBND/dataset/"
 
-    suffix = "_validation"
+    suffix = "_github"
     opModel = 'per'
     createMesh = True
     
@@ -104,14 +106,15 @@ if __name__ == '__main__':
     nu = 0.3
     paramMaterial = [nu,E2*contrast,nu,E2]
 
-    bdnMeshname = folder + 'boundaryMesh.xdmf'
+    bndMeshname = folder + 'boundaryMesh.xdmf'
     paramRVEname = folder +  'paramRVEdataset{0}.hd5'.format(suffix)
     snapshotsname = folder +  'snapshots{0}_{1}.h5'.format(suffix,run)
     meshname = folder + "meshes/mesh_temp_{0}.xdmf".format(run)
     
-    filesnames = [bdnMeshname, paramRVEname, snapshotsname, meshname]
+    filesnames = [bndMeshname, paramRVEname, snapshotsname, meshname]
     
     # generation of the lite mesh for the internal boundary
+    # p = paramRVE_default()
     # meshRef = degeneratedBoundaryRectangleMesh(x0 = p.x0L, y0 = p.y0L, Lx = p.LxL , Ly = p.LyL , Nb = 21)
     # meshRef.generate()
     # meshRef.write(bndMeshname , 'fenics')

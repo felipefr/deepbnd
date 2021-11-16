@@ -60,7 +60,7 @@ class MicroModel(mscm.MicroConstitutiveModel):
         if(len(bcs) > 0): 
             bcs.apply(A)
         
-        solver = df.PETScLUSolver('superlu')
+        solver = df.PETScLUSolver('mumps')
         self.sol = [mp.BlockFunction(W),mp.BlockFunction(W),mp.BlockFunction(W)]
         
         for i in range(self.nvoigt):
