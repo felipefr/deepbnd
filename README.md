@@ -19,7 +19,8 @@ Among other libraries, deepBND relies on the following ones (some of them are in
 - mpi4py           3.0.3 
 - matplotlib       3.4.1 
 - python           3.8.10 
-- lxml              4.6.4 
+- lxml             4.6.4 
+- spyder           5.0.0 (recommended)     
 
 Obs: the default repository is conda-forge, otherwise pypi from pip. Recommended versions should be understood only as guideline and sometimes the same version is not strictly necessary . 
 
@@ -46,7 +47,8 @@ pip install <name_of_the_package>==<version>
 ```
 
 - Make sure your PYTHONPATH variable contains the root directory in which you cloned deepBND. By default, the anaconda installation does not take into consideration the 
-OS path. You can add a .pth file listing the directories into ~/miniconda/envs/tf-fenics/lib/python3.8/site-packages 
+OS path. You can add a .pth (any name) file listing the directories into ~/miniconda/envs/tf-fenics/lib/python3.8/site-packages. Also, you can the directories you want 
+into spyder (Tools > PYTHONPATH), if you are using it.  
 
 **Testing** 
 ```
