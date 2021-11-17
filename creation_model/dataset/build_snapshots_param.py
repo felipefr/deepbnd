@@ -34,8 +34,8 @@ def build_paramRVE(paramRVEname, ns, seed):
 if __name__ == '__main__':
     
     folder = rootDataPath + "/deepBND/dataset/"
-    ns = 20 # training
-    seed = 2 # for the test   
+    ns = 20
+    seed = 2    
     suffix = "_validation"
     paramRVEname = folder + 'paramRVEdataset%s.hd5'%suffix
     

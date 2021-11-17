@@ -33,8 +33,8 @@ dictActivations = {'tanh' : tf.nn.tanh,
                     'sigmoid' : tf.nn.sigmoid , 
                     'linear': tf.keras.activations.linear,
                     'relu': tf.keras.activations.relu,
-                    'leaky_relu': tf.nn.leaky_relu, 
-                    'swish' : tf.keras.activations.swish}
+                    'leaky_relu': tf.nn.leaky_relu}
+                    # 'swish' : tf.keras.activations.swish}
 
 
 # ====================  Initiatialisations ==================================

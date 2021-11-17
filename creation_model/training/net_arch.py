@@ -89,3 +89,10 @@ class NetArch:
         mytf.plot_history( history, label=['custom_loss_mse','val_custom_loss_mse'], savefile = saveFile[:-5] + '_plot')
             
         return history
+
+
+# nets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),    
+#         'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8)}
+
+standardNets = {'big': NetArch([300, 300, 300], 3*['relu'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),    
+        'small': NetArch([40, 40, 40], 3*['relu'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.01] + [0.0], 1.0e-7)}

@@ -7,11 +7,11 @@ import numpy as np
 
 from deepBND.__init__ import *
 import deepBND.creation_model.training.wrapper_tensorflow as mytf
-from deepBND.creation_model.training.net_arch import NetArch
+from deepBND.creation_model.training.net_arch import standardNets
 import deepBND.core.data_manipulation.utils as dman
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
-import deepBND.core.fenics_tools.misc as feut
+import deepBND.core.elasticity.fenics_utils as feut
 
 
 def predictBCs(namefiles, net):
@@ -26,7 +26,7 @@ def predictBCs(namefiles, net):
     
     
     # loading boundary reference mesh
-    Mref = meut.EnrichedMesh(nameMeshRefBnd)
+    Mref = EnrichedMesh(nameMeshRefBnd)
     Vref = df.VectorFunctionSpace(Mref,"CG", 1)
     # normal = FacetNormal(Mref)
     # volMref = 4.0
@@ -34,8 +34,8 @@ def predictBCs(namefiles, net):
     # loading the DNN model
     paramRVEdata = myhd.loadhd5(paramRVEname, 'param')
     
-    scalerX_shear, scalerY_shear  = importScale(nameScaleXY_shear, nX, Nrb)
-    scalerX_axial, scalerY_axial  = importScale(nameScaleXY_axial, nX, Nrb)
+    scalerX_shear, scalerY_shear  = dman.importScale(nameScaleXY_shear, nX, Nrb)
+    scalerX_axial, scalerY_axial  = dman.importScale(nameScaleXY_axial, nX, Nrb)
     
     Wbasis_shear, Wbasis_axial = myhd.loadhd5(nameWbasis, ['Wbasis_S','Wbasis_A'])
     
@@ -43,11 +43,11 @@ def predictBCs(namefiles, net):
     X_axial_s = scalerX_axial.transform(paramRVEdata[:,:,2])
     X_axialY_s = scalerX_axial.transform(paramRVEdata[:,permY,2]) ### permY performs a counterclockwise rotation
     
-    modelShear = generalModel_dropReg(nX, Nrb, net)
-    modelAxial = generalModel_dropReg(nX, Nrb, net)
+    modelShear = net.getModel(nX, Nrb)
+    modelAxial = net.getModel(nX, Nrb)
     
-    modelShear.load_weights(net['file_weights_shear'])
-    modelAxial.load_weights(net['file_weights_axial'])
+    modelShear.load_weights(net.param['file_weights_shear'])
+    modelAxial.load_weights(net.param['file_weights_axial'])
     
     Y_p_shear = scalerY_shear.inverse_transform(modelShear.predict(X_shear_s))
     Y_p_axial = scalerY_axial.inverse_transform(modelAxial.predict(X_axial_s))
@@ -63,36 +63,28 @@ def predictBCs(namefiles, net):
     myhd.savehd5(bcs_namefile, [S_p_axial,S_p_axialY, S_p_shear], ['u0','u1','u2'], mode = 'w')
 
 if __name__ == '__main__':
-    Ny_DNS = 72
     
-    folder = rootData + "/new_fe2/"
+    archId = 'small'
+    Nrb = 80
+    nX = 36
+    
+    folder = rootDataPath + "/deepBND/"
     folderTrain = folder + 'training/'
     folderBasis = folder + 'dataset/'
-    folderDNS = folder + "DNS/DNS_%d_2/"%Ny_DNS
+    folderPrediction = folder + "prediction/"
     nameMeshRefBnd = folderBasis + 'boundaryMesh.xdmf'
+    nameWbasis = folderBasis +  'Wbasis.hd5'
+    paramRVEname = folderPrediction + 'paramRVEdataset_validation.hd5'
+    bcs_namefile = folderPrediction + 'bcs_{0}_{1}.hd5'.format(archId, Nrb)
+    nameScaleXY_shear = folderTrain +  'scaler_S_{0}.txt'.format(Nrb)
+    nameScaleXY_axial = folderTrain +  'scaler_A_{0}.txt'.format(Nrb)
     
-    modelDNN = 'big'
-    Nrb = 140
-    archId = 1
-    nX = 36
-    nameWbasis = folderBasis +  'Wbasis.h5'
-    nameScaleXY_shear = folderTrain +  'scalers/scaler_S_{0}.txt'.format(Nrb) # changed
-    nameScaleXY_axial = folderTrain +  'scalers/scaler_A_{0}.txt'.format(Nrb) # changed
+    net = standardNets[archId]
     
-    nets = {}
-    nets['big'] = {'Neurons': [300, 300, 300], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
-    nets['small'] = {'Neurons': [40, 40, 40], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.1, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
-    nets['medium'] = {'Neurons': [100, 100, 100], 'activations': 3*['swish'] + ['linear'], 'lr': 5.0e-4, 'decay' : 0.01, 'drps' : [0.0] + 3*[0.005] + [0.0], 'reg' : 1.0e-8}
-    
-    net = nets[modelDNN.split('_')[0]]
-    
-    net['nY'] = Nrb
-    net['nX'] = nX
-    net['file_weights_shear'] = folderTrain + 'models/weights_{0}_S_{1}.hdf5'.format(modelDNN,Nrb)
-    net['file_weights_axial'] = folderTrain + 'models/weights_{0}_A_{1}.hdf5'.format(modelDNN,Nrb)
-    
-    paramRVEname = folderDNS + 'param_RVEs_from_DNS.hd5'
-    bcs_namefile = folder + 'DNS/DNS_{2}_2/BCsPrediction_RVEs_{0}_{1}.hd5'.format(modelDNN,Nrb,Ny_DNS)
+    net.param['nY'] = Nrb
+    net.param['nX'] = nX
+    net.param['file_weights_shear'] = folderTrain + 'models_weights_{0}_S_{1}.hdf5'.format(archId, Nrb)
+    net.param['file_weights_axial'] = folderTrain + 'models_weights_{0}_A_{1}.hdf5'.format(archId, Nrb)
 
     namefiles = [nameMeshRefBnd, nameWbasis, paramRVEname, nameScaleXY_shear, nameScaleXY_axial]
     
