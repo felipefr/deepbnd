@@ -30,7 +30,7 @@ def translateSolution(nameSnaps, Vref):
         fIsol.close()
 
 
-def computingBasis(nameSnaps, nameWbasis, Nmax, Vref, dsRef):
+def computingBasis(nameSnaps, nameWbasis, Nmax, Nh, Vref, dsRef):
     os.system('rm ' + nameWbasis)
     Wbasis_fields, f = myhd.zeros_openFile(nameWbasis, [(Nmax,Nh),(Nmax,Nh),(Nmax,),(Nmax,),(Nh,Nh)], 
                                                        ['Wbasis_A', 'Wbasis_S','sig_A', 'sig_S','massMat'])
@@ -73,9 +73,9 @@ if __name__ == '__main__':
     folder = rootDataPath + "/deepBND/dataset/"
     
     suffix = '_github'
-    nameSnaps = folder + 'snapshots%s.h5'%suffix
+    nameSnaps = folder + 'snapshots%s.hd5'%suffix
     nameMeshRefBnd = folder + 'boundaryMesh.xdmf'
-    nameWbasis = folder + 'Wbasis%s.h5'%suffix
+    nameWbasis = folder + 'Wbasis%s.hd5'%suffix
     nameYlist = folder + 'Y%s.h5'%suffix
     nameXYlist = folder + 'XY%s.hd5'%suffix
     nameParamRVEdataset = folder + 'paramRVEdataset%s.hd5'%suffix
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     elif(op==1):
         computingBasis(nameSnaps, nameWbasis, Nmax, Vref, dsRef)
     elif(op==2):
-        extractAlpha(nameSnaps, nameWbasis, Nmax, nameYlist, Vref, dsRef)
+        extractAlpha(nameSnaps, nameWbasis, Nmax, Nh, nameYlist, Vref, dsRef)
     elif(op==3):
         createXY(nameParamRVEdataset, nameYlist, nameXYlist)
         
