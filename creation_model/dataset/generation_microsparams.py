@@ -2,7 +2,7 @@ import sys, os
 import numpy as np
 
 from deepBND.__init__ import *
-import deepBND.core.sampling.generation_inclusions as geni
+import deepBND.creation_model.dataset.generation_inclusions as geni
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 from deepBND.core.multiscale.mesh_RVE import paramRVE_default 
 
@@ -32,9 +32,10 @@ def build_paramRVE(paramRVEname, ns, seed):
 if __name__ == '__main__':
     
     folder = rootDataPath + "/deepBND/dataset/"
-    ns = 200 # training
-    seed = 1 # for the test   
-    paramRVEname = folder + 'paramRVEdataset_github.hd5'
+    ns = 20 # training
+    seed = 2 # for the test   
+    suffix = "_validation"
+    paramRVEname = folder + 'paramRVEdataset%s.hd5'%suffix
     
     
     build_paramRVE(paramRVEname, ns, seed)

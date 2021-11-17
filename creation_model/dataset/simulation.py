@@ -97,7 +97,7 @@ if __name__ == '__main__':
     
     folder = rootDataPath + "/deepBND/dataset/"
 
-    suffix = "_github"
+    suffix = "_validation"
     opModel = 'per'
     createMesh = True
     
@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     bndMeshname = folder + 'boundaryMesh.xdmf'
     paramRVEname = folder +  'paramRVEdataset{0}.hd5'.format(suffix)
-    snapshotsname = folder +  'snapshots{0}_{1}.h5'.format(suffix,run)
+    snapshotsname = folder +  'snapshots{0}_{1}.hd5'.format(suffix,run)
     meshname = folder + "meshes/mesh_temp_{0}.xdmf".format(run)
     
     filesnames = [bndMeshname, paramRVEname, snapshotsname, meshname]

@@ -2,12 +2,8 @@ import os, sys
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import matplotlib.pyplot as plt
 import numpy as np
-import myTensorflow as mytf
 
-import h5py
-import pickle
-import dataManipMisc as dman 
-import myHDF5 as myhd
+import deepBND.core.data_manipulation.wrapper_h5py as myhd
 
 def exportScale(filenameIn, filenameOut, nX, nY, Ylabel = 'Y'):
     scalerX, scalerY = getDatasetsXY(nX, nY, filenameIn, Ylabel = Ylabel)[2:4]
@@ -70,7 +66,6 @@ class myMinMaxScaler:
             
     def inverse_transform(self,x):
         return np.array( [self.inv_scaler(x[:,i],i) for i in range(self.n)] ).T
-
 
 
 def writeDict(d):

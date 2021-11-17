@@ -72,10 +72,10 @@ if __name__ == '__main__':
     
     folder = rootDataPath + "/deepBND/dataset/"
     
-    suffix = '_github'
+    suffix = '_validation'
     nameSnaps = folder + 'snapshots%s.hd5'%suffix
     nameMeshRefBnd = folder + 'boundaryMesh.xdmf'
-    nameWbasis = folder + 'Wbasis%s.hd5'%suffix
+    nameWbasis = folder + 'Wbasis.hd5'
     nameYlist = folder + 'Y%s.h5'%suffix
     nameXYlist = folder + 'XY%s.hd5'%suffix
     nameParamRVEdataset = folder + 'paramRVEdataset%s.hd5'%suffix
@@ -94,9 +94,9 @@ if __name__ == '__main__':
     if(op==0):
         translateSolution(nameSnaps, Vref)
     elif(op==1):
-        computingBasis(nameSnaps, nameWbasis, Nmax, Vref, dsRef)
+        computingBasis(nameSnaps, nameWbasis, Nmax, Nh, Vref, dsRef)
     elif(op==2):
-        extractAlpha(nameSnaps, nameWbasis, Nmax, Nh, nameYlist, Vref, dsRef)
+        extractAlpha(nameSnaps, nameWbasis, Nmax, nameYlist, Vref, dsRef)
     elif(op==3):
         createXY(nameParamRVEdataset, nameYlist, nameXYlist)
         

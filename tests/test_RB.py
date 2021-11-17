@@ -43,3 +43,6 @@ def test_computingBasis():
     assert np.allclose( np.linalg.norm(Wbasis_A[0,:]), 3.6052866881155223 )
     assert np.allclose( sig_A[0], 3.759670654566904)
     assert np.allclose( sig_S[0], 2.819559671161688)
+
+
+# TODO : extractAlpha and createXY tests
