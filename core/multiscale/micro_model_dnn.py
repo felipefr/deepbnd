@@ -1,25 +1,19 @@
 import sys, os
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
+import numpy as np
 import dolfin as df 
 import matplotlib.pyplot as plt
 from ufl import nabla_div
-sys.path.insert(0, '/home/felipefr/github/micmacsFenics/utils/')
-sys.path.insert(0,'../utils/')
-
-import multiscaleModels as mscm
-from fenicsUtils import symgrad, symgrad_voigt, Integral
-import numpy as np
-
-import fenicsMultiscale as fmts
-import myHDF5 as myhd
-import meshUtils as meut
-import elasticity_utils as elut
-import symmetryLib as symlpy
 from timeit import default_timer as timer
 import multiphenics as mp
-import fenicsUtils as feut
-
 from mpi4py import MPI
+
+from deepBND.__init__ import *
+import micmacsfenics.core.micro_constitutive_model as mscm
+from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
+from deepBND.core.elasticity.fenics_utils import getLameInclusions
+from deepBND.core.fenics_tools.misc import symgrad, Integral
+import deepBND.core.fenics_tools.misc as feut
+
 
 comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF
@@ -44,8 +38,8 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
         self.getTangent = self.computeTangent # in the first run should compute     
             
     def readMesh(self):
-        self.mesh = meut.EnrichedMesh(self.nameMesh,comm_self)
-        self.lame = elut.getLameInclusions(*self.param, self.mesh)
+        self.mesh = EnrichedMesh(self.nameMesh,comm_self)
+        self.lame = getLameInclusions(*self.param, self.mesh)
         self.coord_min = np.min(self.mesh.coordinates(), axis = 0)
         self.coord_max = np.max(self.mesh.coordinates(), axis = 0)
         self.others['x0'] = self.coord_min[0]
@@ -72,7 +66,7 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
         if(len(bcs) > 0): 
             bcs.apply(A)
         
-        solver = df.PETScLUSolver('superlu')
+        solver = df.PETScLUSolver('mumps')
         sol = mp.BlockFunction(W)
         
         if(self.model == 'lin' or self.model == 'dnn'):
@@ -90,7 +84,7 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
             if(self.model == 'lin' or self.model == 'dnn'):
                 self.others['uD'].vector().set_local(self.others['uD{0}_'.format(i)])
             
-                B = -feut.Integral(df.outer(self.others['uD'],normal), Mref.ds, (2,2))/volMref
+                B = -Integral(df.outer(self.others['uD'],normal), Mref.ds, (2,2))/volMref
                 T = feut.affineTransformationExpression(np.zeros(2),B, Mref) # ignore a, since the basis is already translated
                 self.others['uD'].vector().set_local(self.others['uD'].vector().get_local()[:] + 
                                                      df.interpolate(T,Vref).vector().get_local()[:])

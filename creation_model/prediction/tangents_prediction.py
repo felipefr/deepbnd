@@ -1,120 +1,127 @@
 import sys, os
+import numpy as np
 import dolfin as df 
 import matplotlib.pyplot as plt
 from ufl import nabla_div
-sys.path.insert(0, '/home/rocha/github/micmacsFenics/utils')
-#sys.path.insert(0, '/home/felipefr/github/micmacsFenics/utils')
-sys.path.insert(0,'../../utils/')
-
-import multiscaleModels as mscm
-from fenicsUtils import symgrad, symgrad_voigt, Integral
-import numpy as np
-
-import fenicsMultiscale as fmts
-import myHDF5 as myhd
-import meshUtils as meut
-import elasticity_utils as elut
-import symmetryLib as symlpy
 from timeit import default_timer as timer
-import multiphenics as mp
+from mpi4py import MPI
 
-from MicroConstitutiveModelDNN import *
+from deepBND.__init__ import *
+import deepBND.core.data_manipulation.wrapper_h5py as myhd
+from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
+from deepBND.core.multiscale.micro_model_dnn import MicroConstitutiveModelDNN
+from deepBND.core.multiscale.mesh_RVE import buildRVEmesh
 
 # for i in {0..19}; do nohup python computeTangents_serial.py 24 $i 20 > log_ny24_full_per_run$i.py & done
 
 comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF
 
-Ny = int(sys.argv[1])
-# Ny = 24
-
-if(len(sys.argv)>2):
-    run = int(sys.argv[2])
-    num_runs = int(sys.argv[3])
-else:
-    run = comm.Get_rank()
-    num_runs = comm.Get_size()
-
-print('run, num_runs ', run, num_runs)
-
-
-f = open("../../../rootDataPath.txt")
-rootData = f.read()[:-1]
-f.close()
-
-folder = rootData + "/new_fe2/DNS/DNS_{0}_old/".format(Ny)
-folderTangent = folder + 'tangents/'
-folderMesh = folder + 'meshes/'
-folderDataset = rootData + '/new_fe2/dataset/'
-
-
-model = 'reduced_per'
-modelBnd = 'per'
-meshSize = 'reduced'
-if(model == 'dnn'):
-    modelDNN = '_big_140' # underscore included before
-    BCname = folderTangent + 'BCsPrediction_RVEs_big_140.hd5'
-else:
-    modelDNN = ''
+def predictTangents(num, num_runs, modelBnd, namefiles, createMesh, meshSize):
     
-start = timer()
+    nameMeshRefBnd, paramRVEname, tangentName, BCname, meshMicroName = namefiles
     
-# loading boundary reference mesh
-nameMeshRefBnd = folderDataset + '/boundaryMesh.xdmf'
-Mref = meut.EnrichedMesh(nameMeshRefBnd,comm_self)
-Vref = df.VectorFunctionSpace(Mref,"CG", 1)
-
-dxRef = df.Measure('dx', Mref) 
-
-# defining the micro model
-
-nameParamRVEdata = folder + 'param_RVEs_from_DNS.hd5' 
-ids = myhd.loadhd5(nameParamRVEdata, 'id')[run::num_runs].astype('int')
-Centers = myhd.loadhd5(nameParamRVEdata, 'center')[ids,:]
-
-ns = len(Centers) # per rank
-
-tangentFile = folderTangent + 'tangent_{0}_{1}.hd5'.format(model,run)
-os.system('rm ' + tangentFile)
-Iid_tangent_center, f = myhd.zeros_openFile(tangentFile, [(ns,), (ns,3,3), (ns,2)],
-                                       ['id', 'tangent','center'], mode = 'w')
-
-Iid, Itangent, Icenter = Iid_tangent_center
-
-if(model == 'dnn'):
-    u0_p = myhd.loadhd5(BCname, 'u0')[run::num_runs,:]
-    u1_p = myhd.loadhd5(BCname, 'u1')[run::num_runs,:]
-    u2_p = myhd.loadhd5(BCname, 'u2')[run::num_runs,:]
-
-for i in range(ns):
-    Iid[i] = ids[i]
+    start = timer()
     
-    contrast = 10.0
-    E2 = 1.0
-    nu = 0.3
-    param = [nu,E2*contrast,nu,E2]
-    print(run, i, ids[i])
-    meshMicroName = folderMesh + 'mesh_micro_{0}_{1}.xdmf'.format(int(Iid[i]), meshSize)
-
-    microModel = MicroConstitutiveModelDNN(meshMicroName, param, modelBnd) 
-    if(model == 'dnn'):
-        microModel.others['uD'] = df.Function(Vref) 
-        microModel.others['uD0_'] = u0_p[i] # it was already picked correctly
-        microModel.others['uD1_'] = u1_p[i] 
-        microModel.others['uD2_'] = u2_p[i]
-    elif(model == 'lin'):
-        microModel.others['uD'] = df.Function(Vref) 
-        microModel.others['uD0_'] = np.zeros(Vref.dim())
-        microModel.others['uD1_'] = np.zeros(Vref.dim())
-        microModel.others['uD2_'] = np.zeros(Vref.dim())
+    # loading boundary reference mesh
+    Mref = EnrichedMesh(nameMeshRefBnd,comm_self)
+    Vref = df.VectorFunctionSpace(Mref,"CG", 1)
+    
+    dxRef = df.Measure('dx', Mref) 
+    
+    # defining the micro model
+    
+    paramRVEdata = myhd.loadhd5(paramRVEname, 'param')[run::num_runs]
+    ns = len(paramRVEdata) # per rank
+    
+    if(myhd.checkExistenceDataset(paramRVEname, 'id')):    
+        ids = myhd.loadhd5(paramRVEname, 'id')[run::num_runs].astype('int')
+        centers = myhd.loadhd5(paramRVEname, 'center')[ids,:]
+    else: # dummy
+        ids = np.zeros(ns)
+        centers = np.zeros((ns,2))
+       
+    os.system('rm ' + tangentName)
+    Iid_tangent_center, f = myhd.zeros_openFile(tangentName, [(ns,), (ns,3,3), (ns,2)],
+                                           ['id', 'tangent','center'], mode = 'w')
+    
+    Iid, Itangent, Icenter = Iid_tangent_center
+    
+    if(modelBnd == 'dnn'):
+        u0_p = myhd.loadhd5(BCname, 'u0')[run::num_runs,:]
+        u1_p = myhd.loadhd5(BCname, 'u1')[run::num_runs,:]
+        u2_p = myhd.loadhd5(BCname, 'u2')[run::num_runs,:]
+    
+    for i in range(ns):
+        Iid[i] = ids[i]
         
-    
-    Icenter[i,:] = Centers[i,:]
-    Itangent[i,:,:] = microModel.getTangent()
-    
-    if(i%10 == 0):
-        f.flush()    
-        sys.stdout.flush()
+        contrast = 10.0
+        E2 = 1.0
+        nu = 0.3
+        param = [nu,E2*contrast,nu,E2]
+        print(run, i, ids[i])
+        meshMicroName_i = meshMicroName.format(int(Iid[i]), meshSize)
         
-f.close()
+        if(createMesh):
+            buildRVEmesh(paramRVEdata[i,:,:], meshMicroName_i, isOrdinated = False, size = meshSize)
+    
+        microModel = MicroConstitutiveModelDNN(meshMicroName_i, param, modelBnd) 
+        
+        if(modelBnd == 'dnn'):
+            microModel.others['uD'] = df.Function(Vref) 
+            microModel.others['uD0_'] = u0_p[i] # it was already picked correctly
+            microModel.others['uD1_'] = u1_p[i] 
+            microModel.others['uD2_'] = u2_p[i]
+        elif(modelBnd == 'lin'):
+            microModel.others['uD'] = df.Function(Vref) 
+            microModel.others['uD0_'] = np.zeros(Vref.dim())
+            microModel.others['uD1_'] = np.zeros(Vref.dim())
+            microModel.others['uD2_'] = np.zeros(Vref.dim())
+            
+        
+        Icenter[i,:] = centers[i,:]
+        Itangent[i,:,:] = microModel.getTangent()
+        
+        if(i%10 == 0):
+            f.flush()    
+            sys.stdout.flush()
+            
+    f.close()
+
+if __name__ == '__main__':
+    
+    if(len(sys.argv)>1):
+        run = int(sys.argv[1])
+        num_runs = int(sys.argv[2])
+    else:
+        run = comm.Get_rank()
+        num_runs = comm.Get_size()
+    
+    print('run, num_runs ', run, num_runs)
+    
+    suffixTangent = 'dnn'
+    modelBnd = 'dnn'
+    meshSize = 'reduced'
+    createMesh = True
+
+    if(modelBnd == 'dnn'):
+        modelDNN = '_small_80' # underscore included before
+    else:
+        modelDNN = ''
+               
+    folder = rootDataPath + "/deepBND/"
+    folderPrediction = folder + 'prediction/'
+    folderMesh = folderPrediction + 'meshes/'
+    folderDataset = folder + 'dataset/'
+    paramRVEname = folderPrediction + 'paramRVEdataset_validation.hd5' 
+    nameMeshRefBnd = folderDataset + 'boundaryMesh.xdmf'
+    tangentName = folderPrediction + 'tangents_{0}_{1}.hd5'.format(suffixTangent,run)
+    BCname = folderPrediction + 'bcs%s.hd5'%modelDNN
+    meshMicroName = folderMesh + 'mesh_micro_{0}_{1}.xdmf'
+
+    namefiles = [nameMeshRefBnd, paramRVEname, tangentName, BCname, meshMicroName]
+    
+    predictTangents(run, num_runs, modelBnd, namefiles, createMesh, meshSize)
+    
+
 

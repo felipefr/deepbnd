@@ -76,8 +76,8 @@ if __name__ == '__main__':
     
     tangentName = folder + 'tangents/tangent_%s.hd5'%caseType
     tangent_dataset = myhd.loadhd5(tangentName, 'tangent')
-    ids = myhd.loadhd5(tangentName, 'id')
-    center = myhd.loadhd5(tangentName, 'center')
+    # ids = myhd.loadhd5(tangentName, 'id') # apparenttly no need
+    # center = myhd.loadhd5(tangentName, 'center') # apparenttly no need
     meshfile = folderMesh + 'mesh_%d.xdmf'%Ny_split
     
     lcar = 44.0/Ny_split  
