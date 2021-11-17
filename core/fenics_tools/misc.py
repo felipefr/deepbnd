@@ -42,9 +42,9 @@ def VecX_expression(degree = 1):
 
 
 # REMOVE?
-getMesh = lambda a,b,c,d : meut.getMesh(meshGMSH = a, file = c + b + '.xml', create = d)
+# getMesh = lambda a,b,c,d : meut.getMesh(meshGMSH = a, file = c + b + '.xml', create = d)
 
-# REMOVE?
+# Used to implement the Piola transofmation
 class myfog(df.UserExpression): # fog f,g : R2 -> R2, generalise 
     def __init__(self, f, g, **kwargs):
         self.f = f 
@@ -58,7 +58,7 @@ class myfog(df.UserExpression): # fog f,g : R2 -> R2, generalise
     def value_shape(self):
         return (2,)
 
-# REMOVE?
+# Used to implement the Piola transofmation
 class myfog_expression(df.UserExpression): # fog f,g : R2 -> R2, generalise 
     def __init__(self, f, g, **kwargs):
         self.f = f 
