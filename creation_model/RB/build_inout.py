@@ -1,3 +1,15 @@
+"""
+Inputs = paramRVEdataset.hd5, snapshots.hd5 (described before) 
+Outputs: 
+- Wbasis.hd5: Reduced-Basis matrices and singular values. Same comment for labels 'A' and 'S' (above) applies.  
+- XY.hd5: Assemble important data of paramRVEdataset.hd5 (to be used as the input of NN training) and also the projected solutions of the snapshots (snapshots.hd5) onto the RB (Wbasis.hd5). Same comment for labels 'A' and 'S' (above) applies.
+
+Obs: Wbasis.hd5 should be obtained to the larger dataset (usually the training one), then should be reused to obtain XY.hd5 files of the remaining datasets. 
+
+The typical order of execution is with op= 0, 1, 2, 3 (one after another). Op = 1 (RB basis obtention) can be skipped according to the situation. 
+
+"""
+
 import sys, os
 import numpy as np
 from dolfin import *

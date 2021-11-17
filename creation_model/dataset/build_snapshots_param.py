@@ -1,3 +1,5 @@
+# Build paramRVEdataset.hd5: It contains geometrical description for each snapshot. It allows the mesh generation, etc. 
+
 import sys, os
 import numpy as np
 

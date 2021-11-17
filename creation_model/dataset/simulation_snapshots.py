@@ -1,3 +1,10 @@
+"""
+build snapshots.hd5: simulation results for each snapshot. 
+Here we only collect the degree of freedom on the internal boundary. 
+For each snapshot axial and shear loads are simulated together (label 'A' and 'S', respectively). 
+This is due to perfomance reasons (same mesh generation, reused LU decomposition, etc). 
+"""
+
 import sys, os
 import numpy as np
 from numpy import isclose

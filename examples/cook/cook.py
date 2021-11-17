@@ -1,3 +1,8 @@
+# You should run cook.py with:
+# 1. the suitable tangents.hd5 file (for the chosen bc model (caseType) ) 
+# 2. macroscale mesh refinement indicator (Ny), 
+# 3. A random seed to indicate how tangents.hd5 file will be shuffled (cell indexes will be matched randonmly to the RVE indexes of tangent.hd5).
+
 import sys, os
 import dolfin as df 
 import matplotlib.pyplot as plt

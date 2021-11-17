@@ -1,3 +1,9 @@
+"""
+We aim to obtain model_weights.hd5, which storages the trained weights of NN models.
+It should be run providing training and validation datasets.
+Models should be trained indepedently for axial and shear loads ('A' and 'S' labels).
+"""
+
 import os, sys
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import matplotlib.pyplot as plt
