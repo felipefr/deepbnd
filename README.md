@@ -107,6 +107,15 @@ todo
 #### bar_DNS (for comparison with multiscale solutions) 
 todo ...
 
+## Main TODOs
+
+- better document bar_multiscale and bar_DNS examples. 
+- compatibilise micmacsfenics version of MicroconstitutiveModelDNN, in other of not repeating code (as today).
+- improve NatArch class, which will simplify scripts of training. 
+- create more automatised scripts to run the examples, e.g., run all cases one after another, instead of manually "change" and "run"".
+- add more tests.
+- update plots and comparison scripts.
+
 
 
 

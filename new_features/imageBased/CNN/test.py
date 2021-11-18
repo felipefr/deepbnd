@@ -1,0 +1,72 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+import os
+from tensorflow.keras import datasets, layers, models
+
+# Solves program for cuda and cnn networks
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+
+config = ConfigProto()
+config.gpu_options.allow_growth = True
+session = InteractiveSession(config=config)
+
+
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1' # solves problem with cuda and cnn networks
+
+
+(train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
+
+class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',
+               'dog', 'frog', 'horse', 'ship', 'truck']
+
+plt.figure(figsize=(10,10))
+for i in range(25):
+    plt.subplot(5,5,i+1)
+    plt.xticks([])
+    plt.yticks([])
+    plt.grid(False)
+    plt.imshow(train_images[i])
+    # The CIFAR labels happen to be arrays, 
+    # which is why you need the extra index
+    plt.xlabel(class_names[train_labels[i][0]])
+plt.show()
+
+model = models.Sequential()
+model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3), use_bias = False))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+# model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+
+model.add(layers.Flatten())
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(10))
+
+model.summary()
+
+
+# tensorflow.keras.layers.Conv2D(filters, kernel_size, strides=(1, 1),
+#   padding='valid', data_format=None, dilation_rate=(1, 1),
+#   activation=None, use_bias=True, kernel_initializer='glorot_uniform',
+#   bias_initializer='zeros', kernel_regularizer=None,
+#   bias_regularizer=None, activity_regularizer=None,
+#   kernel_constraint=None, bias_constraint=None)
+
+model.compile(optimizer='adam',
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy'])
+
+history = model.fit(train_images, train_labels, epochs=10, 
+                    validation_data=(test_images, test_labels))
+
+
+# plt.plot(history.history['accuracy'], label='accuracy')
+# plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+# plt.xlabel('Epoch')
+# plt.ylabel('Accuracy')
+# plt.ylim([0.5, 1])
+# plt.legend(loc='lower right')
+
+# test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
