@@ -115,7 +115,7 @@ todo ...
 - create more automatised scripts to run the examples, e.g., run all cases one after another, instead of manually "change" and "run"".
 - add more tests.
 - update plots and comparison scripts.
-
+- Rename and delete nonused mesh scripts. 
 
 
 
