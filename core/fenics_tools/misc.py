@@ -41,9 +41,6 @@ def VecX_expression(degree = 1):
     return df.Expression(('x[0]','x[1]'), degree = degree)
 
 
-# REMOVE?
-# getMesh = lambda a,b,c,d : meut.getMesh(meshGMSH = a, file = c + b + '.xml', create = d)
-
 # Used to implement the Piola transofmation
 class myfog(df.UserExpression): # fog f,g : R2 -> R2, generalise 
     def __init__(self, f, g, **kwargs):

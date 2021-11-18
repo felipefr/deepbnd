@@ -19,10 +19,6 @@ symgrad_mandel = lambda v: df.as_vector([v[0].dx(0),
                                          v[1].dx(1), 
                                          halfsq2*(v[0].dx(1) + v[1].dx(0)) ])
 
-# REMOVE? equivalent to symgrad
-def epsilon(u):
-    return 0.5*(df.nabla_grad(u) + df.nabla_grad(u).T)
-
 def sigmaLame(u, lame):
     return lame[0]*nabla_div(u)*df.Identity(2) + 2*lame[1]*symgrad(u)
 
