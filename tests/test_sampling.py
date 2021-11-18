@@ -27,4 +27,7 @@ def test_build_paramRVE():
     assert np.allclose( np.sum(paramRVE[:,:,2]), 5318.350592592172 )
     assert np.allclose( np.std(paramRVE[:,:,2]), 0.05750590828174954 )
 
-    os.system('rm ' + paramRVE)
+    os.system('rm ' + paramRVEname)
+
+
+test_build_paramRVE()

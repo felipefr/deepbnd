@@ -6,30 +6,30 @@ A Deep Learning-based method to enhance boundary conditions. This code has been 
 Among other libraries, deepBND relies on the following ones (some of them are installed automatically in the installation of previous ones):
 
 - library          version  
-- fenics           2019.1.0 
-- multiphenics     0.2.dev1 
-- h5py             3.2.1 
-- hdf5             1.10.6 
-- meshio           3.3.1 
-- tensorflow       2.5.0 
-- pygmsh           6.0.2 
-- gmsh             4.6.0 
-- scikit-optimize  0.8.1 
+- python 		   3.8.10 (recommended) 
+- tensorflow       2.5.0 (conda-forge)
+- fenics           2019.1.0   (conda-forge)
+- multiphenics     0.2.dev1  (pypi)
+- lxml             4.6.4  (conda-forge)
+- spyder           5.0.0  (conda-forge)
+- scikit-optimize  0.8.1  (conda-forge)
+- h5py             3.2.1  (pypi)   
+- meshio           3.3.1  (pypi)
+- pygmsh           6.0.2  (pypi)
+- gmsh             4.6.0   (pypi)
+- pytest 		   6.2.5.  (pypi)
 - mkl              2021.2.0 
 - mpi4py           3.0.3 
-- matplotlib       3.4.1 
-- python           3.8.10 
-- lxml             4.6.4 
-- spyder           5.0.0 (recommended)     
+- hdf5             1.10.6 
 
-Obs: the default repository is conda-forge, otherwise pypi from pip. Recommended versions should be understood only as guideline and sometimes the same version is not strictly necessary . 
+Obs: the default repository is conda-forge, otherwise pypi from pip. Recommended versions should be understood only as guideline and sometimes the very same version is not indeed mandatory. 
 
 
 We recommend the use of miniconda (https://docs.conda.io/en/latest/miniconda.html)
 
 - To create a fresh environment with fenics and tensorflow:
 ```
-conda create -n tf-fenics fenics=2019.1 tensorflow=2.5
+conda create -n tf-fenics -c conda-forge python=3.8.10 fenics=2019.1 tensorflow=2.5
 ```
 
 - To activate the environment:
@@ -44,6 +44,16 @@ conda install -c conda-forge <name_of_the_package>=<version>
 or use pip
 ```
 pip install <name_of_the_package>==<version>
+```
+
+or at once (which was tested)
+
+```
+conda install -c conda-forge scikit-optimize h5py lxml spyder
+pip install pytest gmsh==4.6.0 meshio==3.3.1 pygmsh==6.0.2
+git clone https://github.com/multiphenics/multiphenics.git
+cd multiphenics
+python3 setup.py install
 ```
 
 - Make sure your PYTHONPATH variable contains the root directory in which you cloned deepBND. By default, the anaconda installation does not take into consideration the 
