@@ -7,7 +7,7 @@ import deepBND.core.data_manipulation.wrapper_h5py as myhd
 from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh  
 
 def test_computingBasis():
-    from deepBND.creation_model.RB.generation_XYfiles import computingBasis
+    from deepBND.creation_model.RB.build_inout import computingBasis
     folder = "./data/"
     
     suffix = '_github'

@@ -4,10 +4,10 @@ import numpy as np
 
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 
-def build_paramRVE():
-    import deepBND.core.sampling.generation_inclusions as geni
+def test_build_paramRVE():
+    import deepBND.creation_model.dataset.generation_inclusions as geni
     from deepBND.core.multiscale.mesh_RVE import paramRVE_default
-    from deepBND.creation_model.dataset.generation_microsparams import build_paramRVE
+    from deepBND.creation_model.dataset.build_snapshots_param import build_paramRVE
 
     ns = 512 
     seed = 13   

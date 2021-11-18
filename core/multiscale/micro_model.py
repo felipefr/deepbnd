@@ -48,7 +48,7 @@ class MicroModel(mscm.MicroConstitutiveModel):
         self.sigmaLaw = lambda u: self.lame[0]*nabla_div(u)*df.Identity(2) + 2*self.lame[1]*symgrad(u)
 
     
-    def compute(self):      
+    def compute(self):  # maybe should be removed
                 
         Eps = df.Constant(((0.,0.),(0.,0.))) # just placeholder
         
@@ -81,7 +81,7 @@ class MicroModel(mscm.MicroConstitutiveModel):
         
         
         
-    def homogenise(self, regions = [0,1], i_voigt = 0 ):
+    def homogenise(self, regions = [0,1], i_voigt = 0 ): # maybe should be removed
         
         Eps = df.Constant(((0.,0.),(0.,0.))) # just placeholder
         Eps.assign(df.Constant(mscm.macro_strain(i_voigt)))   

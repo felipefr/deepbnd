@@ -4,7 +4,7 @@ from timeit import default_timer as timer
 import copy
 
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
-import deepBND.core.sampling.generation_inclusions as geni
+import deepBND.creation_model.dataset.generation_inclusions as geni
 from deepBND.core.mesh.ellipse_mesh_bar import ellipseMeshBar
 
 def buildDNSmesh(Ny, paramfile, meshfile, readParam, fac_lcar, seed):
