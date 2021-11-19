@@ -1,13 +1,24 @@
+'''
+1. Run mesh_generation_DNS.py with:
+- Number of inclusions in the vertical direction (Ny).
+- Indicate if a new param_DNS.hd5 (similar to paramRVEdataset.hd5, but to the
+macroscale problem, thus one single configuration instead of multiples) will 
+sampled or reused (readReuse).
+- Indicate if you want to generate paramRVEdataset.hd5 from the DNS parameters 
+just sampled (export_paramRVE_fromDNS). It will be used in bar_multiscale. 
+'''
+
 import sys, os
 import numpy as np
 from timeit import default_timer as timer
 import copy
 
+from deepBND.__init__ import *
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 import deepBND.creation_model.dataset.generation_inclusions as geni
 from deepBND.core.mesh.ellipse_mesh_bar import ellipseMeshBar
 
-def buildDNSmesh(Ny, paramfile, meshfile, readParam, fac_lcar, seed):
+def buildDNSmesh(Ny, paramfile, meshfile, readReuse, fac_lcar, seed):
 
     fac_x = 4
     x0 = y0 = 0.0
@@ -18,7 +29,7 @@ def buildDNSmesh(Ny, paramfile, meshfile, readParam, fac_lcar, seed):
 
     lcar = fac_lcar*H # 
         
-    if(not readParam):
+    if(not readReuse):
         print("generating param") 
         
         r0 = 0.2*H
@@ -85,26 +96,24 @@ if __name__ == '__main__':
     
     if(len(sys.argv)>1):
         Ny = int(sys.argv[1])
-        readParam = bool(sys.argv[2])
+        readReuse = bool(sys.argv[2])
         export_paramRVE_fromDNS = bool(sys.argv[3])
     else:
         Ny = 24
-        readParam = False
+        readReuse = False
         export_paramRVE_fromDNS = True
-        
-    rootDataPath = open('../../rootDataPath.txt','r').readline()[:-1]
 
-    folder = rootDataPath + "/deepBND/bar_DNS/Ny_%d/"%Ny
+    folder = rootDataPath + "/deepBND/DNS/Ny_%d/"%Ny
     
     paramfile = folder + 'param_DNS.hd5'
-    meshfile = folder + 'mesh.xdmf'
+    meshname = folder + 'mesh.xdmf'
+    paramRVEfile = folder + 'paramRVEdataset.hd5'
     
     fac_lcar = 1/5 # or 1/9 more less the same order than the RVE
     seed = 9
     
-    buildDNSmesh(Ny, paramfile, meshfile, readParam, fac_lcar, seed)
+    buildDNSmesh(Ny, paramfile, meshfile, readReuse, fac_lcar, seed)
     
     if(export_paramRVE_fromDNS):
-        paramRVEfile = folder + 'param_RVEs_from_DNS.hd5'
         buildRVEparam_fromDNS(Ny, paramfile, paramRVEfile)   
     

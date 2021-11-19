@@ -1,3 +1,11 @@
+''''
+2. Run barMultiscale.py 
+-  Ny_DNS: Same as Ny in the mesh_generation_DNS.py. Needed only for annotations of files purposes.  
+-  caseType: Also for annotation purposes, but for the tangent file name. Indicates the multiscale model, mesh size, etc, used, e.g. per, full, reduced_per, dnn, dnn_small, etc. 
+-  createMesh: Creates or reused the multiscale (coarse) mesh.
+-  Ny_split_mult: If the flag createMesh is true, it is the number elements along the y axis for a regular mesh. 
+'''
+
 import sys, os
 import dolfin as df 
 import matplotlib.pyplot as plt
@@ -82,19 +90,22 @@ if __name__ == '__main__':
     else:     
         Ny_DNS =  24 # 24, 72
         caseType = 'reduced_per' # opt: reduced_per, dnn_big, fulls
-        createMesh = 0
+        createMesh = False
         
+    Ny_split_mult = 96 # For the reference mesh
     folder = rootDataPath + "/deepBND/DNS/DNS_%d_new/"%Ny_DNS
     meshfile = folder + "multiscale/meshBarMacro_Multiscale.xdmf"
     tangentName = folder + 'tangents/tangent_%s.hd5'%caseType
     
-    if(createMesh == 1):
-        # loading boundary reference mesh
-        Ny = 96
-        Nx = 4*Ny
+    outputVTK = folder + "multiscale/barMacro_Multiscale_%s_vtk.xdmf"%(caseType)
+    output = folder + "multiscale/barMacro_Multiscale_%s.xdmf"%(caseType)
+    
+    if(createMesh): # Reference coarse mesh for multiscale analysis
+        Nx_split_mult = 4*Ny_split_mult
         
         # Create mesh and define function space
-        mesh = df.RectangleMesh(comm,df.Point(0.0, 0.0), df.Point(Lx, Ly), Nx, Ny, "right/left")
+        mesh = df.RectangleMesh(comm,df.Point(0.0, 0.0), df.Point(Lx, Ly),
+                                Nx_split_mult, Ny_split_mult, "right/left")
         with df.XDMFFile(comm, meshfile) as file:
             file.write(mesh)
         
@@ -113,12 +124,10 @@ if __name__ == '__main__':
     mesh = uh.function_space().mesh()
     dx = df.Measure('dx', mesh)
     
-    print(Integral(uh, dx, shape=(2,)))
-    print(Integral(sigma(uh), dx, shape=(3,)))
 
-    with df.XDMFFile(comm, folder + "multiscale/barMacro_Multiscale_%s_vtk.xdmf"%(caseType)) as file:
+    with df.XDMFFile(comm, outputVTK) as file:
         uh.rename('u','name')
         file.write(uh)
     
-    with df.XDMFFile(comm, folder + "multiscale/barMacro_Multiscale_%s.xdmf"%(caseType)) as file:
+    with df.XDMFFile(comm, output) as file:
         file.write_checkpoint(uh,'u',0)

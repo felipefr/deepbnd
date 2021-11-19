@@ -1,3 +1,8 @@
+'''
+2. Run solveDNS.py with: 
+- Enter mesh, output files, Ny and some other suffixes for identification of files purposes (as used in the mesh generation). 
+'''
+
 import sys, os
 from dolfin import *
 import numpy as np
@@ -60,7 +65,9 @@ if __name__ == '__main__':
         Ny =  24 # 24 or 72
         suffix = '' # opt: reduced_per, dnn, full
         
-    folder = rootDataPath + '/new_fe2/DNS/DNS_%d%s/'%(Ny,suffix)
+    folder = rootDataPath + '/deepBND/DNS/DNS_%d%s/'%(Ny,suffix)
+    meshname = folder + 'mesh.xdmf'
+    outputfile = folder + "barMacro_DNS%s.xdmf"%suffix
 
     # Lx = 2.0
     # Ly = 0.5
@@ -73,9 +80,9 @@ if __name__ == '__main__':
         
     start = timer()
     
-    uh = solve_DNS(folder + 'mesh.xdmf', param)
+    uh = solve_DNS(meshname, param)
     
-    with XDMFFile(comm, "barMacro_DNS%s.xdmf"%problemType) as file:
+    with XDMFFile(comm, outputfile) as file:
         file.write_checkpoint(uh,'u',0)
     
     end = timer()
