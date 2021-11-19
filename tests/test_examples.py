@@ -7,7 +7,7 @@ import numpy as np
 from timeit import default_timer as timer
 from mpi4py import MPI
 
-import deepBND.__init__ import *
+from deepBND.__init__ import *
 import deepBND.core.fenics_tools.misc as feut
 
 def test_solve_cook():
