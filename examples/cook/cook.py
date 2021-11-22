@@ -63,35 +63,36 @@ if __name__ == '__main__':
         Ny_split = int(sys.argv[1])
         caseType = sys.argv[2]
         seed = int(sys.argv[3])
+        createMesh = bool(sys.argv[4])
     
     else:     
         Ny_split =  40 # 5, 10, 20, 40, 80
         caseType = 'reduced_per' # opt: reduced_per, dnn, full
         seed = 1
-        
+        createMesh = True
     
     # ========== dataset folders ================= 
-    folder = rootDataPath + "/new_fe2/DNS/DNS_72_2/"
-    folderMesh = rootDataPath + '/deepBND/cook/meshes_seed{0}/'.format(seed)
+    folder = rootDataPath + "/cook"
+    folderMesh = folder + '/meshes_seed{0}/'.format(seed)
     
-    tangentName = folder + 'tangents/tangent_%s.hd5'%caseType
+    tangentName = folder + '/tangents/tangent_%s.hd5'%caseType
     tangent_dataset = myhd.loadhd5(tangentName, 'tangent')
     # ids = myhd.loadhd5(tangentName, 'id') # apparenttly no need
     # center = myhd.loadhd5(tangentName, 'center') # apparenttly no need
-    meshfile = folderMesh + 'mesh_%d.xdmf'%Ny_split
     
-    lcar = 44.0/Ny_split  
     
-    gmshMesh = CookMembrane(lcar = lcar)
-    gmshMesh.write(savefile = meshfile, opt = 'fenics')
+    if(createMesh):
+        os.system('mkdir ' + folderMesh)
+        meshfile = folderMesh + 'mesh_%d.xdmf'%Ny_split
+        lcar = 44.0/Ny_split  
+        gmshMesh = CookMembrane(lcar = lcar)
+        gmshMesh.write(savefile = meshfile, opt = 'fenics')
+        
     
     np.random.seed(seed)
-    
     uh, Chom = solve_cook(meshfile, tangent_dataset)
-    
 
     sigma = lambda u: df.dot(Chom, symgrad_voigt(u))
-    
     
     with df.XDMFFile(comm, folderMesh + "cook_%s_%d_vtk.xdmf"%(caseType,Ny_split)) as file:
         iofe.export_XDMF_displacement_sigma(uh, sigma, file)
