@@ -16,6 +16,7 @@ import copy
 from deepBND.__init__ import *
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 import deepBND.creation_model.dataset.generation_inclusions as geni
+import deepBND.core.multiscale.mesh_RVE as mrve
 from deepBND.core.mesh.ellipse_mesh_bar import ellipseMeshBar
 
 def buildDNSmesh(Ny, paramfile, meshfile, readReuse, fac_lcar, seed):
@@ -64,7 +65,7 @@ def buildRVEparam_fromDNS(Ny_DNS, paramDNSfile, paramRVEfile):
     
     H_DNS = Lx_DNS/Nx_DNS # same as Ly/Ny
     
-    p = geni.paramRVE()
+    p = mrve.paramRVE_default()
     
     ns = (Nx_DNS - p.Nx + 1)*(Ny_DNS - p.Ny + 1)
     
@@ -98,21 +99,22 @@ if __name__ == '__main__':
         Ny = int(sys.argv[1])
         readReuse = bool(sys.argv[2])
         export_paramRVE_fromDNS = bool(sys.argv[3])
+        seed = int(sys.argv[4])
     else:
         Ny = 24
         readReuse = False
         export_paramRVE_fromDNS = True
+        seed = 1 # seed is dummy in the case reuse is true
 
-    folder = rootDataPath + "/deepBND/DNS/Ny_%d/"%Ny
+    folder = rootDataPath + "/bar_DNS/Ny_%d/"%Ny
     
     paramfile = folder + 'param_DNS.hd5'
     meshname = folder + 'mesh.xdmf'
     paramRVEfile = folder + 'paramRVEdataset.hd5'
     
-    fac_lcar = 1/5 # or 1/9 more less the same order than the RVE
-    seed = 9
+    fac_lcar = 1/15 # or 1/9 more less the same order than the RVE
     
-    buildDNSmesh(Ny, paramfile, meshfile, readReuse, fac_lcar, seed)
+    buildDNSmesh(Ny, paramfile, meshname, readReuse, fac_lcar, seed)
     
     if(export_paramRVE_fromDNS):
         buildRVEparam_fromDNS(Ny, paramfile, paramRVEfile)   

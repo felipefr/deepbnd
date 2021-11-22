@@ -63,11 +63,10 @@ if __name__ == '__main__':
     
     else:     
         Ny =  24 # 24 or 72
-        suffix = '' # opt: reduced_per, dnn, full
         
-    folder = rootDataPath + '/deepBND/DNS/DNS_%d%s/'%(Ny,suffix)
+    folder = rootDataPath + '/bar_DNS/Ny_%d/'%(Ny)
     meshname = folder + 'mesh.xdmf'
-    outputfile = folder + "barMacro_DNS%s.xdmf"%suffix
+    outputfile = folder + "barMacro_DNS.xdmf"
 
     # Lx = 2.0
     # Ly = 0.5
