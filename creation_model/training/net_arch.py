@@ -5,7 +5,44 @@ import matplotlib.pyplot as plt
 
 import deepBND.creation_model.training.wrapper_tensorflow as mytf
 
+    net.param['epochs'] = int(epochs)
+    net.param['nY'] = Nrb
+    net.param['nX'] = nX
+    net.param['archId'] = archId
+    net.param['stepEpochs'] = 1
+    net.param['file_weights'] = folderTrain + 'models_weights_%s_%s_%d.hdf5'%(archId,load_flag,Nrb)
+    net.param['file_net'] = folderTrain + 'models_net_%s_%s_%d.txt'%(archId,load_flag,Nrb)
+    net.param['file_prediction'] = folderTrain + 'models_prediction_%s_%s_%d.txt'%(archId,load_flag,Nrb)
+    net.param['file_scaler'] = folderTrain + 'scaler_%s_%d.txt'%(load_flag,Nrb)
+    net.param['file_XY'] = nameXY
+    net.param['file_XY_val'] = nameXY_val
+
 class NetArch:
+    
+    def setParam(self, label, value):
+        if(label in self.possibleParam):
+            net.param[label] = value
+        else:
+            print("param not available on the possible params list")
+    def possibleParam(self):
+        return ['epochs', 'nY', 'nX', 'archId', 'stepEpochs', 'file_weights', 
+                'file_net', 'file_prediction', 'file_scaler', 'file_XY', 'file_XY_val']
+    
+    def setNY(self, nY):
+        net.param['nY'] = nY
+
+    def setNY(self, nX):
+        net.param['nX'] = nX
+
+    def setArchId(self, archId):
+        net.param['archId'] = archId
+
+    def setStepEpochs(self, stepEpochs):
+        net.param['stepEpochs'] = stepEpochs
+    
+    def setFileWeights(self, fileWeights):
+        net.param['fileWeights'] = fileWeights
+    
     
     def __init__(self, Neurons, activations, lr = 5.0e-4, decay = 1.0, drps = 0.0, reg = 0.0):
         self.Neurons = Neurons
@@ -51,7 +88,7 @@ class NetArch:
         Epochs = dnet['epochs']
         decay = dnet['decay']
         lr = dnet['lr']
-        saveFile = dnet['file_weights'] 
+        saveFile = dnet['fileWeights'] 
         stepEpochs = dnet['stepEpochs']
         
         np.random.seed(1)
