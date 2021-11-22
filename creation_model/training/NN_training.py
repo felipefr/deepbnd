@@ -15,30 +15,26 @@ from deepBND.creation_model.training.net_arch import standardNets
 import deepBND.core.data_manipulation.utils as dman
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 
-def run_training(net):
-    dman.exportScale(net.param['file_XY'], net.param['file_scaler'], nX, Nrb, Ylabel = 'Y_%s'%load_flag)
-    scalerX, scalerY = dman.importScale(net.param['file_scaler'], nX, Nrb)
-        
-    net.param['Y_data_max'] = scalerY.data_max_ 
-    net.param['Y_data_min'] = scalerY.data_min_
-    net.param['X_data_max'] = scalerX.data_max_
-    net.param['X_data_min'] = scalerX.data_min_
-    net.param['scalerX'] = scalerX
-    net.param['scalerY'] = scalerY
+def run_training(net, Ylabel):
+    dman.exportScale(net.files['XY'], net.files['scaler'], net.nX, net.nY, Ylabel = Ylabel)
+    scalerX, scalerY = dman.importScale(net.files['scaler'], nX, Nrb)
+
+    net.scalerX = scalerX
+    net.scalerY = scalerY
     
-    dman.writeDict(net.getDict())
+    dman.writeDict(net.__dict__)
     
-    XY_train = dman.getDatasetsXY(nX, Nrb, net.param['file_XY'], scalerX, scalerY, Ylabel = 'Y_%s'%load_flag)[0:2]
-    XY_val = dman.getDatasetsXY(nX, Nrb, net.param['file_XY_val'], scalerX, scalerY, Ylabel = 'Y_%s'%load_flag)[0:2]
+    XY_train = dman.getDatasetsXY(nX, Nrb, net.files['XY'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
+    XY_val = dman.getDatasetsXY(nX, Nrb, net.files['XY_val'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
     
     hist = net.training(XY_train, XY_val)
 
 
 if __name__ == '__main__':
-    folderDataset = rootDataPath + "/deepBND/dataset/"
-    folderTrain = rootDataPath + "/deepBND/training/"
+    folderDataset = rootDataPath + "/dataset/"
+    folderTrain = rootDataPath + "/training/"
     
-    nameXY = folderDataset +  'XY.hd5'
+    nameXY = folderDataset +  'XY_train.hd5'
     nameXY_val = folderDataset +  'XY_validation.hd5'
 
     if(len(sys.argv) > 1):    
@@ -58,18 +54,18 @@ if __name__ == '__main__':
     
     net = standardNets[archId]
     
-    net.param['epochs'] = int(epochs)
-    net.param['nY'] = Nrb
-    net.param['nX'] = nX
-    net.param['archId'] = archId
-    net.param['stepEpochs'] = 1
-    net.param['file_weights'] = folderTrain + 'models_weights_%s_%s_%d.hdf5'%(archId,load_flag,Nrb)
-    net.param['file_net'] = folderTrain + 'models_net_%s_%s_%d.txt'%(archId,load_flag,Nrb)
-    net.param['file_prediction'] = folderTrain + 'models_prediction_%s_%s_%d.txt'%(archId,load_flag,Nrb)
-    net.param['file_scaler'] = folderTrain + 'scaler_%s_%d.txt'%(load_flag,Nrb)
-    net.param['file_XY'] = nameXY
-    net.param['file_XY_val'] = nameXY_val
+    net.epochs =  int(epochs)
+    net.nY = Nrb
+    net.nX = nX
+    net.archId =  archId
+    net.stepEpochs =  1
+    net.files['weights'] = folderTrain + 'models_weights_%s_%s_%d.hdf5'%(archId,load_flag,Nrb)
+    net.files['net_settings'] =  folderTrain + 'models_net_%s_%s_%d.txt'%(archId,load_flag,Nrb)
+    net.files['prediction'] = folderTrain + 'models_prediction_%s_%s_%d.txt'%(archId,load_flag,Nrb)
+    net.files['scaler'] = folderTrain + 'scaler_%s_%d.txt'%(load_flag,Nrb)
+    net.files['XY'] = nameXY
+    net.files['XY_val'] = nameXY_val
     
-    run_training(net)
+    run_training(net, 'Y_%s'%load_flag)
     
     

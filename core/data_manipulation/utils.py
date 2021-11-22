@@ -69,7 +69,7 @@ class myMinMaxScaler:
 
 
 def writeDict(d):
-    f = open(d['file_net'],'w')
+    f = open(d['files']['net_settings'],'w')
     
     for keys, value in zip(d.keys(),d.values()):
         f.write("{0}: {1}\n".format(keys,value))
