@@ -25,7 +25,6 @@ def buildMeshRVEs_fromDNS(run, num_runs, nameParamRVEdata, nameMesh, size = 'red
     
     for i in range(nrun):
         print("gererated ", i , ids[i], " mesh")
-        print(paramRVEdata[i,:,:])
         buildRVEmesh(paramRVEdata[i,:,:], nameMesh.format(ids[i]), isOrdenated = False, size = size)
 
 
@@ -35,17 +34,17 @@ if __name__ == '__main__':
         Ny_DNS = int(sys.argv[1])
         run = int(sys.argv[2])
         num_runs = int(sys.argv[3])
+        meshsize = sys.argv[4]
     else:
         Ny_DNS = 24
         comm = MPI.COMM_WORLD
         run = comm.Get_rank()
         num_runs = comm.Get_size()
-
+        meshsize = 'reduced'
+        
     print('run, num_runs ', run, num_runs)
     
-    meshsize = 'reduced'
-    
-    folder = rootDataPath + "/deepBND/DNS/Ny_{0}/".format(Ny_DNS)
+    folder = rootDataPath + "/bar_Multiscale/Ny_{0}/".format(Ny_DNS)
     folderMesh = folder + 'meshes/'
     nameParamRVEdata = folder + 'paramRVEdataset.hd5'
     nameMesh = folderMesh + 'mesh_micro_{0}_reduced.xdmf'

@@ -85,20 +85,28 @@ if __name__ == '__main__':
     if(len(sys.argv)>1):
         Ny_DNS = int(sys.argv[1])
         caseType = sys.argv[2]
-        createMesh = int(sys.argv[3])
+        createMesh = bool(sys.argv[3])
+        Ny_split_mult = int(sys.argv[4]) # For the reference mesh
     
     else:     
         Ny_DNS =  24 # 24, 72
         caseType = 'reduced_per' # opt: reduced_per, dnn_big, fulls
         createMesh = False
+        Ny_split_mult = 96 # For the reference mesh
         
-    Ny_split_mult = 96 # For the reference mesh
-    folder = rootDataPath + "/deepBND/DNS/DNS_%d_new/"%Ny_DNS
-    meshfile = folder + "multiscale/meshBarMacro_Multiscale.xdmf"
+
+    folder = rootDataPath + "/bar_Multiscale/Ny_%d/"%Ny_DNS
+    meshfile = folder + "/multiscale/meshBarMacro_Multiscale.xdmf"
     tangentName = folder + 'tangents/tangent_%s.hd5'%caseType
     
     outputVTK = folder + "multiscale/barMacro_Multiscale_%s_vtk.xdmf"%(caseType)
     output = folder + "multiscale/barMacro_Multiscale_%s.xdmf"%(caseType)
+
+    Lx = 2.0
+    Ly = 0.5
+    
+    ty = -0.01
+    tx = 0.0    
     
     if(createMesh): # Reference coarse mesh for multiscale analysis
         Nx_split_mult = 4*Ny_split_mult
@@ -108,13 +116,7 @@ if __name__ == '__main__':
                                 Nx_split_mult, Ny_split_mult, "right/left")
         with df.XDMFFile(comm, meshfile) as file:
             file.write(mesh)
-        
-    Lx = 2.0
-    Ly = 0.5
-    
-    ty = -0.01
-    tx = 0.0    
-    
+            
     param = [Lx, Ly, tx, ty]
     
     uh, Chom = solve_barMultiscale(meshfile, tangentName, param)
