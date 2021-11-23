@@ -151,7 +151,6 @@ Obs: This script is intended to generate RVE meshes that will be used online or 
 Obs: You can run runall.py to automatically run several cases, this has not been extensively tested though. Hence it should be taken mostly as guide. 
 ## Main TODOs
 
-- improve NatArch class, which will simplify scripts of training. 
 - compatibilise micmacsfenics version of MicroconstitutiveModelDNN, in other of not repeating code (as today).
 - add more tests.
 - update plots and comparison scripts.
