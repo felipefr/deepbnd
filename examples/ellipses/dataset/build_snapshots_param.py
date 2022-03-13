@@ -34,7 +34,7 @@ def build_paramRVE(paramRVEname, ns, seed, excentricity = 1.0):
         print("inserting on ", i)
         X[i,:,:] = ellipseData_pattern
         X[i,:,3] = excentricity
-        X[i,:,2] = p.rm
+        X[i,:,2] = np.sqrt(2)*p.rm # to give the same area
         X[i,:,4] = thetas[i,:]
             
     f.close()
