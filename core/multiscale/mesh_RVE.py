@@ -29,11 +29,11 @@ class paramRVE_default:
         self.rm = self.H*np.sqrt(self.Vfrac/np.pi)
 
 
-def buildRVEmesh(paramRVEdata, nameMesh, isOrdenated = False, size = 'reduced'):
+def buildRVEmesh(paramRVEdata, nameMesh, isOrdered = False, size = 'reduced'):
 
     p = paramRVE_default() # load default parameters
     
-    if(isOrdenated): # it is already ordered (internal, after external)
+    if(isOrdered): # it is already ordered (internal, after external)
         permTotal = np.arange(0,p.Nx*p.Ny).astype('int')
     else: # it is NOT ordered already ordered (internal, after external)
         permTotal = geni.orderedIndexesTotal(p.Nx,p.Ny,p.NxL)

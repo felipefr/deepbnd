@@ -26,8 +26,8 @@ from deepBND.core.mesh.degenerated_rectangle_mesh import degeneratedBoundaryRect
 from deepBND.core.multiscale.mesh_RVE import paramRVE_default
 
 
-comm = MPI.COMM_WORLD
-comm_self = MPI.COMM_SELF
+# comm = MPI.COMM_WORLD
+# comm_self = MPI.COMM_SELF
 
 
 def solve_snapshot(i, meshname, paramMaterial, opModel, datasets, usol):
@@ -55,7 +55,7 @@ def solve_snapshot(i, meshname, paramMaterial, opModel, datasets, usol):
     print("concluded in ", end - start)      
     
 
-def buildSnapshots(paramMaterial, filesnames, opModel, createMesh):
+def buildSnapshots(paramMaterial, filesnames, opModel, createMesh, run, num_runs, comm_self):
     bndMeshname, paramRVEname, snapshotsname, meshname = filesnames
     
     Mref = EnrichedMesh(bndMeshname, comm = comm_self)
@@ -86,10 +86,10 @@ def buildSnapshots(paramMaterial, filesnames, opModel, createMesh):
         print("Solving snapshot", int(ids[i]), i)
 
         if(createMesh):
-            buildRVEmesh(paramRVEdata[i,:,:], meshname.format(suffix,run), 
-                         isOrdinated = False, size = 'full')
+            buildRVEmesh(paramRVEdata[i,:,:], meshname, 
+                         isOrdered = False, size = 'full')
         
-        solve_snapshot(i, meshname.format(suffix,run), paramMaterial, opModel, snapshots, usol)
+        solve_snapshot(i, meshname, paramMaterial, opModel, snapshots, usol)
     
         
         fsnaps.flush()
@@ -126,6 +126,6 @@ if __name__ == '__main__':
     # meshRef.generate()
     # meshRef.write(bndMeshname , 'fenics')
     
-    buildSnapshots(paramMaterial, filesnames, opModel, createMesh)
+    buildSnapshots(paramMaterial, filesnames, opModel, createMesh, run, num_runs)
     
     
