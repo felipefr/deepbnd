@@ -11,9 +11,31 @@ import numpy as np
 
 from deepBND.__init__ import * 
 import deepBND.creation_model.training.wrapper_tensorflow as mytf
-from deepBND.creation_model.training.net_arch import standardNets
+# from deepBND.creation_model.training.net_arch import standardNets
+from deepBND.creation_model.training.net_arch import NetArch
 import deepBND.core.data_manipulation.utils as dman
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
+
+
+# standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
+#          'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8)}
+
+
+# {'big': NetArch([300, 300, 300], 3*['swish'] + ['sigmoid'], 5.0e-4, 0.9, [0.0] + 3*[0.0] + [0.0], 0.0),
+standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['sigmoid'], 5.0e-4, 0.9, [0.0] + 3*[0.0] + [0.0], 0.0),
+         'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.8, [0.0] + 3*[0.001] + [0.0], 1.0e-8)}
+
+
+def dataAugmentation(XY):
+    XX = np.concatenate((XY[0], -XY[0]), axis = 0)
+    YY = np.concatenate((XY[1], XY[1]), axis = 0)
+    
+    ids = np.arange(0,XX.shape[0])
+    np.random.shuffle(ids)
+    
+
+    return (XX[ids,:],YY[ids,:])
+
 
 def run_training(net, Ylabel):
     dman.exportScale(net.files['XY'], net.files['scaler'], net.nX, net.nY, Ylabel = Ylabel)
@@ -27,15 +49,19 @@ def run_training(net, Ylabel):
     XY_train = dman.getDatasetsXY(nX, Nrb, net.files['XY'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
     XY_val = dman.getDatasetsXY(nX, Nrb, net.files['XY_val'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
     
+    # XY_train = dataAugmentation(XY_train)
+    # XY_val = dataAugmentation(XY_val)
+    
     hist = net.training(XY_train, XY_val)
 
+    return XY_train, XY_val, scalerX, scalerY
 
 if __name__ == '__main__':
-    folderDataset = rootDataPath + "/dataset/"
-    folderTrain = rootDataPath + "/training/"
+    folderDataset = "/home/felipe/deepBND/DATA/ellipses/training/"
+    folderTrain = "/home/felipe/deepBND/DATA/ellipses/training/"
     
     nameXY = folderDataset +  'XY_train.hd5'
-    nameXY_val = folderDataset +  'XY_validation.hd5'
+    nameXY_val = folderDataset +  'XY_val.hd5'
 
     if(len(sys.argv) > 1):    
         Nrb = int(sys.argv[1])
@@ -44,11 +70,11 @@ if __name__ == '__main__':
 
     else:
         Nrb = 80
-        epochs = 1000
-        archId = 'small'
+        epochs = 100
+        archId = 'big'
         load_flag = 'S'
 
-    nX = 36
+    nX = 72
     
     print('Nrb is ', Nrb, 'epochs ', epochs)
     
@@ -66,5 +92,6 @@ if __name__ == '__main__':
     net.files['XY'] = nameXY
     net.files['XY_val'] = nameXY_val
     
-    run_training(net, 'Y_%s'%load_flag)
+    XY_train, XY_val, scalerX, scalerY = run_training(net, 'Y_%s'%load_flag)
+    
     

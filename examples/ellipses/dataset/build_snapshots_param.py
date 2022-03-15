@@ -28,6 +28,7 @@ def build_paramRVE(paramRVEname, ns, seed, excentricity = 1.0):
     
     ellipseData_pattern = geni.getEllipse_emptyRadius(p.Nx,p.Ny,p.Lxt, p.Lyt, p.x0, p.y0)
     
+    # WROOOOONNNNNGGGGGGG SHOULD BE -0.5*np.pi, 0.5*np.pi
     thetas = geni.getScikitoptSample(NR,ns, -np.pi, np.pi,  seed, op = 'lhs')
     
     for i in range(ns):

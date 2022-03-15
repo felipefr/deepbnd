@@ -26,8 +26,8 @@ from deepBND.core.mesh.degenerated_rectangle_mesh import degeneratedBoundaryRect
 from deepBND.core.multiscale.mesh_RVE import paramRVE_default
 
 
-# comm = MPI.COMM_WORLD
-# comm_self = MPI.COMM_SELF
+comm = MPI.COMM_WORLD
+comm_self = MPI.COMM_SELF
 
 
 def solve_snapshot(i, meshname, paramMaterial, opModel, datasets, usol):
