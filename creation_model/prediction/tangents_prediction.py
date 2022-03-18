@@ -103,7 +103,7 @@ if __name__ == '__main__':
     suffixTangent = 'dnn'
     modelBnd = 'dnn'
     meshSize = 'reduced'
-    createMesh = True
+    createMesh = False
 
     if(modelBnd == 'dnn'):
         modelDNN = '_small_80' # underscore included before

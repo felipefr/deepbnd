@@ -66,7 +66,7 @@ class MicroConstitutiveModelDNN(mscm.MicroConstitutiveModel):
         if(len(bcs) > 0): 
             bcs.apply(A)
         
-        solver = df.PETScLUSolver('mumps')
+        solver = df.PETScLUSolver('superlu')
         sol = mp.BlockFunction(W)
         
         if(self.model == 'lin' or self.model == 'dnn'):

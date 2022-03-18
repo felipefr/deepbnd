@@ -29,8 +29,6 @@ def predictTangents(num, num_runs, modelBnd, namefiles, createMesh, meshSize):
     
     nameMeshRefBnd, paramRVEname, tangentName, BCname, meshMicroName = namefiles
     
-    start = timer()
-    
     # loading boundary reference mesh
     Mref = EnrichedMesh(nameMeshRefBnd,comm_self)
     Vref = df.VectorFunctionSpace(Mref,"CG", 1)
@@ -73,9 +71,14 @@ def predictTangents(num, num_runs, modelBnd, namefiles, createMesh, meshSize):
         param = [nu,E2*contrast,nu,E2]
         print(run, i, ids[i])
         meshMicroName_i = meshMicroName.format(int(Iid[i]), meshSize)
+    
+        start = timer()
         
         if(createMesh):
             buildRVEmesh(paramRVEdata[i,:,:], meshMicroName_i, isOrdered = False, size = meshSize)
+    
+        end = timer()
+        print("time expended in meshing ", end - start)
     
         microModel = MicroConstitutiveModelDNN(meshMicroName_i, param, modelBnd) 
         
