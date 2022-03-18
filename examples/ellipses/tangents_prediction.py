@@ -128,7 +128,7 @@ if __name__ == '__main__':
     folderDataset = folder + 'dataset_cluster/'
     paramRVEname = folderPrediction + 'paramRVEdataset{0}.hd5'.format(suffix) 
     nameMeshRefBnd = folderDataset + 'boundaryMesh.xdmf'
-    tangentName = folderPrediction + 'tangents_{0}_{1}.hd5'.format(suffixTangent,run)
+    tangentName = folderPrediction + 'tangents_{0}_{1}.hd5'.format(modelDNN+suffix,run)
     BCname = folderPrediction + 'bcs{0}{1}.hd5'.format(modelDNN,suffix) 
     meshMicroName = folderMesh + 'mesh_micro_{0}_{1}.xdmf'
 
