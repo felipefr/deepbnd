@@ -24,6 +24,29 @@ import deepBND.core.multiscale.misc as mtsm
 
 dotProduct = lambda u,v, dx : assemble(inner(u,v)*ds)
 
+
+def transformQuadrant(x):
+
+    if(x<np.pi and x>0.5*np.pi): 
+        return x - np.pi
+    elif(x<-0.5*np.pi and x>-np.pi):
+        return x + np.pi
+    else:
+        return x
+    
+    
+def mapSinusCosinus(x):
+    y = np.zeros((x.shape[0],x.shape[1],2))
+    
+    for i in range(x.shape[0]):
+        for j in range(x.shape[1]):
+            y[i,j,0] = np.cos(x[i,j])
+            y[i,j,1] = np.sin(x[i,j])
+
+    
+    return y.reshape((x.shape[0],-1))
+
+
 def translateSolution(nameSnaps, Vref):
     for load_flag in ['A', 'S']:
         labels = ['solutions_%s'%load_flag,'a_%s'%load_flag,'B_%s'%load_flag]
@@ -103,27 +126,6 @@ if __name__ == '__main__':
     Nmax = 160
     
     op = int(input('option (0 to 3)'))
-    
-    def transformQuadrant(x):
-
-        if(x<np.pi and x>0.5*np.pi): 
-            return x - np.pi
-        elif(x<-0.5*np.pi and x>-np.pi):
-            return x + np.pi
-        else:
-            return x
-        
-        
-    def mapSinusCosinus(x):
-        y = np.zeros((x.shape[0],x.shape[1],2))
-        
-        for i in range(x.shape[0]):
-            for j in range(x.shape[1]):
-                y[i,j,0] = np.cos(x[i,j])
-                y[i,j,1] = np.sin(x[i,j])
-
-        
-        return y.reshape((x.shape[0],-1))
         
     if(op==0):
         translateSolution(nameSnaps, Vref)

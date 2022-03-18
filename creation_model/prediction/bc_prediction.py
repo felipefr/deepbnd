@@ -40,10 +40,10 @@ if __name__ == '__main__':
     Nrb = 80
     nX = 36
     
-    folder = rootDataPath + "/"
-    folderTrain = folder + 'training/'
-    folderBasis = folder + 'dataset/'
-    folderPrediction = folder + "prediction/"
+    folder = rootDataPath + "/ellipses/"
+    folderTrain = folder + 'training_cluster/'
+    folderBasis = folder + 'dataset_cluster/'
+    folderPrediction = folder + "prediction_cluster/"
     nameMeshRefBnd = folderBasis + 'boundaryMesh.xdmf'
     nameWbasis = folderBasis +  'Wbasis.hd5'
     paramRVEname = folderPrediction + 'paramRVEdataset_validation.hd5'
