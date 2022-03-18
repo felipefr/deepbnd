@@ -23,7 +23,8 @@ import deepBND.core.data_manipulation.wrapper_h5py as myhd
 
 # {'big': NetArch([300, 300, 300], 3*['swish'] + ['sigmoid'], 5.0e-4, 0.9, [0.0] + 3*[0.0] + [0.0], 0.0),
 standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['sigmoid'], 5.0e-4, 0.9, [0.0] + 3*[0.0] + [0.0], 0.0),
-         'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.8, [0.0] + 3*[0.001] + [0.0], 1.0e-8)}
+         'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.8, [0.0] + 3*[0.001] + [0.0], 1.0e-8),
+         'big_classical': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8) }
 
 
 def dataAugmentation(XY):
@@ -57,8 +58,8 @@ def run_training(net, Ylabel):
     return XY_train, XY_val, scalerX, scalerY
 
 if __name__ == '__main__':
-    folderDataset = "/home/felipe/deepBND/DATA/ellipses/training/"
-    folderTrain = "/home/felipe/deepBND/DATA/ellipses/training/"
+    folderDataset = "/home/rocha/deepBND/DATA/ellipses/training/"
+    folderTrain = "/home/rocha/deepBND/DATA/ellipses/training/"
     
     nameXY = folderDataset +  'XY_train.hd5'
     nameXY_val = folderDataset +  'XY_val.hd5'
@@ -69,9 +70,9 @@ if __name__ == '__main__':
         archId = int(sys.argv[3])
 
     else:
-        Nrb = 80
-        epochs = 100
-        archId = 'big'
+        Nrb = 140
+        epochs = 5000
+        archId = 'big_classical'
         load_flag = 'S'
 
     nX = 72
