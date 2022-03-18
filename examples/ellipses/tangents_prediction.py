@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Mar 18 14:25:42 2022
+
+@author: felipe
+"""
+
 import sys, os
 import numpy as np
 import dolfin as df 
@@ -37,9 +45,12 @@ def predictTangents(num, num_runs, modelBnd, namefiles, createMesh, meshSize):
     # Id here have nothing to with the position of the RVE in the body. Solve it later
     if(myhd.checkExistenceDataset(paramRVEname, 'id')):    
         ids = myhd.loadhd5(paramRVEname, 'id')[run::num_runs].astype('int')
+    else:
+        ids = np.zeros(ns).astype('int')
+        
+    if(myhd.checkExistenceDataset(paramRVEname, 'center')):    
         centers = myhd.loadhd5(paramRVEname, 'center')[ids,:]
-    else: # dummy
-        ids = np.zeros(ns)
+    else:
         centers = np.zeros((ns,2))
        
     os.system('rm ' + tangentName)
@@ -104,25 +115,25 @@ if __name__ == '__main__':
     modelBnd = 'dnn'
     meshSize = 'reduced'
     createMesh = True
+    suffix = '_val'
 
     if(modelBnd == 'dnn'):
-        modelDNN = '_small_80' # underscore included before
+        modelDNN = '_big_classical_140' # underscore included before
     else:
         modelDNN = ''
                
-    folder = rootDataPath + "/deepBND/"
-    folderPrediction = folder + 'prediction/'
+    folder = rootDataPath + "/ellipses/"
+    folderPrediction = folder + 'prediction_cluster/'
     folderMesh = folderPrediction + 'meshes/'
-    folderDataset = folder + 'dataset/'
-    paramRVEname = folderPrediction + 'paramRVEdataset_validation.hd5' 
+    folderDataset = folder + 'dataset_cluster/'
+    paramRVEname = folderPrediction + 'paramRVEdataset{0}.hd5'.format(suffix) 
     nameMeshRefBnd = folderDataset + 'boundaryMesh.xdmf'
     tangentName = folderPrediction + 'tangents_{0}_{1}.hd5'.format(suffixTangent,run)
-    BCname = folderPrediction + 'bcs%s.hd5'%modelDNN
+    BCname = folderPrediction + 'bcs{0}{1}.hd5'.format(modelDNN,suffix) 
     meshMicroName = folderMesh + 'mesh_micro_{0}_{1}.xdmf'
 
     namefiles = [nameMeshRefBnd, paramRVEname, tangentName, BCname, meshMicroName]
     
     predictTangents(run, num_runs, modelBnd, namefiles, createMesh, meshSize)
     
-
 

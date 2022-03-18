@@ -57,18 +57,19 @@ def predictBCs(namefiles, net):
     
     myhd.savehd5(bcs_namefile, S_p, ['u0','u1','u2'], mode = 'w')
 
-
-standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
-          'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8)}
-
+standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['sigmoid'], 5.0e-4, 0.9, [0.0] + 3*[0.0] + [0.0], 0.0),
+         'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.8, [0.0] + 3*[0.001] + [0.0], 1.0e-8),
+         'big_classical': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8) }
 
 if __name__ == '__main__':
   
     labels = ['A', 'S']
   
-    archId = 'big'
-    Nrb = 80
+    archId = 'big_classical'
+    Nrb = 140
     nX = 72
+    
+    suffix = '_test'
     
     folder = rootDataPath + "/ellipses/"
     folderTrain = folder + 'training_cluster/'
@@ -76,8 +77,8 @@ if __name__ == '__main__':
     folderPrediction = folder + "prediction_cluster/"
     nameMeshRefBnd = folderBasis + 'boundaryMesh.xdmf'
     nameWbasis = folderBasis +  'Wbasis.hd5'
-    paramRVEname = folderPrediction + 'paramRVEdataset_val.hd5'
-    bcs_namefile = folderPrediction + 'bcs_{0}_{1}.hd5'.format(archId, Nrb)
+    paramRVEname = folderPrediction + 'paramRVEdataset{0}.hd5'.format(suffix)
+    bcs_namefile = folderPrediction + 'bcs_{0}_{1}{2}.hd5'.format(archId, Nrb, suffix)
     nameScaleXY = {}
     
     net = {}
