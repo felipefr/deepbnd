@@ -111,11 +111,14 @@ if __name__ == '__main__':
     
     print('run, num_runs ', run, num_runs)
     
-    suffixTangent = 'dnn'
-    modelBnd = 'dnn'
+    suffixTangent = 'per'
+    modelBnd = 'per'
     meshSize = 'reduced'
-    createMesh = True
-    suffix = '_val'
+    createMesh = False
+    suffix = '_test'
+
+    # for i in {0..9}; do nohup python tangents_prediction.py $i 10 > log_val_$i.txt & done
+    # nohup mpiexec -n 8 python tangents_prediction.py log_val_mpiexec.txt &
 
     if(modelBnd == 'dnn'):
         modelDNN = '_big_classical_140' # underscore included before
