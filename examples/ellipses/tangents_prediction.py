@@ -74,7 +74,13 @@ def predictTangents(num, num_runs, modelBnd, namefiles, createMesh, meshSize):
     
         start = timer()
         
-        if(createMesh):
+        if(os.path.exists(meshMicroName_i)):
+            if(createMesh):
+                print("mesh exists : jumping the calculation")
+                continue
+            else:
+                pass
+        else:
             buildRVEmesh(paramRVEdata[i,:,:], meshMicroName_i, isOrdered = False, size = meshSize)
     
         end = timer()
@@ -114,17 +120,18 @@ if __name__ == '__main__':
     
     print('run, num_runs ', run, num_runs)
     
-    suffixTangent = 'per'
-    modelBnd = 'per'
+    suffixTangent = 'dnn'
+    modelBnd = 'dnn'
     meshSize = 'reduced'
     createMesh = False
-    suffix = '_test'
+    suffixBC = '_train'
+    suffix = "_train"
 
     # for i in {0..9}; do nohup python tangents_prediction.py $i 10 > log_val_$i.txt & done
     # nohup mpiexec -n 8 python tangents_prediction.py log_val_mpiexec.txt &
 
     if(modelBnd == 'dnn'):
-        modelDNN = '_big_classical_140' # underscore included before
+        modelDNN = '_big_80' # underscore included before
     else:
         modelDNN = ''
                
@@ -132,10 +139,10 @@ if __name__ == '__main__':
     folderPrediction = folder + 'prediction_cluster/'
     folderMesh = folderPrediction + 'meshes/'
     folderDataset = folder + 'dataset_cluster/'
-    paramRVEname = folderPrediction + 'paramRVEdataset{0}.hd5'.format(suffix) 
+    paramRVEname = folderPrediction + 'paramRVEdataset{0}.hd5'.format(suffixBC) 
     nameMeshRefBnd = folderDataset + 'boundaryMesh.xdmf'
-    tangentName = folderPrediction + 'tangents_{0}_{1}.hd5'.format(modelDNN+suffix,run)
-    BCname = folderPrediction + 'bcs{0}{1}.hd5'.format(modelDNN,suffix) 
+    tangentName = folderPrediction + 'tangents_{0}_{1}.hd5'.format(modelBnd + modelDNN + suffix,run)
+    BCname = folderPrediction + 'bcs{0}{1}.hd5'.format(modelDNN,suffixBC) 
     meshMicroName = folderMesh + 'mesh_micro_{0}_{1}.xdmf'
 
     namefiles = [nameMeshRefBnd, paramRVEname, tangentName, BCname, meshMicroName]
