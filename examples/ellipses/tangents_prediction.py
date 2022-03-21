@@ -120,12 +120,12 @@ if __name__ == '__main__':
     
     print('run, num_runs ', run, num_runs)
     
-    suffixTangent = 'dnn'
-    modelBnd = 'dnn'
-    meshSize = 'reduced'
+    suffixTangent = 'per_full'
+    modelBnd = 'per'
+    meshSize = 'full'
     createMesh = False
-    suffixBC = '_train'
-    suffix = "_train"
+    suffixBC = '_test'
+    suffix = "_full_test"
 
     # for i in {0..9}; do nohup python tangents_prediction.py $i 10 > log_val_$i.txt & done
     # nohup mpiexec -n 8 python tangents_prediction.py log_val_mpiexec.txt &
