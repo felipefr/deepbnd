@@ -9,9 +9,9 @@ import deepBND.core.data_manipulation.wrapper_h5py as myhd
 # Test Loading 
 problemType = ''
 
-folder = rootDataPath + '/ellipses/cook/meshes_seed%d/'
+folder = rootDataPath + '/circles/cook/meshes_seed%d/'
 
-cases = ['full_per', 'dnn_big_classical_140_rotated', 'per', 'lin', 'dnn_big_classical_140_rotated_x025']
+cases = ['full', 'dnn', 'reduced_per']
 Ny_splits = [5,10,20,40,80]
 
 solution = folder + 'cook_%s_%d.xdmf'
@@ -28,7 +28,7 @@ norms = [lambda x,y: x(pA)[1], lambda x,y: y(pB)[0], lambda x,y: y(pC)[0], lambd
 uhs = []
 vonMises_ = []
 # listSeeds = [0,1,2,3,6,7,8,9,10]
-listSeeds = [0,1,2,3,6,7,8,9]
+listSeeds = [0,1,2]
 
 
 D = {}
@@ -69,8 +69,6 @@ plt.xlabel("Number of vertical elements")
 plt.plot(Ny_splits, np.mean(D[cases[0]][:,0,:], axis = 0), '--', label='High-Fidelity')
 plt.plot(Ny_splits, np.mean(D[cases[1]][:,0,:], axis = 0), 'o', label='DeepBND')
 plt.plot(Ny_splits, np.mean(D[cases[2]][:,0,:], axis = 0), 'x', label="Periodic")
-plt.plot(Ny_splits, np.mean(D[cases[3]][:,0,:], axis = 0), '+', label="Linear")
-plt.plot(Ny_splits, np.mean(D[cases[4]][:,0,:], axis = 0), '*', label="DeepBND 2")
 plt.legend()
 plt.grid()
 plt.savefig('dispA.eps')

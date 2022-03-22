@@ -120,12 +120,12 @@ if __name__ == '__main__':
     
     print('run, num_runs ', run, num_runs)
     
-    suffixTangent = 'per_full'
+    suffixTangent = 'per'
     modelBnd = 'per'
-    meshSize = 'full'
-    createMesh = False
-    suffixBC = '_test'
-    suffix = "_full_test"
+    meshSize = 'reduced'
+    createMesh = True
+    suffixBC = ''
+    suffix = ""
 
     # for i in {0..31}; do nohup python tangents_prediction.py $i 32 > log_dnn_big_classical_140_test_rotated_$i.txt & done
     # for i in {0..9}; do nohup python tangents_prediction.py $i 10 > log_val_$i.txt & done
@@ -137,7 +137,7 @@ if __name__ == '__main__':
     else:
         modelDNN = ''
                
-    folder = rootDataPath + "/ellipses/"
+    folder = rootDataPath + "/circles/"
     folderPrediction = folder + 'prediction_cluster/'
     folderMesh = folderPrediction + 'meshes/'
     folderDataset = folder + 'dataset_cluster/'

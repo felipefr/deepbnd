@@ -31,7 +31,7 @@ class NNElast_ellipses(NNElast):
 
         
         # Y here doesn't mean the output but the vertical direction
-        Theta_axialY = Theta[self.getPermY()] - 0.5*np.pi ### permY performs a counterclockwise permutation
+        Theta_axialY = Theta[:,self.getPermY()] - 0.5*np.pi ### permY performs a counterclockwise permutation
         X_axialY = mapSinusCosinus(Theta_axialY)
         
         X_axialY_s = self.scalerX['A'].transform(X_axialY) 
