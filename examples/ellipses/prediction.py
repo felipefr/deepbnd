@@ -6,37 +6,23 @@ Created on Thu Mar 17 18:40:49 2022
 @author: felipe
 """
 
-import sys, os
-# os.environ['KMP_DUPLICATE_LIB_OK']='True'
-import dolfin as df
-# import matplotlib.pyplot as plt
-# from ufl import nabla_div
+
+import os, sys
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+import matplotlib.pyplot as plt
 import numpy as np
 
-from deepBND.__init__ import *
-# import deepBND.creation_model.training.wrapper_tensorflow as mytf
+from deepBND.__init__ import * 
+import deepBND.creation_model.training.wrapper_tensorflow as mytf
+# from deepBND.creation_model.training.net_arch import standardNets
 from deepBND.creation_model.training.net_arch import NetArch
-# import deepBND.core.data_manipulation.utils as dman
+import deepBND.core.data_manipulation.utils as dman
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
+
 from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
-from deepBND.creation_model.prediction.NN_elast import NNElast
-from deepBND.examples.ellipses.build_rb import mapSinusCosinus
+from deepBND.creation_model.prediction.NN_elast_ellipses import NNElast_ellipses
 
-
-class NNElast_angleMapSinusCosinus(NNElast):
-    def getPermY(self, n = 6, m = 2):  
-        ## it may be changed (permY)
-        # the permY below is only valid for the ordenated radius (inside to outsid)
-        # permY = np.array([2,0,3,1,12,10,8,4,13,5,14,6,15,11,9,7,30,28,26,24,22,16,31,17,32,18,33,19,34,20,35,29,27,25,23,21])
-        # the permY below is only valid for the radius ordenated by rows and columns (below to top {left to right})
-    
-        perm = np.array([[(n-1-j)*n + i for j in range(n)] for i in range(n)]).flatten()  # note that (i,j) -> (Nx-j-1,i)
-        perm_star = np.zeros(len(perm)*m).astype('int')
-        
-        for k in range(m):
-            perm_star[k::m] = m*perm + k
-            
-        return perm_star 
+import dolfin as df # apparently this import should be after the tensorflow stuff
         
 def predictBCs(namefiles, net):
     
@@ -51,9 +37,9 @@ def predictBCs(namefiles, net):
     # loading the DNN model
     paramRVEdata = myhd.loadhd5(paramRVEname, 'param')
     
-    model = NNElast_angleMapSinusCosinus(nameWbasis, net, net['A'].nY)
+    model = NNElast_ellipses(nameWbasis, net, net['A'].nY)
     
-    S_p = model.predict(mapSinusCosinus(paramRVEdata[:,:,4]), Vref)
+    S_p = model.predict(paramRVEdata[:,:,4], Vref)
     
     myhd.savehd5(bcs_namefile, S_p, ['u0','u1','u2'], mode = 'w')
 
@@ -69,7 +55,9 @@ if __name__ == '__main__':
     Nrb = 140
     nX = 72
     
-    suffix = '_test'
+    suffixParam = '_test'
+    suffix = '_test_rotated'
+    
     
     folder = rootDataPath + "/ellipses/"
     folderTrain = folder + 'training_cluster/'
@@ -77,7 +65,7 @@ if __name__ == '__main__':
     folderPrediction = folder + "prediction_cluster/"
     nameMeshRefBnd = folderBasis + 'boundaryMesh.xdmf'
     nameWbasis = folderBasis +  'Wbasis.hd5'
-    paramRVEname = folderPrediction + 'paramRVEdataset{0}.hd5'.format(suffix)
+    paramRVEname = folderPrediction + 'paramRVEdataset{0}.hd5'.format(suffixParam)
     bcs_namefile = folderPrediction + 'bcs_{0}_{1}{2}.hd5'.format(archId, Nrb, suffix)
     nameScaleXY = {}
     

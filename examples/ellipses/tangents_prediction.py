@@ -127,7 +127,9 @@ if __name__ == '__main__':
     suffixBC = '_test'
     suffix = "_full_test"
 
+    # for i in {0..31}; do nohup python tangents_prediction.py $i 32 > log_full_per_test_$i.txt & done
     # for i in {0..9}; do nohup python tangents_prediction.py $i 10 > log_val_$i.txt & done
+
     # nohup mpiexec -n 8 python tangents_prediction.py log_val_mpiexec.txt &
 
     if(modelBnd == 'dnn'):

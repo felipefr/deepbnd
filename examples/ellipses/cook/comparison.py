@@ -1,40 +1,26 @@
 import os, sys
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
-sys.path.insert(0,'../../utils/')
-
-# import generation_deepBoundary_lib as gdb
 import matplotlib.pyplot as plt
 import numpy as np
+import dolfin as df
 
-# import myTensorflow as mytf
-from timeit import default_timer as timer
-
-import h5py
-import myHDF5 as myhd
-import matplotlib.pyplot as plt
-import meshUtils as meut
-from dolfin import *
-import plotUtils
+from deepBND.__init__ import *
+import deepBND.core.data_manipulation.wrapper_h5py as myhd
 
 # Test Loading 
-
-rootDataPath = open('../../../rootDataPath.txt','r').readline()[:-1]
-print(rootDataPath)
-
 problemType = ''
 
-folder = rootDataPath + '/new_fe2/cook/meshes_%d/'
+folder = rootDataPath + '/ellipses/cook/meshes_seed%d/'
 
-cases = ['full', 'dnn', 'reduced_per']
+cases = ['full_per', 'dnn_big_80', 'dnn_big_classical_80', 'per', 'lin']
 Ny_splits = [5,10,20,40,80]
 
 solution = folder + 'cook_%s_%d.xdmf'
 meshfile =  folder + 'mesh_%d.xdmf'
 
-pA = Point(48.0,60.0)
-pB = Point(35.2,44.0)
-pC = Point(24.0,22.1)
-pD = Point(16.0,49.0)
+pA = df.Point(48.0,60.0)
+pB = df.Point(35.2,44.0)
+pC = df.Point(24.0,22.1)
+pD = df.Point(16.0,49.0)
 
 norms_label = ['uyA', 'sigB', 'sigC', 'sigD']
 norms = [lambda x,y: x(pA)[1], lambda x,y: y(pB)[0], lambda x,y: y(pC)[0], lambda x,y: y(pD)[0]]
@@ -42,7 +28,7 @@ norms = [lambda x,y: x(pA)[1], lambda x,y: y(pB)[0], lambda x,y: y(pC)[0], lambd
 uhs = []
 vonMises_ = []
 # listSeeds = [0,1,2,3,6,7,8,9,10]
-listSeeds = [0,1,2,3,4,5,6,7,8,9,10]
+listSeeds = [0,1,2,3,4,5,6,7,8,9]
 
 
 D = {}
@@ -53,19 +39,19 @@ for case in cases:
 for kk, k in enumerate(listSeeds):
     for i, ny in enumerate(Ny_splits):    
     
-        mesh = Mesh()
-        with XDMFFile(meshfile%(k,ny)) as infile:
+        mesh = df.Mesh()
+        with df.XDMFFile(meshfile%(k,ny)) as infile:
             infile.read(mesh)
     
-        Uh = VectorFunctionSpace(mesh, "CG", 2)
-        DG0 = VectorFunctionSpace(mesh, "DG", 0)
+        Uh = df.VectorFunctionSpace(mesh, "CG", 2)
+        DG0 = df.VectorFunctionSpace(mesh, "DG", 0)
         
-        uh = Function(Uh)
-        vonMises = Function(DG0)
+        uh = df.Function(Uh)
+        vonMises = df.Function(DG0)
     
         for case in cases:
             
-            with XDMFFile(solution%(k,case,ny)) as infile:
+            with df.XDMFFile(solution%(k,case,ny)) as infile:
                 infile.read_checkpoint(uh, 'u', 0)
                 infile.read_checkpoint(vonMises, 'vonMises', 0)
             
@@ -80,9 +66,11 @@ plt.figure(1)
 plt.title('Vertical Tip Displacement (A)')
 plt.ylabel("\Large $\mathbf{u}_{2}$")
 plt.xlabel("Number of vertical elements")
-plt.plot(Ny_splits, np.mean(D['full'][:,0,:], axis = 0), '--', label='High-Fidelity')
-plt.plot(Ny_splits, np.mean(D['dnn'][:,0,:], axis = 0), 'o', label='DeepBND')
-plt.plot(Ny_splits, np.mean(D['reduced_per'][:,0,:], axis = 0), 'x', label="Periodic")
+plt.plot(Ny_splits, np.mean(D[cases[0]][:,0,:], axis = 0), '--', label='High-Fidelity')
+plt.plot(Ny_splits, np.mean(D[cases[1]][:,0,:], axis = 0), 'o', label='DeepBND')
+plt.plot(Ny_splits, np.mean(D[cases[2]][:,0,:], axis = 0), 'o', label='DeepBND 2')
+plt.plot(Ny_splits, np.mean(D[cases[3]][:,0,:], axis = 0), 'x', label="Periodic")
+plt.plot(Ny_splits, np.mean(D[cases[4]][:,0,:], axis = 0), 'x', label="Linear")
 plt.legend()
 plt.grid()
 plt.savefig('dispA.eps')

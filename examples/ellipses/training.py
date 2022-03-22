@@ -58,8 +58,9 @@ def run_training(net, Ylabel):
     return XY_train, XY_val, scalerX, scalerY
 
 if __name__ == '__main__':
-    folderDataset = "/home/rocha/deepBND/DATA/ellipses/training/"
-    folderTrain = "/home/rocha/deepBND/DATA/ellipses/training/"
+    
+    folderDataset = rootDataPath + "/ellipses/training/"
+    folderTrain = rootDataPath + "/ellipses/training/"
     
     nameXY = folderDataset +  'XY_train.hd5'
     nameXY_val = folderDataset +  'XY_val.hd5'
@@ -70,7 +71,7 @@ if __name__ == '__main__':
         archId = int(sys.argv[3])
 
     else:
-        Nrb = 140
+        Nrb = 80
         epochs = 5000
         archId = 'big_classical'
         load_flag = 'S'
