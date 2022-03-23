@@ -6,10 +6,10 @@ if __name__ == '__main__':
     
     main_script = 'cook.py'
     
-    Ny_split_list = [5, 10, 20, 40, 80]
-    caseType_list = ['reduced_per', 'dnn', 'full']
+    Ny_split_list = [5, 10, 20, 40]
+    caseType_list = ['reduced_per', 'per', 'dnn', 'dnn_big', 'dnn_big_old', 'full', 'lin']
     seed_list = [0,1,2]
-    createMesh_list = ['True', 'False', 'False']
+    createMesh_list = ['True', 'False', 'False', 'False', 'False', 'False', 'False']
     
     # ========== dataset folders ================= 
     

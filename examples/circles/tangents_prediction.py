@@ -127,7 +127,7 @@ if __name__ == '__main__':
     suffixBC = ''
     suffix = ""
 
-    # for i in {0..31}; do nohup python tangents_prediction.py $i 32 > log_dnn_big_classical_140_test_rotated_$i.txt & done
+    # for i in {0..31}; do nohup python tangents_prediction.py $i 32 > log_dnn_big_old_140.txt & done
     # for i in {0..9}; do nohup python tangents_prediction.py $i 10 > log_val_$i.txt & done
 
     # nohup mpiexec -n 8 python tangents_prediction.py log_val_mpiexec.txt &

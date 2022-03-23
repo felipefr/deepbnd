@@ -11,8 +11,8 @@ problemType = ''
 
 folder = rootDataPath + '/circles/cook/meshes_seed%d/'
 
-cases = ['full', 'dnn', 'reduced_per']
-Ny_splits = [5,10,20,40,80]
+cases = ['reduced_per', 'per', 'dnn', 'dnn_big', 'dnn_big_old', 'full', 'lin']
+Ny_splits = [5,10,20,40]
 
 solution = folder + 'cook_%s_%d.xdmf'
 meshfile =  folder + 'mesh_%d.xdmf'
@@ -66,9 +66,10 @@ plt.figure(1)
 plt.title('Vertical Tip Displacement (A)')
 plt.ylabel("\Large $\mathbf{u}_{2}$")
 plt.xlabel("Number of vertical elements")
-plt.plot(Ny_splits, np.mean(D[cases[0]][:,0,:], axis = 0), '--', label='High-Fidelity')
-plt.plot(Ny_splits, np.mean(D[cases[1]][:,0,:], axis = 0), 'o', label='DeepBND')
-plt.plot(Ny_splits, np.mean(D[cases[2]][:,0,:], axis = 0), 'x', label="Periodic")
+
+for c in cases: 
+    plt.plot(Ny_splits, np.mean(D[c][:,0,:], axis = 0), '--', label = c)
+
 plt.legend()
 plt.grid()
 plt.savefig('dispA.eps')

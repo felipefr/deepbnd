@@ -77,30 +77,39 @@ if __name__ == '__main__':
     folder = rootDataPath + "/circles/cook/"
     folderMesh = folder + 'meshes_seed{0}/'.format(seed)
     
-    tangentName = folder + 'tangent_%s%s.hd5'%(caseType,otherSuffix)
+    tangentName = folder + 'tangents_%s%s.hd5'%(caseType,otherSuffix)
     tangent_dataset = myhd.loadhd5(tangentName, 'tangent')
     # ids = myhd.loadhd5(tangentName, 'id') # apparenttly no need
     # center = myhd.loadhd5(tangentName, 'center') # apparenttly no need
     
-    meshfile = folderMesh + 'mesh_%d.xdmf'%Ny_split
     
-    if(createMesh):
-        os.system('mkdir ' + folderMesh)
-        lcar = 44.0/Ny_split  
-        gmshMesh = CookMembrane(lcar = lcar)
-        gmshMesh.write(savefile = meshfile, opt = 'fenics')
+    if(caseType == 'full' or caseType == 'reduced_per' or caseType == 'lin'):
+        tangent_dataset = tangent_dataset[1:7301]
+    else:
+        tangent_dataset = tangent_dataset[:7300]
+    
+    print(caseType, tangent_dataset[5,:])
+    print(caseType, tangent_dataset[10,:])
+    
+    # meshfile = folderMesh + 'mesh_%d.xdmf'%Ny_split
+    
+    # if(createMesh):
+    #     os.system('mkdir ' + folderMesh)
+    #     lcar = 44.0/Ny_split  
+    #     gmshMesh = CookMembrane(lcar = lcar)
+    #     gmshMesh.write(savefile = meshfile, opt = 'fenics')
         
     
-    np.random.seed(seed)
-    uh, Chom = solve_cook(meshfile, tangent_dataset)
+    # np.random.seed(seed)
+    # uh, Chom = solve_cook(meshfile, tangent_dataset)
 
-    sigma = lambda u: df.dot(Chom, symgrad_voigt(u))
+    # sigma = lambda u: df.dot(Chom, symgrad_voigt(u))
     
-    with df.XDMFFile(comm, folderMesh + "cook_%s_%d_vtk.xdmf"%(caseType,Ny_split)) as file:
-        iofe.export_XDMF_displacement_sigma(uh, sigma, file)
+    # with df.XDMFFile(comm, folderMesh + "cook_%s_%d_vtk.xdmf"%(caseType,Ny_split)) as file:
+    #     iofe.export_XDMF_displacement_sigma(uh, sigma, file)
     
-    with df.XDMFFile(comm, folderMesh + "cook_%s_%d.xdmf"%(caseType,Ny_split)) as file:
-        iofe.export_checkpoint_XDMF_displacement_sigma(uh, sigma, file)
+    # with df.XDMFFile(comm, folderMesh + "cook_%s_%d.xdmf"%(caseType,Ny_split)) as file:
+    #     iofe.export_checkpoint_XDMF_displacement_sigma(uh, sigma, file)
 
 
 
