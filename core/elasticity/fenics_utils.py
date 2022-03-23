@@ -3,7 +3,7 @@ import numpy as np
 from ufl import nabla_div
 
 from deepBND.core.fenics_tools.misc import symgrad
-import deepBND.core.fenics_tools.misc as feut
+import deepBND.core.fenics_tools.misc as misc
 from deepBND.core.elasticity.misc import eng2mu, eng2lambPlane
 from deepBND.core.fenics_tools.wrapper_expression import getMyCoeff
 
@@ -49,10 +49,10 @@ def PiolaTransform_rotation(theta, Vref): #only detB = pm 1 in our context
     s = np.sin(theta) ; c = np.cos(theta)
     B = np.array([[c,-s],[s,c]])
 
-    Finv = feut.affineTransformationExpression(np.zeros(2), B.T, Mref)
-    Bmultiplication = feut.affineTransformationExpression(np.zeros(2), B, Mref)
+    Finv = misc.affineTransformationExpression(np.zeros(2), B.T, Mref)
+    Bmultiplication = misc.affineTransformationExpression(np.zeros(2), B, Mref)
     
-    return lambda sol: df.interpolate( feut.myfog_expression(Bmultiplication, feut.myfog(sol,Finv)), Vref) #
+    return lambda sol: df.interpolate( misc.myfog_expression(Bmultiplication, misc.myfog(sol,Finv)), Vref) #
 
 
 def PiolaTransform_rotation_matricial(theta, Vref): #only detB = pm 1 in our context

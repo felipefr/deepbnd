@@ -67,10 +67,10 @@ if __name__ == '__main__':
     net.nX = nX
     net.archId =  archId
     net.stepEpochs =  1
-    net.files['weights'] = folderTrain + 'models_weights_%s_%s_%d.hdf5'%(archId,load_flag,Nrb)
-    net.files['net_settings'] =  folderTrain + 'models_net_%s_%s_%d.txt'%(archId,load_flag,Nrb)
-    net.files['prediction'] = folderTrain + 'models_prediction_%s_%s_%d.txt'%(archId,load_flag,Nrb)
-    net.files['scaler'] = folderTrain + 'scaler_%s_%d.txt'%(load_flag,Nrb)
+    net.files['weights'] = folderTrain + 'model_weights_%s_%s_%d.hdf5'%(archId,load_flag,Nrb)
+    net.files['net_settings'] =  folderTrain + 'model_net_%s_%s_%d.txt'%(archId,load_flag,Nrb)
+    net.files['prediction'] = folderTrain + 'model_prediction_%s_%s_%d.txt'%(archId,load_flag,Nrb)
+    net.files['scaler'] = folderTrain + 'scalers_%s_%d.txt'%(load_flag,Nrb)
     net.files['XY'] = nameXY
     net.files['XY_val'] = nameXY_val
     
