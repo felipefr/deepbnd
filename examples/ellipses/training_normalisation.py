@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Mar 30 17:36:27 2022
+
+@author: felipe
+"""
+
 """
 We aim to obtain model_weights.hd5, which storages the trained weights of NN models.
 It should be run providing training and validation datasets.
@@ -24,7 +32,7 @@ import deepBND.core.data_manipulation.wrapper_h5py as myhd
 # {'big': NetArch([300, 300, 300], 3*['swish'] + ['sigmoid'], 5.0e-4, 0.9, [0.0] + 3*[0.0] + [0.0], 0.0),
 standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['sigmoid'], 5.0e-4, 0.9, [0.0] + 3*[0.0] + [0.0], 0.0),
          'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.8, [0.0] + 3*[0.001] + [0.0], 1.0e-8),
-         'big_classical': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-3, 0.01, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
+         'big_classical': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
          'big_big_400': NetArch([400, 400, 400], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8)}
 
 
@@ -58,11 +66,11 @@ def run_training(net, Ylabel):
     XY_train = (X_train_original, XY_train[1])
     XY_val = (X_val_original, XY_val[1])
     
-    # XY_train = dataAugmentation(XY_train)
-    # XY_val = dataAugmentation(XY_val)
+    XY_train = dataAugmentation(XY_train)
+    XY_val = dataAugmentation(XY_val)
     
     
-    hist = net.training_tensorboard(XY_train, XY_val)
+    hist = net.training(XY_train, XY_val)
 
     return XY_train, XY_val, scalerX, scalerY
 
@@ -80,9 +88,9 @@ if __name__ == '__main__':
         archId = int(sys.argv[3])
 
     else:
-        Nrb = 140
+        Nrb = 80
         epochs = 100
-        archId = 'big_classical'
+        archId = 'big_big_400'
         load_flag = 'S'
 
     nX = 72
@@ -91,7 +99,7 @@ if __name__ == '__main__':
     
     net = standardNets[archId]
     
-    suffix = "unnormalised_lr5em3_decay001_tensorboard"
+    suffix = "unnormalised_data_augmented_lr5em4"
     
     net.epochs =  int(epochs)
     net.nY = Nrb

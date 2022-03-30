@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 
 import deepBND.creation_model.training.wrapper_tensorflow as mytf
 
+import datetime
+
 
 class NetArch:
     
@@ -84,6 +86,54 @@ class NetArch:
         mytf.plot_history( history, label=['custom_loss_mse','val_custom_loss_mse'], savefile = savefile[:-5] + '_plot')
             
         return history
+
+
+    def training_tensorboard(self, XY_train, XY_val, seed = 1):
+        
+        np.random.seed(seed)
+      
+        savefile = self.files['weights'] 
+      
+        Xtrain, Ytrain = XY_train
+        indices = np.arange(len(Xtrain))
+        np.random.shuffle(indices)
+    
+        Xtrain = Xtrain[indices,:]
+        Ytrain = Ytrain[indices,:]
+    
+        w_l = (self.scalerY.data_max_ - self.scalerY.data_min_)**2.0  
+        w_l = w_l.astype('float32')
+        
+        lossW= mytf.my_partial(mytf.custom_loss_mse, weight = w_l)
+            
+        optimizer= tf.keras.optimizers.Adam(learning_rate = self.lr)
+        
+        model = self.getModel()
+        model.summary()
+        model.compile(loss = lossW, optimizer=optimizer, metrics=[lossW,'mse','mae'])
+    
+        schdDecay = mytf.my_partial(mytf.scheduler ,lr = self.lr, decay = self.decay, EPOCHS = self.epochs)
+        decay_lr = tf.keras.callbacks.LearningRateScheduler(schdDecay)    
+
+                
+        log_dir = "./" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)   
+        
+        kw = {}
+        kw['epochs']= self.epochs; kw['batch_size'] = 32
+        kw['validation_data'] = XY_val
+        kw['verbose'] = 1
+        kw['callbacks']=[mytf.PrintDot(), decay_lr, mytf.checkpoint(savefile, self.stepEpochs),
+                          tf.keras.callbacks.CSVLogger(savefile[:-5] + '_history.csv' , append=True),
+                          tensorboard_callback]
+        
+        history = model.fit(Xtrain, Ytrain, **kw)
+        
+        mytf.plot_history( history, label=['custom_loss_mse','val_custom_loss_mse'], savefile = savefile[:-5] + '_plot')
+            
+        return history
+
+
 
 
 standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
