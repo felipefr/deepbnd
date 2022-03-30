@@ -25,7 +25,7 @@ from deepBND.core.multiscale.mesh_RVE import buildRVEmesh
 comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF
 
-def predictTangents(num, num_runs, modelBnd, namefiles, createMesh, meshSize):
+def predictTangents(num, num_runs, modelBnd, namefiles, createMesh, meshSize, ns_max = 50):
     
     nameMeshRefBnd, paramRVEname, tangentName, BCname, meshMicroName = namefiles
     
@@ -37,12 +37,12 @@ def predictTangents(num, num_runs, modelBnd, namefiles, createMesh, meshSize):
     
     # defining the micro model
     
-    paramRVEdata = myhd.loadhd5(paramRVEname, 'param')[run::num_runs]
+    paramRVEdata = myhd.loadhd5(paramRVEname, 'param')[run:ns_max:num_runs]
     ns = len(paramRVEdata) # per rank
     
     # Id here have nothing to with the position of the RVE in the body. Solve it later
     if(myhd.checkExistenceDataset(paramRVEname, 'id')):    
-        ids = myhd.loadhd5(paramRVEname, 'id')[run::num_runs].astype('int')
+        ids = myhd.loadhd5(paramRVEname, 'id')[run:ns_max:num_runs].astype('int')
     else:
         ids = np.zeros(ns).astype('int')
         
@@ -58,9 +58,9 @@ def predictTangents(num, num_runs, modelBnd, namefiles, createMesh, meshSize):
     Iid, Itangent, Icenter = Iid_tangent_center
     
     if(modelBnd == 'dnn'):
-        u0_p = myhd.loadhd5(BCname, 'u0')[run::num_runs,:]
-        u1_p = myhd.loadhd5(BCname, 'u1')[run::num_runs,:]
-        u2_p = myhd.loadhd5(BCname, 'u2')[run::num_runs,:]
+        u0_p = myhd.loadhd5(BCname, 'u0')[run:ns_max:num_runs,:]
+        u1_p = myhd.loadhd5(BCname, 'u1')[run:ns_max:num_runs,:]
+        u2_p = myhd.loadhd5(BCname, 'u2')[run:ns_max:num_runs,:]
     
     for i in range(ns):
         Iid[i] = ids[i]
@@ -120,12 +120,12 @@ if __name__ == '__main__':
     
     print('run, num_runs ', run, num_runs)
     
-    suffixTangent = 'per_full'
+    suffixTangent = '_full'
     modelBnd = 'per'
     meshSize = 'full'
     createMesh = False
-    suffixBC = '_test'
-    suffix = "_full_test"
+    suffixBC = ''
+    suffix = ""
 
     # for i in {0..31}; do nohup python tangents_prediction.py $i 32 > log_dnn_big_classical_140_test_rotated_$i.txt & done
     # for i in {0..9}; do nohup python tangents_prediction.py $i 10 > log_val_$i.txt & done
@@ -133,17 +133,17 @@ if __name__ == '__main__':
     # nohup mpiexec -n 8 python tangents_prediction.py log_val_mpiexec.txt &
 
     if(modelBnd == 'dnn'):
-        modelDNN = '_big_80' # underscore included before
+        modelDNN = '' # underscore included before
     else:
         modelDNN = ''
                
     folder = rootDataPath + "/ellipses/"
-    folderPrediction = folder + 'prediction_cluster/'
+    folderPrediction = folder + 'prediction_fresh/'
     folderMesh = folderPrediction + 'meshes/'
     folderDataset = folder + 'dataset_cluster/'
     paramRVEname = folderPrediction + 'paramRVEdataset{0}.hd5'.format(suffixBC) 
     nameMeshRefBnd = folderDataset + 'boundaryMesh.xdmf'
-    tangentName = folderPrediction + 'tangents_{0}_{1}.hd5'.format(modelBnd + modelDNN + suffix,run)
+    tangentName = folderPrediction + 'tangents_{0}_{1}.hd5'.format(modelBnd + modelDNN + suffixTangent,run)
     BCname = folderPrediction + 'bcs{0}{1}.hd5'.format(modelDNN,suffixBC) 
     meshMicroName = folderMesh + 'mesh_micro_{0}_{1}.xdmf'
 

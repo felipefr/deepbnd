@@ -6,11 +6,13 @@ if __name__ == '__main__':
     
     main_script = 'cook.py'
     
-    Ny_split_list = [5, 10, 20, 40, 80]
-    # caseType_list = ['per', 'dnn_big_classical_80', 'full_per']
-    caseType_list = ['dnn_big_classical_140_rotated_x025']
-    seed_list = [0,1,2,3,4,5,6,7,8,9]
+    Ny_split_list = [5, 10, 20, 40]
+    # caseType_list = ['per', 'dnn', 'lin']
+    # seed_list = [3,4,5,6,7,8,9]
     # createMesh_list = ['True', 'False', 'False']
+    
+    caseType_list = ['full']
+    seed_list = [0,1,2,3,4,5,6,7,8,9]
     createMesh_list = ['False']
     
     

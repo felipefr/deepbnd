@@ -42,6 +42,11 @@ def solve_snapshot(i, meshname, paramMaterial, opModel, datasets, usol):
     
     microModel = mscm.MicroModel(meshname, paramMaterial, opModel)
     microModel.compute()
+    
+    meshname_postproc = meshname[:-5] + '_to_the_paper.xdmf'
+    microModel.visualiseMicrostructure(meshname_postproc)
+    
+    
 
     for j_voigt, sol, sigma, a, B, sigmaT in zip([2,0], [sol_S,sol_A],[sigma_S,sigma_A],
                                                  [a_S,a_A],[B_S,B_A],[sigmaT_S, sigmaT_A]):
@@ -114,11 +119,11 @@ if __name__ == '__main__':
         
     print('run, num_runs ', run, num_runs)
     
-    i0 = 150
+    i0 = 0
     run = comm.Get_rank()
     num_runs = comm.Get_size()
     
-    folder = rootDataPath + "/ellipses/dataset/"
+    folder = rootDataPath + "/ellipses/dataset_postprocessing/"
     
     suffix = ""
     opModel = 'per'

@@ -24,8 +24,8 @@ import deepBND.core.data_manipulation.wrapper_h5py as myhd
 # {'big': NetArch([300, 300, 300], 3*['swish'] + ['sigmoid'], 5.0e-4, 0.9, [0.0] + 3*[0.0] + [0.0], 0.0),
 standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['sigmoid'], 5.0e-4, 0.9, [0.0] + 3*[0.0] + [0.0], 0.0),
          'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.8, [0.0] + 3*[0.001] + [0.0], 1.0e-8),
-         'big_classical': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8)
-         'big_': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8)}
+         'big_classical': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
+         'big_tanh': NetArch([300, 300, 300], 3*['tanh'] + ['sigmoid'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8)}
 
 
 def dataAugmentation(XY):
@@ -51,8 +51,16 @@ def run_training(net, Ylabel):
     XY_train = dman.getDatasetsXY(nX, Nrb, net.files['XY'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
     XY_val = dman.getDatasetsXY(nX, Nrb, net.files['XY_val'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
     
+    
+    X_train_original = scalerX.inverse_transform(XY_train[0])
+    X_val_original = scalerX.inverse_transform(XY_val[0])
+    
+    XY_train = (X_train_original, XY_train[1])
+    XY_val = (X_val_original, XY_val[1])
+    
     # XY_train = dataAugmentation(XY_train)
     # XY_val = dataAugmentation(XY_val)
+    
     
     hist = net.training(XY_train, XY_val)
 
@@ -74,7 +82,7 @@ if __name__ == '__main__':
     else:
         Nrb = 80
         epochs = 100
-        archId = 'big_classical'
+        archId = 'big_tanh'
         load_flag = 'S'
 
     nX = 72
@@ -83,7 +91,7 @@ if __name__ == '__main__':
     
     net = standardNets[archId]
     
-    suffix = "test"
+    suffix = "unnormalised"
     
     net.epochs =  int(epochs)
     net.nY = Nrb

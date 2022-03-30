@@ -67,17 +67,17 @@ if __name__ == '__main__':
     
     else:     
         Ny_split =  40 # 5, 10, 20, 40, 80
-        caseType = 'dnn_big_classical_140' # opt: reduced_per, dnn, full
+        caseType = 'dnn' # opt: reduced_per, dnn, full
         seed = 1
-        createMesh = False
+        createMesh = True
         
-    otherSuffix = '_test'
+    otherSuffix = ''
     
     # ========== dataset folders ================= 
-    folder = rootDataPath + "/ellipses/cook"
+    folder = rootDataPath + "/ellipses/cook_fresh"
     folderMesh = folder + '/meshes_seed{0}/'.format(seed)
     
-    tangentName = rootDataPath + '/ellipses/prediction_cluster/tangents_%s%s.hd5'%(caseType,otherSuffix)
+    tangentName = rootDataPath + '/ellipses/prediction_fresh/tangents_%s%s.hd5'%(caseType,otherSuffix)
     tangent_dataset = myhd.loadhd5(tangentName, 'tangent')
     # ids = myhd.loadhd5(tangentName, 'id') # apparenttly no need
     # center = myhd.loadhd5(tangentName, 'center') # apparenttly no need

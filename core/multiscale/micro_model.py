@@ -12,6 +12,7 @@ import micmacsfenics.core.micro_constitutive_model as mscm
 from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
 from deepBND.core.elasticity.fenics_utils import getLameInclusions
 from deepBND.core.fenics_tools.misc import symgrad, Integral
+from deepBND.core.fenics_tools.wrapper_solvers import local_project
 
 comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF
@@ -93,4 +94,20 @@ class MicroModel(mscm.MicroConstitutiveModel):
         
 
         return sigma_hom
+    
+    def visualiseMicrostructure(self, outputFile):
+        Vlame = df.FunctionSpace(self.mesh, "DG", 0)
+        
+        with df.XDMFFile(outputFile) as f:
+            f.parameters["flush_output"] = True
+            f.parameters["functions_share_mesh"] = True
+                        
+            lamb = df.Function(Vlame, name="lamb")
+            lamb.assign(local_project(self.lame[0], Vlame))
+            
+            f.write(lamb,0.)
+               
+        
+        
+        
             

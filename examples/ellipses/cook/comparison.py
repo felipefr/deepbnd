@@ -9,10 +9,11 @@ import deepBND.core.data_manipulation.wrapper_h5py as myhd
 # Test Loading 
 problemType = ''
 
-folder = rootDataPath + '/ellipses/cook/meshes_seed%d/'
+folder = rootDataPath + '/ellipses/cook_fresh/meshes_seed%d/'
+folderTangent = rootDataPath + '/ellipses/prediction_fresh/'
 
-cases = ['full_per', 'dnn_big_classical_140_rotated', 'per', 'lin', 'dnn_big_classical_140_rotated_x025']
-Ny_splits = [5,10,20,40,80]
+cases = ['dnn', 'per', 'lin', 'full']
+Ny_splits = [5,10,20,40]
 
 solution = folder + 'cook_%s_%d.xdmf'
 meshfile =  folder + 'mesh_%d.xdmf'
@@ -28,7 +29,7 @@ norms = [lambda x,y: x(pA)[1], lambda x,y: y(pB)[0], lambda x,y: y(pC)[0], lambd
 uhs = []
 vonMises_ = []
 # listSeeds = [0,1,2,3,6,7,8,9,10]
-listSeeds = [0,1,2,3,6,7,8,9]
+listSeeds = [0,1,2]
 
 
 D = {}
@@ -66,11 +67,10 @@ plt.figure(1)
 plt.title('Vertical Tip Displacement (A)')
 plt.ylabel("\Large $\mathbf{u}_{2}$")
 plt.xlabel("Number of vertical elements")
-plt.plot(Ny_splits, np.mean(D[cases[0]][:,0,:], axis = 0), '--', label='High-Fidelity')
-plt.plot(Ny_splits, np.mean(D[cases[1]][:,0,:], axis = 0), 'o', label='DeepBND')
-plt.plot(Ny_splits, np.mean(D[cases[2]][:,0,:], axis = 0), 'x', label="Periodic")
-plt.plot(Ny_splits, np.mean(D[cases[3]][:,0,:], axis = 0), '+', label="Linear")
-plt.plot(Ny_splits, np.mean(D[cases[4]][:,0,:], axis = 0), '*', label="DeepBND 2")
+
+for c in cases: 
+    plt.plot(Ny_splits, np.mean(D[c][:,0,:], axis = 0), '--', label = c)
+
 plt.legend()
 plt.grid()
 plt.savefig('dispA.eps')
@@ -79,18 +79,41 @@ plt.savefig('dispA.pdf')
 
 E = {}
 
-# E['dnn'] = np.abs(D['dnn'] - D['full'])/D['full']
-# E['reduced_per'] = np.abs(D['reduced_per'] - D['full'])/D['full']
 
-# for i in range(4):
-#     print("%e \pm %e & %e \pm %e "%(np.mean(E['dnn'][:,i,-2]), np.std(E['dnn'][:,i,-2]),
-#                                     np.mean(E['reduced_per'][:,i,-2]), np.std(E['reduced_per'][:,i,-2]) ) )
+E['dnn'] = np.abs(D['dnn'] - D['full'])/D['full']
+E['per'] = np.abs(D['per'] - D['full'])/D['full']
+
+for i in range(4):
+    print("%e \pm %e & %e \pm %e "%(np.mean(E['dnn'][:,i,-2]), np.std(E['dnn'][:,i,-2]),
+                                    np.mean(E['per'][:,i,-2]), np.std(E['per'][:,i,-2]) ) )
 
 # plt.figure(2)
 # plt.title('Error Sigma Von Mises D')
 # plt.plot(Ny_splits, np.mean(E['dnn'][:,1,:], axis = 0), '-', label='dnn')
-# plt.plot(Ny_splits, np.mean(E['reduced_per'][:,1,:], axis = 0), '-', label='reducedper')
+# plt.plot(Ny_splits, np.mean(E['per'][:,1,:], axis = 0), '-', label='reducedper')
 # plt.yscale('log')
 # plt.legend()
 # # plt.savefig('sigD_1_error.png')
 # plt.grid()
+
+
+
+
+# ========= Error in the tangent ======================================
+
+tangentName = folderTangent + 'tangents_{0}.hd5'
+tangents = {}
+for case in cases:
+    tangents[case] = myhd.loadhd5(tangentName.format(case), 'tangent')
+
+
+refCase = 'full'
+errors = {}
+ns = 50
+for case in cases[:-1]:
+    errors[case] = np.zeros(ns)
+    for i in range(ns):
+        errors[case][i] = np.linalg.norm(tangents[case][i] - tangents[refCase][i])
+        
+for case in cases[:-1]:
+    print(case, np.mean(errors[case]), np.std(errors[case]))
