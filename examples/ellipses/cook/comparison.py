@@ -9,10 +9,10 @@ import deepBND.core.data_manipulation.wrapper_h5py as myhd
 # Test Loading 
 problemType = ''
 
-folder = rootDataPath + '/ellipses/cook_fresh/meshes_seed%d/'
-folderTangent = rootDataPath + '/ellipses/prediction_fresh/'
+folder = rootDataPath + '/ellipses/cook_fresh_data_augmentation/meshes_seed%d/'
+folderTangent = rootDataPath + '/ellipses/prediction_fresh_data_augmentation/'
 
-cases = ['dnn', 'per', 'lin', 'full']
+cases = ['dnn_200', 'per_200', 'lin_200', 'full_200']
 Ny_splits = [5,10,20,40]
 
 solution = folder + 'cook_%s_%d.xdmf'
@@ -28,8 +28,8 @@ norms = [lambda x,y: x(pA)[1], lambda x,y: y(pB)[0], lambda x,y: y(pC)[0], lambd
 
 uhs = []
 vonMises_ = []
-# listSeeds = [0,1,2,3,6,7,8,9,10]
-listSeeds = [0,1,2]
+listSeeds = [0,1,2,3,4,5,6,7,8,9]
+# listSeeds = [0,1,2]
 
 
 D = {}
@@ -80,17 +80,17 @@ plt.savefig('dispA.pdf')
 E = {}
 
 
-E['dnn'] = np.abs(D['dnn'] - D['full'])/D['full']
-E['per'] = np.abs(D['per'] - D['full'])/D['full']
+E['dnn_200'] = np.abs(D['dnn_200'] - D['full_200'])/D['full_200']
+E['per_200'] = np.abs(D['per_200'] - D['full_200'])/D['full_200']
 
 for i in range(4):
-    print("%e \pm %e & %e \pm %e "%(np.mean(E['dnn'][:,i,-2]), np.std(E['dnn'][:,i,-2]),
-                                    np.mean(E['per'][:,i,-2]), np.std(E['per'][:,i,-2]) ) )
+    print("%e \pm %e & %e \pm %e "%(np.mean(E['dnn_200'][:,i,-2]), np.std(E['dnn_200'][:,i,-2]),
+                                    np.mean(E['per_200'][:,i,-2]), np.std(E['per_200'][:,i,-2]) ) )
 
 # plt.figure(2)
 # plt.title('Error Sigma Von Mises D')
-# plt.plot(Ny_splits, np.mean(E['dnn'][:,1,:], axis = 0), '-', label='dnn')
-# plt.plot(Ny_splits, np.mean(E['per'][:,1,:], axis = 0), '-', label='reducedper')
+# plt.plot(Ny_splits, np.mean(E['dnn_200'][:,1,:], axis = 0), '-', label='dnn_200')
+# plt.plot(Ny_splits, np.mean(E['per_200'][:,1,:], axis = 0), '-', label='reducedper')
 # plt.yscale('log')
 # plt.legend()
 # # plt.savefig('sigD_1_error.png')
@@ -107,9 +107,9 @@ for case in cases:
     tangents[case] = myhd.loadhd5(tangentName.format(case), 'tangent')
 
 
-refCase = 'full'
+refCase = 'full_200'
 errors = {}
-ns = 50
+ns = 200
 for case in cases[:-1]:
     errors[case] = np.zeros(ns)
     for i in range(ns):

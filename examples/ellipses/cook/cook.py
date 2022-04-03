@@ -74,10 +74,10 @@ if __name__ == '__main__':
     otherSuffix = ''
     
     # ========== dataset folders ================= 
-    folder = rootDataPath + "/ellipses/cook_fresh"
+    folder = rootDataPath + "/ellipses/cook_fresh_data_augmentation"
     folderMesh = folder + '/meshes_seed{0}/'.format(seed)
     
-    tangentName = rootDataPath + '/ellipses/prediction_fresh/tangents_%s%s.hd5'%(caseType,otherSuffix)
+    tangentName = rootDataPath + '/ellipses/prediction_fresh_data_augmentation/tangents_%s%s.hd5'%(caseType,otherSuffix)
     tangent_dataset = myhd.loadhd5(tangentName, 'tangent')
     # ids = myhd.loadhd5(tangentName, 'id') # apparenttly no need
     # center = myhd.loadhd5(tangentName, 'center') # apparenttly no need

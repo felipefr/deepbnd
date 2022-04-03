@@ -112,7 +112,7 @@ class NetArch:
         model.summary()
         model.compile(loss = lossW, optimizer=optimizer, metrics=[lossW,'mse','mae'])
     
-        schdDecay = mytf.my_partial(mytf.scheduler ,lr = self.lr, decay = self.decay, EPOCHS = self.epochs)
+        schdDecay = mytf.my_partial(mytf.scheduler_linear ,lr = self.lr, decay = self.decay, EPOCHS = self.epochs)
         decay_lr = tf.keras.callbacks.LearningRateScheduler(schdDecay)    
 
                 
@@ -120,7 +120,7 @@ class NetArch:
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)   
         
         kw = {}
-        kw['epochs']= self.epochs; kw['batch_size'] = 32
+        kw['epochs']= self.epochs; kw['batch_size'] = 128
         kw['validation_data'] = XY_val
         kw['verbose'] = 1
         kw['callbacks']=[mytf.PrintDot(), decay_lr, mytf.checkpoint(savefile, self.stepEpochs),

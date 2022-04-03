@@ -25,7 +25,7 @@ from deepBND.core.multiscale.mesh_RVE import buildRVEmesh
 comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF
 
-def predictTangents(num, num_runs, modelBnd, namefiles, createMesh, meshSize, ns_max = 50):
+def predictTangents(num, num_runs, modelBnd, namefiles, createMesh, meshSize, ns_max = 200):
     
     nameMeshRefBnd, paramRVEname, tangentName, BCname, meshMicroName = namefiles
     
@@ -120,9 +120,9 @@ if __name__ == '__main__':
     
     print('run, num_runs ', run, num_runs)
     
-    suffixTangent = '_full'
-    modelBnd = 'per'
-    meshSize = 'full'
+    suffixTangent = ''
+    modelBnd = 'dnn'
+    meshSize = 'reduced'
     createMesh = False
     suffixBC = ''
     suffix = ""
@@ -138,7 +138,7 @@ if __name__ == '__main__':
         modelDNN = ''
                
     folder = rootDataPath + "/ellipses/"
-    folderPrediction = folder + 'prediction_fresh/'
+    folderPrediction = folder + 'prediction_fresh_data_augmentation/'
     folderMesh = folderPrediction + 'meshes/'
     folderDataset = folder + 'dataset_cluster/'
     paramRVEname = folderPrediction + 'paramRVEdataset{0}.hd5'.format(suffixBC) 

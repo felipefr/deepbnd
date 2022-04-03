@@ -32,7 +32,7 @@ standardNets = {'big_A': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e
                 'big_nonclassical_A': NetArch([300, 300, 300], 3*['swish'] + ['sigmoid'], 5.0e-4, 0.9, [0.0] + 3*[0.0] + [0.0], 0.0),
                 'big_nonclassical_S': NetArch([300, 300, 300], 3*['swish'] + ['sigmoid'], 5.0e-4, 0.9, [0.0] + 3*[0.0] + [0.0], 0.0)}  
         
-def predictBCs(namefiles, net, ns_max = 50):
+def predictBCs(namefiles, net, ns_max = None):
     
     labels = net.keys()
     
@@ -43,7 +43,10 @@ def predictBCs(namefiles, net, ns_max = 50):
     Vref = df.VectorFunctionSpace(Mref,"CG", 1)
     
     # loading the DNN model
-    paramRVEdata = myhd.loadhd5(paramRVEname, 'param')[:ns_max]
+    if(type(ns_max) == type(None)):
+        paramRVEdata = myhd.loadhd5(paramRVEname, 'param')
+    else:
+        paramRVEdata = myhd.loadhd5(paramRVEname, 'param')[:ns_max]
     
     model = NNElast_ellipses(nameWbasis, net, net['A'].nY)
     
@@ -64,9 +67,9 @@ if __name__ == '__main__':
     
     
     folder = rootDataPath + "/ellipses/"
-    folderTrain = folder + 'training_fresh/'
-    folderBasis = folder + 'training_fresh/'
-    folderPrediction = folder + "prediction_fresh/"
+    folderTrain = folder + 'training_fresh_data_augmentation/'
+    folderBasis = folder + 'training_fresh_data_augmentation/'
+    folderPrediction = folder + "prediction_fresh_test/"
     nameMeshRefBnd = folderBasis + 'boundaryMesh.xdmf'
     nameWbasis = folderBasis +  'Wbasis.hd5'
     paramRVEname = folderPrediction + 'paramRVEdataset.hd5'

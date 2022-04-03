@@ -24,6 +24,24 @@ def scheduler(epoch, decay, lr, EPOCHS):
     print('learning_rate = ', rate)
     return rate
 
+def scheduler_linear(epoch, decay, lr, EPOCHS):    
+    omega = float(epoch/EPOCHS)
+    rate = lr*(1.0 - omega) + omega*decay*lr
+    print('learning_rate = ', rate)
+    return rate
+
+def scheduler_cosinus(epoch, decay, lr, EPOCHS):  
+    lr_mean = lr
+    lr_min = lr*decay
+    lr_amp = lr_mean - lr_min
+    
+    
+    omega = np.sin(30*float(epoch/EPOCHS))
+    rate = lr_min + lr_amp*omega
+    print('learning_rate = ', rate, omega)
+    return rate
+
+
 # Custom weighted mse     
 def custom_loss_mse(y_p,y_d,weight):
     return tf.reduce_sum(tf.reduce_mean(tf.multiply(weight,tf.square(tf.subtract(y_p,y_d))), axis=0))

@@ -1,4 +1,6 @@
 """
+@author: felipe
+
 This is a wrapper for the h5py library. 
 The main idea is to create a numpy-like access to hdf5 files.
 
@@ -10,6 +12,7 @@ way of saving datasets in a compressed form
 import h5py
 import numpy as np
 from functools import partial
+import os
 # import sys; sys.__stdout__ = sys.__stderr__ # workaround of a bug
 
 # defaultCompression = {'dtype' : 'f8',  'compression' : "gzip", 
@@ -109,6 +112,19 @@ def merge(filenameInputs, filenameOutput, InputLabels, OutputLabels ,
                               compression = 'gzip', 
                               compression_opts = 1, shuffle = True)
 
+
+# Split datasets of list into multiples hdf5 files, according to some indexing 
+def split(filenameInput, indexesOutput, labels, mode = 'w-'):
+    
+    n = len(indexesOutput)
+    
+    os.system("mkdir " + filenameInput[:-4] + "_split")
+    
+    ddinputs = loadhd5(filenameInput, labels)
+    
+    for i in range(n): 
+        filenameOutput = filenameInput[:-4] + "_split/part_%d.hd5"%i 
+        savehd5(filenameOutput, [d[indexesOutput[i]] for d in ddinputs], labels, mode)
 
 # transforms a .txt file into a hdf5 file
 def txt2hd5(filenameIn, filenameOut, label, reshapeLast = [False,0], mode = 'w-'):

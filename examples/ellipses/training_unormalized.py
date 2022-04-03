@@ -22,9 +22,8 @@ import deepBND.core.data_manipulation.wrapper_h5py as myhd
 
 
 # {'big': NetArch([300, 300, 300], 3*['swish'] + ['sigmoid'], 5.0e-4, 0.9, [0.0] + 3*[0.0] + [0.0], 0.0),
-standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['sigmoid'], 5.0e-4, 0.9, [0.0] + 3*[0.0] + [0.0], 0.0),
-         'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.8, [0.0] + 3*[0.001] + [0.0], 1.0e-8),
-         'big_classical': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-3, 0.01, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
+standardNets = {'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.8, [0.0] + 3*[0.001] + [0.0], 1.0e-8),
+         'big_classical': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 1.0e-3, 0.01, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
          'big_big_400': NetArch([400, 400, 400], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8)}
 
 
@@ -83,7 +82,7 @@ if __name__ == '__main__':
         Nrb = 140
         epochs = 100
         archId = 'big_classical'
-        load_flag = 'S'
+        load_flag = 'A'
 
     nX = 72
     
@@ -91,7 +90,7 @@ if __name__ == '__main__':
     
     net = standardNets[archId]
     
-    suffix = "unnormalised_lr5em3_decay001_tensorboard"
+    suffix = "test_learning_rate_A_tensorboard_linear_batch128"
     
     net.epochs =  int(epochs)
     net.nY = Nrb
