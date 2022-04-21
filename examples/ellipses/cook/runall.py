@@ -7,9 +7,9 @@ if __name__ == '__main__':
     main_script = 'cook.py'
     
     Ny_split_list = [5, 10, 20, 40]
-    caseType_list = ['dnn_200']
+    caseType_list = ['dnn', 'per', 'full']
     seed_list = [0,1,2,3,4,5,6,7,8,9]
-    createMesh_list = ['False']
+    createMesh_list = ['True', 'False', 'False']
     
     # caseType_list = ['full']
     # seed_list = [0,1,2,3,4,5,6,7,8,9]

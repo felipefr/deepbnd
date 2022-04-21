@@ -11,7 +11,7 @@ problemType = ''
 
 folder = rootDataPath + '/circles/cook/meshes_seed%d/'
 
-cases = ['reduced_per', 'per', 'dnn', 'dnn_big', 'dnn_big_old', 'full', 'lin']
+cases = ['reduced_per', 'per', 'dnn', 'dnn_big_old', 'full']
 Ny_splits = [5,10,20,40]
 
 solution = folder + 'cook_%s_%d.xdmf'
@@ -27,7 +27,7 @@ norms = [lambda x,y: x(pA)[1], lambda x,y: y(pB)[0], lambda x,y: y(pC)[0], lambd
 
 uhs = []
 vonMises_ = []
-# listSeeds = [0,1,2,3,6,7,8,9,10]
+#listSeeds = [0,1,2,3,6,7,8,9,10]
 listSeeds = [0,1,2]
 
 

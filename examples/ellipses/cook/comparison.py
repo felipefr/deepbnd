@@ -9,10 +9,10 @@ import deepBND.core.data_manipulation.wrapper_h5py as myhd
 # Test Loading 
 problemType = ''
 
-folder = rootDataPath + '/ellipses/cook_fresh_data_augmentation/meshes_seed%d/'
-folderTangent = rootDataPath + '/ellipses/prediction_fresh_data_augmentation/'
+folder = rootDataPath + '/ellipses/cook_fresh_test/meshes_seed%d/'
+folderTangent = rootDataPath + '/ellipses/prediction_fresh_test/'
 
-cases = ['dnn_200', 'per_200', 'lin_200', 'full_200']
+cases = ['dnn', 'per', 'full']
 Ny_splits = [5,10,20,40]
 
 solution = folder + 'cook_%s_%d.xdmf'
@@ -80,12 +80,12 @@ plt.savefig('dispA.pdf')
 E = {}
 
 
-E['dnn_200'] = np.abs(D['dnn_200'] - D['full_200'])/D['full_200']
-E['per_200'] = np.abs(D['per_200'] - D['full_200'])/D['full_200']
+E['dnn'] = np.abs(D['dnn'] - D['full'])/D['full']
+E['per'] = np.abs(D['per'] - D['full'])/D['full']
 
 for i in range(4):
-    print("%e \pm %e & %e \pm %e "%(np.mean(E['dnn_200'][:,i,-2]), np.std(E['dnn_200'][:,i,-2]),
-                                    np.mean(E['per_200'][:,i,-2]), np.std(E['per_200'][:,i,-2]) ) )
+    print("%e \pm %e & %e \pm %e "%(np.mean(E['dnn'][:,i,-1]), np.std(E['dnn'][:,i,-1]),
+                                    np.mean(E['per'][:,i,-1]), np.std(E['per'][:,i,-1]) ) )
 
 # plt.figure(2)
 # plt.title('Error Sigma Von Mises D')
@@ -107,9 +107,9 @@ for case in cases:
     tangents[case] = myhd.loadhd5(tangentName.format(case), 'tangent')
 
 
-refCase = 'full_200'
+refCase = 'full'
 errors = {}
-ns = 200
+ns = 3218
 for case in cases[:-1]:
     errors[case] = np.zeros(ns)
     for i in range(ns):

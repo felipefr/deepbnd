@@ -122,6 +122,8 @@ if __name__ == '__main__':
     else:
         modelDNN = ''
                
+
+
     folder = rootDataPath + "/ellipses/"
     folderPrediction = folder + 'prediction_fresh_test/'
     folderMesh = folderPrediction + 'meshes/'
