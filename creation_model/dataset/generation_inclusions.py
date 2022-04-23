@@ -73,6 +73,7 @@ def orderListBox(L):
 def orderedIndexesTotal(Nx,Ny,minNx):
     L = list(np.arange(0,Nx*Ny).reshape((Nx,Ny)).astype('int').flatten())
     
+    print(len(L))
     maxOffset = int((Nx - minNx)/2)
     NI = [ (Nx - 2*i)*(Ny - 2*i) for i in range(maxOffset)]
     

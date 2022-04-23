@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Mar  9 04:46:39 2022
+Created on Fri Apr 22 09:07:03 2022
 
 @author: felipe
 """
@@ -35,20 +35,13 @@ comm_self = MPI.COMM_SELF
 # comm_self = MPI.COMM_SELF
 
 def solve_snapshot(i, meshname, paramMaterial, opModel, datasets):
-    
-    tangent, tangentL, sigma, sigmaL, eps, epsL = datasets[1:]
+    ids, tangent = datasets
     
     start = timer()
     
     microModel = MicroConstitutiveModelGen(meshname, paramMaterial, opModel)
       
-    Hom = microModel.computeHomogenisation([0,1])   
-    tangent[i,:,:] = Hom['tangent']
-    tangentL[i,:,:] = Hom['tangentL']
-    sigma[i,:,:] = Hom['sigma']
-    sigmaL[i,:,:] = Hom['sigmaL']
-    eps[i,:,:] = Hom['eps']
-    epsL[i,:,:] = Hom['epsL']
+    tangent[i,:,:] = microModel.computeTangent([0,1])[0]   
     
     end = timer()
 
@@ -65,10 +58,10 @@ def buildSnapshots(paramMaterial, filesnames, opModel, createMesh, run, num_runs
     
     os.system('rm ' + snapshotsname)
     snapshots, fsnaps = myhd.zeros_openFile(filename = snapshotsname,  
-                                            shape = [(nrun,)] + 6*[(nrun,3,3)],
-                                            label = ['id', 'tangent', 'tangentL', 'sigma', 'sigmaL', 'eps', 'epsL'], mode = 'w-')
+                                            shape = [(nrun,)] + [(nrun,3,3)],
+                                            label = ['id', 'tangent'], mode = 'w-')
     
-    ids = snapshots[0]
+    ids, tangent = snapshots
              
     paramRVEdata = myhd.loadhd5(paramRVEname, 'param')[ids_run] 
         
@@ -80,7 +73,7 @@ def buildSnapshots(paramMaterial, filesnames, opModel, createMesh, run, num_runs
 
         if(createMesh):
             buildRVEmesh(paramRVEdata[i,:,:], meshname, 
-                         isOrdered = False, size = 'full',  NxL = 6, NyL = 6, maxOffset = 2)
+                         isOrdered = False, size = 'reduced',  NxL = 6, NyL = 6, maxOffset = 2)
         
         solve_snapshot(i, meshname, paramMaterial, opModel, snapshots)
     
@@ -109,7 +102,7 @@ if __name__ == '__main__':
     folder = rootDataPath + "/CFM/dataset/"
     
     suffix = ""
-    opModel = 'per'
+    opModel = 'MR'
     createMesh = True
     
     contrast = 10.0
@@ -118,8 +111,8 @@ if __name__ == '__main__':
     paramMaterial = [nu,E2*contrast,nu,E2]
     
     paramRVEname = folder +  'paramRVEdataset{0}.hd5'.format(suffix)
-    snapshotsname = folder +  'snapshots_full.hd5'.format(suffix,run)
-    meshname = folder + "meshes/mesh_temp_{0}.xdmf".format(run)
+    snapshotsname = folder +  'snapshots_reduced_MR.hd5'.format(suffix,run)
+    meshname = folder + "meshes/mesh_temp_reduced_{0}.xdmf".format(run)
     
     filesnames = [paramRVEname, snapshotsname, meshname]
     

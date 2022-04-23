@@ -43,33 +43,26 @@ def solve_snapshot(i, meshname, paramMaterial):
     
     meshname_postproc = meshname[:-5] + '_to_the_paper.xdmf'
     microModel.visualiseMicrostructure(meshname_postproc)
-    
-    print("c'est fini")
-    
-    input()
  
+    print("c'est fini")
 
-def buildSnapshots(paramMaterial, filesnames, createMesh):
+def buildSnapshots(paramMaterial, filesnames, createMesh, index = 0):
     paramRVEname, meshname = filesnames
         
-    ns = len(myhd.loadhd5(paramRVEname, 'param')[:,0])
-         
-    paramRVEdata = myhd.loadhd5(paramRVEname, 'param') 
-    
-    
-    for i in range(100,ns):
 
-        if(createMesh):
-            buildRVEmesh(paramRVEdata[i,:,:], meshname, 
-                         isOrdered = False, size = 'full')
-        
-        solve_snapshot(i, meshname, paramMaterial)
+    paramRVEdata = myhd.loadhd5(paramRVEname, 'param')[index, :, :]
+    
+    if(createMesh):
+        buildRVEmesh(paramRVEdata, meshname, 
+                     isOrdered = False, size = 'full',  NxL = 6, NyL = 6, maxOffset = 2)
+    
+    solve_snapshot(index, meshname, paramMaterial)
     
 
 
 if __name__ == '__main__':
     
-    folder = rootDataPath + "/ellipses/dataset_postprocessing/"
+    folder = rootDataPath + "/CFM/dataset/"
     
     suffix = ""
     opModel = 'per'
@@ -81,8 +74,8 @@ if __name__ == '__main__':
     paramMaterial = [nu,E2*contrast,nu,E2]
     
     paramRVEname = folder +  'paramRVEdataset.hd5'
-    meshname = folder + "meshes/mesh_temp.xdmf"
+    meshname = folder + "meshes/mesh_temp_0.xdmf"
     
     filesnames = [paramRVEname, meshname]
         
-    buildSnapshots(paramMaterial, filesnames, createMesh)
+    buildSnapshots(paramMaterial, filesnames, createMesh, index = 9)

@@ -43,8 +43,17 @@ def tensor2voigt_sym(A):
     return np.array([A[0,0],A[1,1],A[0,1] + A[1,0]])
 
 
+def stress2voigt(s):
+    return np.array([s[0, 0], s[1, 1], s[0, 1]])
 
+def strain2voigt(e):
+    return np.array([e[0, 0], e[1, 1], 2*e[0, 1]])
 
+def voigt2strain(e):
+    return np.array([[e[0], 0.5*e[2]], [0.5*e[2], e[1]]])
+
+def voigt2stress(s):
+    return np.array([[s[0], s[2]], [s[2], s[1]]])
 
 # Either mandel or voigt since specific entries are zero
 def orthotropicElasticityTensor(Ex,Ey,vxy):

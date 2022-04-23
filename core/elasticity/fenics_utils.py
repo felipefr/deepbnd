@@ -41,7 +41,6 @@ def getLameInclusions(nu1,E1,nu2,E2,M, op='cpp'):
     
     return lame
 
-
 # Piola transform used to rotate solutions
 def PiolaTransform_rotation(theta, Vref): #only detB = pm 1 in our context
     Mref = Vref.mesh()    

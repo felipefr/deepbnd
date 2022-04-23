@@ -13,8 +13,10 @@ class paramRVE_default:
         self.NyL = NyL
         self.H = 1.0 # size of each square
         self.NL = self.NxL*self.NyL
-        self.x0L = self.y0L = -self.H 
-        self.LxL = self.LyL = 2*self.H
+        self.LxL = self.NxL*self.H
+        self.LyL = self.NyL*self.H
+        self.x0L = - 0.5*self.LxL
+        self.y0L = - 0.5*self.LyL
         self.lcar = (2/30)*self.H
         self.Nx = (self.NxL+2*self.maxOffset)
         self.Ny = (self.NyL+2*self.maxOffset)
@@ -22,16 +24,18 @@ class paramRVE_default:
         self.Lyt = self.Ny*self.H
         self.NpLxt = int(self.Lxt/self.lcar) + 1
         self.NpLxL = int(self.LxL/self.lcar) + 1
-        self.x0 = -self.Lxt/2.0
-        self.y0 = -self.Lyt/2.0
+        self.x0 = -0.5*self.Lxt
+        self.y0 = -0.5*self.Lyt
         self.r0 = 0.2*self.H
         self.r1 = 0.4*self.H
         self.rm = self.H*np.sqrt(self.Vfrac/np.pi)
 
 
-def buildRVEmesh(paramRVEdata, nameMesh, isOrdered = False, size = 'reduced'):
+def buildRVEmesh(paramRVEdata, nameMesh, isOrdered = False, size = 'reduced', 
+                 NxL = 2, NyL = 2, maxOffset = 2, Vfrac = 0.282743):
 
-    p = paramRVE_default() # load default parameters
+    p = paramRVE_default(NxL, NyL, maxOffset, Vfrac) # load default parameters
+    
     
     if(isOrdered): # it is already ordered (internal, after external)
         permTotal = np.arange(0,p.Nx*p.Ny).astype('int')
@@ -40,8 +44,8 @@ def buildRVEmesh(paramRVEdata, nameMesh, isOrdered = False, size = 'reduced'):
 
     paramRVEdata[:,:] = paramRVEdata[permTotal,:]
     
-    if(size == 'reduced'): # It was chosen 2x2 for the moment
-        meshGMSH = ellipseMesh2(paramRVEdata[:4,:], p.x0L, p.y0L, p.LxL, p.LyL, p.lcar) 
+    if(size == 'reduced'):
+        meshGMSH = ellipseMesh2(paramRVEdata[:p.NxL*p.NyL,:], p.x0L, p.y0L, p.LxL, p.LyL, p.lcar) 
         meshGMSH.setTransfiniteBoundary(p.NpLxL)
         
     elif(size == 'full'):
