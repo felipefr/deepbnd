@@ -38,9 +38,10 @@ comm_self = MPI.COMM_SELF
 # comm_self = MPI.COMM_SELF
 
 
+totalTime = 0.0 
 
-standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
-                'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.8, [0.0] + 3*[0.001] + [0.0], 1.0e-8)}  
+standardNets = {'big': [ [300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8],
+                'small': [[40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.8, [0.0] + 3*[0.001] + [0.0], 1.0e-8]}  
 
 def predictBCs(features, folder):
 
@@ -56,7 +57,7 @@ def predictBCs(features, folder):
     
     labels = ['A', 'S']
     for l in labels:
-        net[l] = standardNets[archId] 
+        net[l] =  NetArch(*standardNets[archId])
         net[l].nY = Nrb
         net[l].nX = nX
         net[l].files['weights'] = folderDNN + 'weights_%s.hdf5'%(l)
@@ -75,9 +76,11 @@ def predictBCs(features, folder):
 
 
 def solve_snapshot(i, meshname, paramMaterial, opModel, snapshots, bcsDNN = None):
+    
+    global totalTime
+    
     start = timer()
-    
-    
+
     tangent, tangentL, sigma, sigmaL, eps, epsL = snapshots[2:]
     
     microModel = MicroConstitutiveModelGen(meshname, paramMaterial, opModel)
@@ -99,6 +102,8 @@ def solve_snapshot(i, meshname, paramMaterial, opModel, snapshots, bcsDNN = None
 
     end = timer()
 
+    totalTime = totalTime + (end - start)
+    
     print("concluded in ", end - start)      
     
 
@@ -134,7 +139,7 @@ def buildSnapshots(paramMaterial, filesnames, opModel, createMesh, run, num_runs
 
         if(createMesh):
             buildRVEmesh(paramRVEdata[i,:,:], meshname, 
-                         isOrdered = False, size = 'full',  NxL = 2, NyL = 2, maxOffset = 2)
+                         isOrdered = False, size = 'reduced',  NxL = 2, NyL = 2, maxOffset = 2)
         
         solve_snapshot(i, meshname, paramMaterial, opModel, snapshots, bcsDNN )
     
@@ -162,8 +167,8 @@ if __name__ == '__main__':
     
     folder = rootDataPath + "/CFM/dataset/"
     
-    suffix = ""
-    opModel = 'per'
+    suffix = "_ns100"
+    opModel = 'dnn'
     createMesh = True
     
     contrast = 10.0
@@ -171,9 +176,9 @@ if __name__ == '__main__':
     nu = 0.3
     paramMaterial = [nu,E2*contrast,nu,E2]
     
-    paramRVEname = folder +  'paramRVEdataset_subdomains{0}.hd5'.format(suffix)
-    snapshotsname = folder +  'snapshots_subdomains_HF.hd5'.format(suffix,run)
-    meshname = folder + "meshes/mesh_temp_subdomains_full_HF_{0}.xdmf".format(run)
+    paramRVEname = folder +  'paramRVEdataset{0}_subdomains.hd5'.format(suffix)
+    snapshotsname = folder +  'snapshots_subdomains{0}_dnn.hd5'.format(suffix)
+    meshname = folder + "meshes/mesh_temp_subdomains_reduced_dnn_{0}.xdmf".format(run)
     
     filesnames = [paramRVEname, snapshotsname, meshname, folder]
     

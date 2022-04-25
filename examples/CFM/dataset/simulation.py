@@ -34,7 +34,11 @@ comm_self = MPI.COMM_SELF
 # comm = MPI.COMM_WORLD
 # comm_self = MPI.COMM_SELF
 
+totalTime = 0.0 
+
 def solve_snapshot(i, meshname, paramMaterial, opModel, datasets):
+    
+    global totalTime
     
     tangent, tangentL, sigma, sigmaL, eps, epsL = datasets[1:]
     
@@ -51,7 +55,8 @@ def solve_snapshot(i, meshname, paramMaterial, opModel, datasets):
     epsL[i,:,:] = Hom['epsL']
     
     end = timer()
-
+    
+    totalTime = totalTime + (end - start)
     print("concluded in ", end - start)      
     
 
@@ -108,7 +113,7 @@ if __name__ == '__main__':
     
     folder = rootDataPath + "/CFM/dataset/"
     
-    suffix = ""
+    suffix = "_ns100"
     opModel = 'per'
     createMesh = True
     
@@ -118,7 +123,7 @@ if __name__ == '__main__':
     paramMaterial = [nu,E2*contrast,nu,E2]
     
     paramRVEname = folder +  'paramRVEdataset{0}.hd5'.format(suffix)
-    snapshotsname = folder +  'snapshots_full.hd5'.format(suffix,run)
+    snapshotsname = folder +  'snapshots{0}_full.hd5'.format(suffix)
     meshname = folder + "meshes/mesh_temp_{0}.xdmf".format(run)
     
     filesnames = [paramRVEname, snapshotsname, meshname]
@@ -131,3 +136,5 @@ if __name__ == '__main__':
     
     
     buildSnapshots(paramMaterial, filesnames, opModel, createMesh, run, num_runs, i0, comm_self)
+    
+    print(totalTime)

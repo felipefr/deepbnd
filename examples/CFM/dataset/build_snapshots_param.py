@@ -89,11 +89,11 @@ def build_paramRVE(paramRVEname, ns, seed):
 if __name__ == '__main__':
     
     folder = rootDataPath + "/CFM/dataset/"
-    ns = 2
-    seed = 2    
-    suffix = ""
+    ns = 100
+    seed = 1 
+    suffix = "_ns100"
     paramRVEname = folder + 'paramRVEdataset%s.hd5'%suffix
     
 
-    # build_paramRVE(paramRVEname, ns, seed)
+    build_paramRVE(paramRVEname, ns, seed)
     build_paramRVE_subdomains(paramRVEname, Nx = 10, Ny = 10, maxOffset = 2)
