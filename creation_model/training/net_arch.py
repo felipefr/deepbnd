@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import deepBND.creation_model.training.wrapper_tensorflow as mytf
 
 import datetime
+import deepBND.core.data_manipulation.utils as dman
 
 
 class NetArch:
@@ -101,7 +102,12 @@ class NetArch:
         Xtrain = Xtrain[indices,:]
         Ytrain = Ytrain[indices,:]
     
-        w_l = (self.scalerY.data_max_ - self.scalerY.data_min_)**2.0  
+        if(type(self.scalerY) == type(dman.myMinMaxScaler())):
+            w_l = (self.scalerY.data_max_ - self.scalerY.data_min_)**2.0  
+       
+        elif(type(self.scalerY) == type(dman.myNormalisationScaler()) ):
+            w_l = (2.0*self.scalerY.data_std)**2.0
+            
         w_l = w_l.astype('float32')
         
         lossW= mytf.my_partial(mytf.custom_loss_mse, weight = w_l)
@@ -116,11 +122,11 @@ class NetArch:
         decay_lr = tf.keras.callbacks.LearningRateScheduler(schdDecay)    
 
                 
-        log_dir = "./" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        log_dir = "./" + self.files["tensorboard_id"]
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)   
         
         kw = {}
-        kw['epochs']= self.epochs; kw['batch_size'] = 128
+        kw['epochs']= self.epochs; kw['batch_size'] = 32
         kw['validation_data'] = XY_val
         kw['verbose'] = 1
         kw['callbacks']=[mytf.PrintDot(), decay_lr, mytf.checkpoint(savefile, self.stepEpochs),
