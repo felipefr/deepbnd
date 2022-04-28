@@ -56,7 +56,8 @@ class NetArch:
         kw = {
                'kernel_constraint':tf.keras.constraints.MaxNorm(5.0), 
                'bias_constraint':tf.keras.constraints.MaxNorm(10.0), 
-              # 'bias_regularizer': tf.keras.regularizers.l1_l2(l1=0.1*lambReg, l2=lambReg),
+              'kernel_regularizer': tf.keras.regularizers.l2(lambReg),
+              'bias_regularizer': tf.keras.regularizers.l2(lambReg),
               'kernel_initializer': tf.keras.initializers.HeNormal()} 
         
         x = [tf.keras.Input((self.nX,))]
@@ -65,7 +66,7 @@ class NetArch:
             if(len(x) == 1):
                 x.append(tf.keras.layers.Dense(n, activation = mytf.dictActivations[a], **kw)(x[0]))
             else:
-                x[1] = tf.keras.layers.GaussianNoise(stddev = 0.01)(x[1])
+                # x[1] = tf.keras.layers.GaussianNoise(stddev = 0.01)(x[1])
                 x[1] = tf.keras.layers.Dense(n, activation = mytf.dictActivations[a], **kw)(x[1])
             
             
@@ -157,7 +158,7 @@ class NetArch:
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)   
         
         kw = {}
-        kw['epochs']= self.epochs; kw['batch_size'] = 64
+        kw['epochs']= self.epochs; kw['batch_size'] = 32
         kw['validation_data'] = XY_val
         kw['verbose'] = 1
         kw['callbacks']=[mytf.PrintDot(), decay_lr, mytf.checkpoint(savefile, self.stepEpochs, monitor = "val_custom_loss_mse" ),

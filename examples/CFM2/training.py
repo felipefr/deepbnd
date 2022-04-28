@@ -17,7 +17,8 @@ import deepBND.core.data_manipulation.utils as dman
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 
 
-standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
+standardNets = {'huge': NetArch([500, 500, 500], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 1.0e-9),
+                'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
                 'extreme_big_noreg': NetArch([500, 500, 500], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 2*[0.0] + 2*[0.05] + [0.0], 0.0),
                 'extreme_medbig_noreg': NetArch([400, 400, 400], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 0.0),
                 'extreme_medbig_reg': NetArch([400, 400, 400], 3*['swish'] + ['linear'], 5.0e-3, 0.1, 5*[0.0], 0.0),
@@ -25,7 +26,7 @@ standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4
                 'big_noreg': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 1.0e-3, 0.1, 5*[0.0], 0.0),
                 'medium_noreg': NetArch([200, 200, 200], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 0.0),
                 'medium': NetArch([100, 100, 100], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 1.0e-8),
-                'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-2, 1.0, 5*[0.0], 0.0)}
+                'small':NetArch([40, 40, 40], 3*['tanh'] + ['linear'], 1.0e-5, 0.1, 5*[0.0], 0.0)}
 
 
 def run_training(net, Ylabel, Xmask = None):
@@ -41,10 +42,18 @@ def run_training(net, Ylabel, Xmask = None):
     XY_train = dman.getDatasetsXY(nX, Nrb, net.files['XY'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
     XY_val = dman.getDatasetsXY(nX, Nrb, net.files['XY_val'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
         
-    if(type(Xmask) != type(None)):
-        net.nX = len(Xmask)
-        XY_train = (XY_train[0][:, Xmask] , XY_train[1])
-        XY_val = (XY_val[0][:, Xmask] , XY_val[1])
+    # if(type(Xmask) != type(None)):
+    #     net.nX = len(Xmask)
+    #     XY_train = (XY_train[0][:, Xmask] , XY_train[1])
+    #     XY_val = (XY_val[0][:, Xmask] , XY_val[1])
+    
+    
+    
+    # if(type(Xmask) != type(None)):
+    #     lacking = np.array(list(set(list(np.arange(36))) - set(list(Xmask))))  
+    #     XY_train[0][:, lacking] = 0.0
+    #     XY_val[0][:, lacking] = 0.0
+      
     
     hist = net.training_tensorboard(XY_train, XY_val, seed = 2)
 
@@ -65,10 +74,10 @@ if __name__ == '__main__':
 
     else:
         Nrb = 140
-        epochs = 100
-        archId = 'extreme_big_noreg'
-        load_flag = 'S'
-        suffix = "with_reduceLR"
+        epochs = 5000
+        archId = 'huge'
+        load_flag = 'A'
+        suffix = "all"
 
     nX = 36
     
@@ -96,6 +105,6 @@ if __name__ == '__main__':
     net.files['XY_val'] = nameXY_val
     net.files["tensorboard_id"] = "%s_%s_%d_%s"%(archId, load_flag, Nrb, suffix)
     
-    XY_train, XY_val, scalerX, scalerY = run_training(net, 'Y_%s'%load_flag)
+    XY_train, XY_val, scalerX, scalerY = run_training(net, 'Y_%s'%load_flag, Xmask_list[suffix])
     
     
