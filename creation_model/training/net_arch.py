@@ -32,10 +32,12 @@ class NetArch:
     def getModel(self):
         Neurons, actLabels, drps, lambReg = self.Neurons , self.activations, self.drps, self.reg
 
-        kw = {'kernel_constraint':tf.keras.constraints.MaxNorm(5.0), 
-              'bias_constraint':tf.keras.constraints.MaxNorm(10.0), 
-              'kernel_regularizer': tf.keras.regularizers.l1_l2(l1=0.1*lambReg, l2=lambReg), 
-              'bias_regularizer': tf.keras.regularizers.l1_l2(l1=0.1*lambReg, l2=lambReg)} 
+        kw = {
+               'kernel_constraint':tf.keras.constraints.MaxNorm(5.0), 
+               'bias_constraint':tf.keras.constraints.MaxNorm(10.0), 
+              'kernel_regularizer': tf.keras.regularizers.l1_l2(l1=0.0*lambReg, l2=lambReg), 
+              # 'bias_regularizer': tf.keras.regularizers.l1_l2(l1=0.1*lambReg, l2=lambReg),
+              'kernel_initializer': tf.keras.initializers.HeNormal()} 
         
         x = [tf.keras.Input((self.nX,))]
         
@@ -43,8 +45,33 @@ class NetArch:
         
         for n,a,d in zip(Neurons + [self.nY],actLabels,drps[1:]): 
             x[1] = tf.keras.layers.Dense(n, activation = mytf.dictActivations[a], **kw)(x[1])
-            x[1] = tf.keras.layers.Dropout(d)(x[1])
+            x[1] = tf.keras.layers.GaussianDropout(d)(x[1])
             
+        return tf.keras.Model(x[0], x[1])
+    
+    
+    def getModel_batchNorm(self):
+        Neurons, actLabels, drps, lambReg = self.Neurons , self.activations, self.drps, self.reg
+
+        kw = {
+               'kernel_constraint':tf.keras.constraints.MaxNorm(5.0), 
+               'bias_constraint':tf.keras.constraints.MaxNorm(10.0), 
+              # 'bias_regularizer': tf.keras.regularizers.l1_l2(l1=0.1*lambReg, l2=lambReg),
+              'kernel_initializer': tf.keras.initializers.HeNormal()} 
+        
+        x = [tf.keras.Input((self.nX,))]
+        
+        for n,a,d in zip(Neurons + [self.nY],actLabels,drps[1:]): 
+            if(len(x) == 1):
+                x.append(tf.keras.layers.Dense(n, activation = mytf.dictActivations[a], **kw)(x[0]))
+            else:
+                x[1] = tf.keras.layers.GaussianNoise(stddev = 0.01)(x[1])
+                x[1] = tf.keras.layers.Dense(n, activation = mytf.dictActivations[a], **kw)(x[1])
+            
+            
+        # regularizer = tf.keras.regularizers.OrthogonalRegularizer(factor=0.01)
+        # layer = tf.keras.layers.Dense(units=4, kernel_regularizer=regularizer)
+
         return tf.keras.Model(x[0], x[1])
         
 
@@ -91,6 +118,10 @@ class NetArch:
 
     def training_tensorboard(self, XY_train, XY_val, seed = 1):
         
+        # reduceLR = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_custom_loss_mse',
+                                                        # factor=0.5, patience=2,
+                                                        # min_delta=1e-6, cooldown = 0, min_lr = 1.0e-6 )
+    
         np.random.seed(seed)
       
         savefile = self.files['weights'] 
@@ -114,7 +145,7 @@ class NetArch:
             
         optimizer= tf.keras.optimizers.Adam(learning_rate = self.lr)
         
-        model = self.getModel()
+        model = self.getModel_batchNorm()
         model.summary()
         model.compile(loss = lossW, optimizer=optimizer, metrics=[lossW,'mse','mae'])
     
@@ -126,10 +157,10 @@ class NetArch:
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)   
         
         kw = {}
-        kw['epochs']= self.epochs; kw['batch_size'] = 32
+        kw['epochs']= self.epochs; kw['batch_size'] = 64
         kw['validation_data'] = XY_val
         kw['verbose'] = 1
-        kw['callbacks']=[mytf.PrintDot(), decay_lr, mytf.checkpoint(savefile, self.stepEpochs),
+        kw['callbacks']=[mytf.PrintDot(), decay_lr, mytf.checkpoint(savefile, self.stepEpochs, monitor = "val_custom_loss_mse" ),
                           tf.keras.callbacks.CSVLogger(savefile[:-5] + '_history.csv' , append=True),
                           tensorboard_callback]
         
@@ -138,12 +169,3 @@ class NetArch:
         mytf.plot_history( history, label=['custom_loss_mse','val_custom_loss_mse'], savefile = savefile[:-5] + '_plot')
             
         return history
-
-
-
-
-standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
-         'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8)}
-
-#standardNets = {'big': NetArch([300, 300, 300], 3*['relu'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
-    #       'small': NetArch([40, 40, 40], 3*['relu'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.01] + [0.0], 1.0e-7)}

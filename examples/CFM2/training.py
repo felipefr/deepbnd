@@ -18,15 +18,17 @@ import deepBND.core.data_manipulation.wrapper_h5py as myhd
 
 
 standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
-                'extreme_big_noreg': NetArch([500, 500, 500], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 0.0),
+                'extreme_big_noreg': NetArch([500, 500, 500], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 2*[0.0] + 2*[0.05] + [0.0], 0.0),
+                'extreme_medbig_noreg': NetArch([400, 400, 400], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 0.0),
+                'extreme_medbig_reg': NetArch([400, 400, 400], 3*['swish'] + ['linear'], 5.0e-3, 0.1, 5*[0.0], 0.0),
                 'extreme_big_noreg2': NetArch([400, 400, 400, 400], 4*['swish'] + ['linear'], 5.0e-4, 0.1, 6*[0.0], 0.0),
-                'big_noreg': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 0.0),
+                'big_noreg': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 1.0e-3, 0.1, 5*[0.0], 0.0),
                 'medium_noreg': NetArch([200, 200, 200], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 0.0),
                 'medium': NetArch([100, 100, 100], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 1.0e-8),
-                'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.8, [0.0] + 3*[0.001] + [0.0], 1.0e-8)}
+                'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-2, 1.0, 5*[0.0], 0.0)}
 
 
-def run_training(net, Ylabel):
+def run_training(net, Ylabel, Xmask = None):
     print(Ylabel)
     dman.exportScale(net.files['XY'], net.files['scaler'], net.nX, net.nY, Ylabel = Ylabel, scalerType = 'Normalisation' )
     scalerX, scalerY = dman.importScale(net.files['scaler'], nX, Nrb)
@@ -39,7 +41,12 @@ def run_training(net, Ylabel):
     XY_train = dman.getDatasetsXY(nX, Nrb, net.files['XY'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
     XY_val = dman.getDatasetsXY(nX, Nrb, net.files['XY_val'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
         
-    hist = net.training_tensorboard(XY_train, XY_val)
+    if(type(Xmask) != type(None)):
+        net.nX = len(Xmask)
+        XY_train = (XY_train[0][:, Xmask] , XY_train[1])
+        XY_val = (XY_val[0][:, Xmask] , XY_val[1])
+    
+    hist = net.training_tensorboard(XY_train, XY_val, seed = 2)
 
     return XY_train, XY_val, scalerX, scalerY
 
@@ -61,7 +68,7 @@ if __name__ == '__main__':
         epochs = 100
         archId = 'extreme_big_noreg'
         load_flag = 'S'
-        suffix = ""
+        suffix = "with_reduceLR"
 
     nX = 36
     
@@ -69,6 +76,12 @@ if __name__ == '__main__':
     
     net = standardNets[archId]
     
+    
+    Xmask_list = {'all' : np.arange(nX), 
+                  '4x4' : np.array([7,8,9,10,13,14,15,16,19,20,21,22,25,26,27,28]),
+                  '2x2' : np.array([14,15,20,21]), 
+                  '4x4_nobottom' : np.array([13,14,15,16,19,20,21,22,25,26,27,28]),
+                  '4x4_nobottom' : np.array([13,14,15,16,19,20,21,22,25,26,27,28])}
     
     net.epochs =  int(epochs)
     net.nY = Nrb

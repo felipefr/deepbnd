@@ -5,6 +5,23 @@ import matplotlib.pyplot as plt
 
 from tensorflow.keras.callbacks import ModelCheckpoint
 
+# Activations
+dictActivations = {'tanh' : tf.nn.tanh, 
+                    'sigmoid' : tf.nn.sigmoid , 
+                    'linear': tf.keras.activations.linear,
+                    'relu': tf.keras.activations.relu,
+                    'leaky_relu': tf.nn.leaky_relu,
+                    'swish' : tf.keras.activations.swish,
+                    'elu' : tf.keras.activations.elu}
+
+
+# ====================  Initiatialisations ==================================
+dfInitK = tf.keras.initializers.glorot_uniform(seed = 1)
+# dfInitK = tf.keras.initializers.VarianceScaling(scale=1.0, 
+# mode="fan_in", distribution="untruncated_normal", seed=None)
+dfInitB = tf.keras.initializers.Zeros()
+
+
 # Display training progress by printing a single dot for each completed epoch
 class PrintDot(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs):
@@ -13,8 +30,8 @@ class PrintDot(tf.keras.callbacks.Callback):
 
 
 # Custom Checkpoint
-def checkpoint(saveFile, stepEpochs = 1): 
-    return ModelCheckpoint(saveFile, monitor='val_loss', verbose=1,
+def checkpoint(saveFile, stepEpochs = 1, monitor = "val_loss"): 
+    return ModelCheckpoint(saveFile, monitor='val_custom_loss_mse', verbose=1,
                            save_best_only=True, save_weights_only = True, mode='auto', period=stepEpochs)
 
 # Custom scheduler for learning rate decay
@@ -46,20 +63,8 @@ def scheduler_cosinus(epoch, decay, lr, EPOCHS):
 def custom_loss_mse(y_p,y_d,weight):
     return tf.reduce_sum(tf.reduce_mean(tf.multiply(weight,tf.square(tf.subtract(y_p,y_d))), axis=0))
 
-# Activations
-dictActivations = {'tanh' : tf.nn.tanh, 
-                    'sigmoid' : tf.nn.sigmoid , 
-                    'linear': tf.keras.activations.linear,
-                    'relu': tf.keras.activations.relu,
-                    'leaky_relu': tf.nn.leaky_relu,
-                    'swish' : tf.keras.activations.swish}
 
 
-# ====================  Initiatialisations ==================================
-dfInitK = tf.keras.initializers.glorot_uniform(seed = 1)
-# dfInitK = tf.keras.initializers.VarianceScaling(scale=1.0, 
-# mode="fan_in", distribution="untruncated_normal", seed=None)
-dfInitB = tf.keras.initializers.Zeros()
 
 def set_seed_default_initialisers(seed = 1):
     return tf.keras.initializers.glorot_uniform(seed = seed), tf.keras.initializers.Zeros()
