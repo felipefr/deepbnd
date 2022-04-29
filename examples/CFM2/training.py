@@ -42,11 +42,10 @@ def run_training(net, Ylabel, Xmask = None):
     XY_train = dman.getDatasetsXY(nX, Nrb, net.files['XY'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
     XY_val = dman.getDatasetsXY(nX, Nrb, net.files['XY_val'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
         
-    # if(type(Xmask) != type(None)):
-    #     net.nX = len(Xmask)
-    #     XY_train = (XY_train[0][:, Xmask] , XY_train[1])
-    #     XY_val = (XY_val[0][:, Xmask] , XY_val[1])
-    
+    if(type(Xmask) != type(None)):
+        net.nX = len(Xmask)
+        XY_train = (XY_train[0][:, Xmask] , XY_train[1])
+        XY_val = (XY_val[0][:, Xmask] , XY_val[1])
     
     
     # if(type(Xmask) != type(None)):
@@ -61,8 +60,8 @@ def run_training(net, Ylabel, Xmask = None):
 
 if __name__ == '__main__':
     
-    folderDataset = rootDataPath + "/CFM2/datasets/"
-    folderTrain = rootDataPath + "/CFM2/training/"
+    folderDataset = rootDataPath + "/CFM2/datasets_fluctuations/"
+    folderTrain = rootDataPath + "/CFM2/training_fluctuations/"
     
     nameXY = folderDataset +  'XY_train.hd5'
     nameXY_val = folderDataset +  'XY_validation.hd5'
@@ -74,10 +73,10 @@ if __name__ == '__main__':
 
     else:
         Nrb = 140
-        epochs = 5000
-        archId = 'huge'
+        epochs = 100
+        archId = 'medium'
         load_flag = 'A'
-        suffix = "all"
+        suffix = "4x4"
 
     nX = 36
     
@@ -87,6 +86,7 @@ if __name__ == '__main__':
     
     
     Xmask_list = {'all' : np.arange(nX), 
+                  '35' : np.arange(nX - 6),
                   '4x4' : np.array([7,8,9,10,13,14,15,16,19,20,21,22,25,26,27,28]),
                   '2x2' : np.array([14,15,20,21]), 
                   '4x4_nobottom' : np.array([13,14,15,16,19,20,21,22,25,26,27,28]),
