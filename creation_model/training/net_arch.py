@@ -35,8 +35,8 @@ class NetArch:
         kw = {
                'kernel_constraint':tf.keras.constraints.MaxNorm(5.0), 
                'bias_constraint':tf.keras.constraints.MaxNorm(10.0), 
-              'kernel_regularizer': tf.keras.regularizers.l1_l2(l1=0.0*lambReg, l2=lambReg), 
-              # 'bias_regularizer': tf.keras.regularizers.l1_l2(l1=0.1*lambReg, l2=lambReg),
+              'kernel_regularizer': tf.keras.regularizers.l2(lambReg), 
+              'bias_regularizer': tf.keras.regularizers.l2(lambReg),
               'kernel_initializer': tf.keras.initializers.HeNormal()} 
         
         x = [tf.keras.Input((self.nX,))]
@@ -66,9 +66,9 @@ class NetArch:
             if(len(x) == 1):
                 x.append(tf.keras.layers.Dense(n, activation = mytf.dictActivations[a], **kw)(x[0]))
             else:
-                # x[1] = tf.keras.layers.GaussianNoise(stddev = 0.01)(x[1])
+                x[1] = tf.keras.layers.GaussianNoise(stddev = 0.005)(x[1])
                 x[1] = tf.keras.layers.Dense(n, activation = mytf.dictActivations[a], **kw)(x[1])
-            
+                x[1] = tf.keras.layers.GaussianDropout(rate = 0.005)(x[1])
             
         # regularizer = tf.keras.regularizers.OrthogonalRegularizer(factor=0.01)
         # layer = tf.keras.layers.Dense(units=4, kernel_regularizer=regularizer)
@@ -89,10 +89,11 @@ class NetArch:
         Xtrain = Xtrain[indices,:]
         Ytrain = Ytrain[indices,:]
     
-        if(type(self.scalerY) == type(dman.myMinMaxScaler())):
+    
+        if(isinstance(self.scalerY, dman.myMinMaxScaler)):
             w_l = (self.scalerY.data_max_ - self.scalerY.data_min_)**2.0  
        
-        elif(type(self.scalerY) == type(dman.myNormalisationScaler()) ):
+        elif(isinstance(self.scalerY, dman.myNormalisationScaler)):
             w_l = (2.0*self.scalerY.data_std)**2.0
             
         w_l = w_l.astype('float32')
@@ -138,11 +139,12 @@ class NetArch:
     
         Xtrain = Xtrain[indices,:]
         Ytrain = Ytrain[indices,:]
-    
-        if(type(self.scalerY) == type(dman.myMinMaxScaler())):
+
+
+        if(isinstance(self.scalerY, dman.myMinMaxScaler)):
             w_l = (self.scalerY.data_max_ - self.scalerY.data_min_)**2.0  
        
-        elif(type(self.scalerY) == type(dman.myNormalisationScaler()) ):
+        elif(isinstance(self.scalerY, dman.myNormalisationScaler)):
             w_l = (2.0*self.scalerY.data_std)**2.0
             
         w_l = w_l.astype('float32')

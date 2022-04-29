@@ -6,23 +6,19 @@ import deepBND.core.data_manipulation.utils as dman
 
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 
-def exportScale(filenameIn, filenameOut, nX, nY, Ylabel = 'Y', scalerType = "MinMax"):
-    scalerX, scalerY = getDatasetsXY(nX, nY, filenameIn, Ylabel = Ylabel, scalerType = scalerType)[2:4]
-    scalerLimits = np.zeros((max(nX,nY),4))
-    scalerLimits[:nX,0:2] = scalerX.export_scale()
-    scalerLimits[:nY,2:4] = scalerY.export_scale()
 
-    np.savetxt(filenameOut, scalerLimits)
-
-def importScale(filenameIn, nX, nY):
-    scalerX = myMinMaxScaler()
-    scalerY = myMinMaxScaler()
-    scalerX.load_param(np.loadtxt(filenameIn)[:,0:2])
-    scalerY.load_param(np.loadtxt(filenameIn)[:,2:4])
-    scalerX.set_n(nX)
-    scalerY.set_n(nY)
+def writeDict(d):
+    f = open(d['files']['net_settings'],'w')
     
-    return scalerX, scalerY
+    for keys, value in zip(d.keys(),d.values()):
+        f.write("{0}: {1}\n".format(keys,value))
+        
+    f.close()
+
+def constructor_scaler(scalerType):    
+    return {'MinMax': myMinMaxScaler() , 
+            'Normalisation': myNormalisationScaler(), 
+            'MinMax11': myMinMax11Scaler()}[scalerType]
 
 
 class myScaler:
@@ -55,9 +51,11 @@ class myScaler:
 
 
 class myMinMaxScaler(myScaler):
-    def __init__(self):
+    def __init__(self, eps_margin = 0.05):
         self.data_min_ = []
         self.data_max_ = []
+        
+        self.eps_margin = eps_margin
         super().__init__()
                 
     def set_n(self,n):
@@ -84,12 +82,24 @@ class myMinMaxScaler(myScaler):
     def fit(self,x):
         self.n = x.shape[1]
         
-        for i in range(self.n):
-            self.data_min_.append(x[:,i].min())
-            self.data_max_.append(x[:,i].max())
+        self.data_min_ = np.min(x , axis = 0)  
+        self.data_max_ = np.max(x, axis = 0)
         
-        self.data_min_ = np.array(self.data_min_)
-        self.data_max_ = np.array(self.data_max_)
+        max_abs = np.max(np.abs(np.stack((self.data_min_, self.data_max_))), axis = 0) # per feature
+        
+        self.data_min_ = self.data_min_ - self.eps_margin*max_abs
+        self.data_max_ = self.data_max_ + self.eps_margin*max_abs
+        
+        print(self.data_min_.shape)
+    
+class myMinMax11Scaler(myMinMaxScaler):
+    
+        
+    def scaler(self, x, i):
+        return 2*(x - self.data_min_[i])/(self.data_max_[i]-self.data_min_[i]) - 1.0
+    
+    def inv_scaler(self, x, i):
+        return (self.data_max_[i]-self.data_min_[i])*0.5*(x+1) + self.data_min_[i]
 
 
 class myNormalisationScaler(myScaler):
@@ -136,14 +146,6 @@ class myNormalisationScaler(myScaler):
         return np.array( [self.inv_scaler(x[:,i],i) for i in range(self.n)] ).T
 
 
-def writeDict(d):
-    f = open(d['files']['net_settings'],'w')
-    
-    for keys, value in zip(d.keys(),d.values()):
-        f.write("{0}: {1}\n".format(keys,value))
-        
-    f.close()
-        
 def getDatasetsXY(nX, nY, XYdatafile, scalerX = None, scalerY = None, Ylabel = 'Y', scalerType = 'MinMax'):
     Xlist = []
     Ylist = []
@@ -159,15 +161,35 @@ def getDatasetsXY(nX, nY, XYdatafile, scalerX = None, scalerY = None, Ylabel = '
     Y = np.concatenate(tuple(Ylist),axis = 0)
     
     if(type(scalerX) == type(None)):
-        scalerX = {'MinMax': myMinMaxScaler() , 'Normalisation': myNormalisationScaler()}[scalerType]            
+        scalerX = constructor_scaler(scalerType)            
         scalerX.fit(X)
     
     if(type(scalerY) == type(None)):
-        scalerY = {'MinMax': myMinMaxScaler() , 'Normalisation': myNormalisationScaler()}[scalerType]            
+        scalerY = constructor_scaler(scalerType)            
         scalerY.fit(Y)
             
     return scalerX.transform(X), scalerY.transform(Y), scalerX, scalerY
 
+
+
+def exportScale(filenameIn, filenameOut, nX, nY, Ylabel = 'Y', scalerType = "MinMax"):
+    scalerX, scalerY = getDatasetsXY(nX, nY, filenameIn, Ylabel = Ylabel, scalerType = scalerType)[2:4]
+    scalerLimits = np.zeros((max(nX,nY),4))
+    scalerLimits[:nX,0:2] = scalerX.export_scale()
+    scalerLimits[:nY,2:4] = scalerY.export_scale()
+
+    np.savetxt(filenameOut, scalerLimits)
+
+def importScale(filenameIn, nX, nY, scalerType = 'MinMax'): ## It was wrong (I have to use it wrongly: Use minmax with the normalization values)
+
+    scalerX = constructor_scaler(scalerType)      
+    scalerY = constructor_scaler(scalerType)      
+    scalerX.load_param(np.loadtxt(filenameIn)[:,0:2])
+    scalerY.load_param(np.loadtxt(filenameIn)[:,2:4])
+    scalerX.set_n(nX)
+    scalerY.set_n(nY)
+    
+    return scalerX, scalerY
 
 # def getTraining(ns_start, ns_end, nX, nY, Xdatafile, Ydatafile, scalerX = None, scalerY = None):
 #     X = np.zeros((ns_end - ns_start,nX))
