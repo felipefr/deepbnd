@@ -94,6 +94,8 @@ class NetArch:
        
         elif(type(self.scalerY) == type(dman.myNormalisationScaler()) ):
             w_l = (2.0*self.scalerY.data_std)**2.0
+            
+        w_l = w_l.astype('float32')
         
         lossW= mytf.my_partial(mytf.custom_loss_mse, weight = w_l)
             
