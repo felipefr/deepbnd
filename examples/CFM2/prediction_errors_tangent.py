@@ -28,11 +28,12 @@ import deepBND.core.data_manipulation.utils as dman
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 
 
-standardNets = {'huge': NetArch([500, 500, 500], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 1.0e-9),
-                'escalonated': NetArch([50, 300, 500], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 1.0e-9),
-                'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8)}
-
  
+standardNets = {'huge': NetArch([500, 500, 500], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 1.0e-8),
+                'huge_tanh': NetArch([500, 500, 500], 3*['swish'] + ['tanh'], 5.0e-4, 0.1, 5*[0.0], 1.0e-8),
+                'huge_reg': NetArch([500, 500, 500], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-9)}
+ 
+
 def compute_DNN_error(net, Ylabel, Xmask):
 
     scalerX, scalerY = dman.importScale(net.files['scaler'], nX, Nrb, scalerType = 'MinMax') # wrongly, but the network was scaled wrongly
@@ -50,7 +51,7 @@ def compute_DNN_error(net, Ylabel, Xmask):
     # Xbar = Xbar[:, Xmask]
     # net.nX = len(Xmask)
     
-    model = net.getModel()   
+    model = net.getModel_batchNorm()   
     model.load_weights(net.files['weights'])
     
     
@@ -90,7 +91,7 @@ def plot_curve_training(net, title = '', add_y_lines=[]):
     for yi in add_y_lines:
         plt.plot([0,np.max(hist[:,index_epochs])] , 2*[yi[0]] ,label= yi[1])
             
-    plt.yscale('log')
+    # plt.yscale('log')
     plt.legend()
     plt.grid()
     plt.legend()
@@ -99,11 +100,11 @@ def plot_curve_training(net, title = '', add_y_lines=[]):
 if __name__ == '__main__':
     
     folderDataset = rootDataPath + "/CFM2/datasets_fluctuations/"
-    folderTrain = rootDataPath + "/CFM2/training_fluctuations_normalisation/"
+    folderTrain = rootDataPath + "/CFM2/training_fluctuations/"
     
     Nrb = 140
     archId = 'huge'
-    load_flag = 'S'
+    load_flag = 'A'
     suffix = "all_fluctuations"
     suffix_incomplete_case = "4x4"
     nX = 36
@@ -112,7 +113,8 @@ if __name__ == '__main__':
     Xmask_list = {'all' : np.arange(nX), 
                   '35' : np.arange(nX - 1),
                   '4x4' : np.array([7,8,9,10,13,14,15,16,19,20,21,22,25,26,27,28]),
-                  '2x2' : np.array([14,15,20,21]), 
+                  '2x2' : np.array([14,15,20,21]),
+                  '2x2_comp' : np.concatenate( (np.arange(14), np.arange(16,20), np.arange(22,36)) ).flatten(),
                   '4x4_nobottom' : np.array([13,14,15,16,19,20,21,22,25,26,27,28]),
                   '4x4_nobottom' : np.array([13,14,15,16,19,20,21,22,25,26,27,28])}
     

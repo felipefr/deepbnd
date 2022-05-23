@@ -23,6 +23,8 @@ import numpy as np
 from dolfin import *
 from timeit import default_timer as timer
 import matplotlib.pyplot as plt
+from numba import njit, prange
+
 
 from deepBND.__init__ import *
 import deepBND.creation_model.RB.RB_utils as rbut
@@ -32,6 +34,7 @@ import deepBND.core.multiscale.misc as mtsm
 
 dotProduct = lambda u,v, dx : assemble(inner(u,v)*ds)
 
+@njit(parallel=True)
 def translateSolution(nameSnaps, Vref):
     for load_flag in ['A', 'S']:
         labels = ['solutions_%s'%load_flag,'a_%s'%load_flag,'B_%s'%load_flag]
@@ -40,7 +43,8 @@ def translateSolution(nameSnaps, Vref):
         Isol_trans = Isol_full[:,:]
         usol = Function(Vref)
         ns = len(Isol_trans)
-        for i in range(ns):
+        # for i in range(ns):
+        for i in prange(A.shape[0]):
             print('translating ', i)
             usol.vector().set_local(Isol_full[i,:])
             T = mtsm.affineTransformationExpression(Isol_a[i,:], Isol_B[i,:,:], Mref) # B = 0
@@ -48,7 +52,8 @@ def translateSolution(nameSnaps, Vref):
             
         myhd.addDataset(fIsol,Isol_trans, 'solutions_fluctuations_%s'%load_flag)
         fIsol.close()
-
+        
+    return 0
 
 def computingBasis(nameSnaps, nameWbasis, Nmax, Nh, Vref, dsRef):
     os.system('rm ' + nameWbasis)
@@ -90,10 +95,10 @@ def createXY(nameParamRVEdataset, nameYlist, nameXYlist, id_feature = 2, transfo
 
 if __name__ == '__main__': 
     
-    folder = "/home/felipe/deepBND/DATA/CFM2/datasets_fluctuations/"
-    folder_mesh = "/home/felipe/deepBND/DATA/CFM2/datasets_fluctuations/"
+    folder = "/home/felipe/deepBND/DATA/CFM2/datasets_numba/"
+    folder_mesh = "/home/felipe/deepBND/DATA/CFM2/datasets_numba/"
     
-    suffix = '_validation'
+    suffix = '_train'
     nameSnaps = folder + 'snapshots%s.h5'%suffix
     nameMeshRefBnd = folder_mesh + 'boundaryMesh.xdmf'
     nameWbasis = folder + 'Wbasis.hd5'

@@ -108,7 +108,7 @@ if __name__ == '__main__':
     archId = 'huge'
     load_flag = 'S'
     suffix = "all_fluctuations"
-    suffix_incomplete_case = "all"
+    suffix_incomplete_case = "2x2"
     nX = 36
     
     
