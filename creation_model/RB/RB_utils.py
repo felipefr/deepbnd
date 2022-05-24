@@ -114,31 +114,24 @@ def computingBasis(Wbasis,C,Isol,Nmax, divisionInC = False, N0=0,N1=0):
     return sig, U
 
 def getMassMatrix(Vref,dxRef,dotProduct):
-    Nh = Vref.dim()
-    ui = Function(Vref)
-    uj = Function(Vref)
+    u = TrialFunction(Vref)
+    v = TestFunction(Vref)
 
-    M = np.zeros((Nh,Nh))
+    a = dotProduct(u,v,dxRef)
+    A = assemble(a)
     
-    for i in range(Nh):     ## think in passing it to above
-        ei = np.zeros(Nh)
-        ei[i] = 1.0
-        ui.vector().set_local(ei)
-        for j in range(i, Nh):     ## think in passing it to above
-            ej = np.zeros(Nh)
-            ej[j] = 1.0
-            uj.vector().set_local(ej)
-            M[i,j] = dotProduct(ui,uj,dxRef)
-            M[j,i] = M[i,j]
-
-    return M
+    return A.array()
 
 def computingBasis_svd(Wbasis,M,Isol,Nmax, Vref,dxRef,dotProduct):
     M[:,:] = getMassMatrix(Vref,dxRef,dotProduct)
+    print("Mass matrix built")
     UM,SM,VMT = np.linalg.svd(M)  
+    print("Mass matrix factorised")
     Msqrt = (UM[:,:len(SM)]*np.sqrt(SM))@VMT
             
     U, sig, VT = np.linalg.svd(Isol@Msqrt,full_matrices = False) # sig here means the sqrt of eigenvalues for the correlation matrix method
+    
+    print("SVD on the snapshots perfomed")
     
     print(U.shape)
     print(sig.shape)

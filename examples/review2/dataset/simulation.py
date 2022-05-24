@@ -18,21 +18,13 @@ from mpi4py import MPI
 from deepBND.__init__ import *
 from deepBND.core.multiscale.mesh_RVE import buildRVEmesh
 import deepBND.core.multiscale.micro_model as mscm
-import deepBND.core.elasticity.fenics_utils as fela
-import deepBND.core.fenics_tools.wrapper_io as iofe
-import deepBND.core.multiscale.misc as mtsm
-from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
-import deepBND.core.data_manipulation.wrapper_h5py as myhd
-from deepBND.core.mesh.degenerated_rectangle_mesh import degeneratedBoundaryRectangleMesh
 from deepBND.core.multiscale.mesh_RVE import paramRVE_default
+import deepBND.core.multiscale.misc as mtsm
 
-# from deepBND.creation_model.dataset.simulation_snapshots import *
-
-comm = MPI.COMM_WORLD
-comm_self = MPI.COMM_SELF
-
-# comm = MPI.COMM_WORLD
-# comm_self = MPI.COMM_SELF
+from fetricks.fenics.mesh.mesh import Mesh 
+import fetricks.fenics.postprocessing.wrapper_io as iofe
+import fetricks.data_manipulation.wrapper_h5py as myhd
+from fetricks.fenics.mesh.degenerated_rectangle_mesh import degeneratedBoundaryRectangleMesh
 
 
 def solve_snapshot(i, meshname, paramMaterial, opModel, datasets, usol):
@@ -43,11 +35,9 @@ def solve_snapshot(i, meshname, paramMaterial, opModel, datasets, usol):
     microModel = mscm.MicroModel(meshname, paramMaterial, opModel)
     microModel.compute()
     
-    meshname_postproc = meshname[:-5] + '_to_the_paper.xdmf'
-    microModel.visualiseMicrostructure(meshname_postproc)
+    # meshname_postproc = meshname[:-5] + '_to_the_paper.xdmf'
+    # microModel.visualiseMicrostructure(meshname_postproc)
     
-    
-
     for j_voigt, sol, sigma, a, B, sigmaT in zip([2,0], [sol_S,sol_A],[sigma_S,sigma_A],
                                                  [a_S,a_A],[B_S,B_A],[sigmaT_S, sigmaT_A]):
         
@@ -65,39 +55,37 @@ def solve_snapshot(i, meshname, paramMaterial, opModel, datasets, usol):
     print("concluded in ", end - start)      
     
 
-def buildSnapshots(paramMaterial, filesnames, opModel, createMesh, run, num_runs, i0, comm_self):
+def buildSnapshots(paramMaterial, filesnames, opModel, createMesh):
     bndMeshname, paramRVEname, snapshotsname, meshname = filesnames
     
-    Mref = EnrichedMesh(bndMeshname, comm = comm_self)
-    Vref = VectorFunctionSpace(Mref,"CG", 1)
+    Mref = Mesh(bndMeshname)
+    Vref = VectorFunctionSpace(Mref,"CG", 2)
     usol = Function(Vref)
     
-    ns = len(myhd.loadhd5(paramRVEname, 'param')[:,0])
     
-    ids_run = np.arange(run,ns,num_runs).astype('int')
-    nrun = len(ids_run)
+    paramRVEdata = myhd.loadhd5(paramRVEname, 'param') 
+    ids_param = myhd.loadhd5(paramRVEname, 'ids')
+    ns = len(ids_param)
     
     os.system('rm ' + snapshotsname)
     snapshots, fsnaps = myhd.zeros_openFile(filename = snapshotsname,  
-                                            shape = [(nrun,)] + 2*[(nrun,Vref.dim()),(nrun,3),(nrun,2), (nrun,2,2), (nrun,3)],
+                                            shape = [(ns,)] + 2*[(ns,Vref.dim()),(ns,3),(ns,2), (ns,2,2), (ns,3)],
                                             label = ['id', 'solutions_S','sigma_S','a_S','B_S', 'sigmaTotal_S',
                                                      'solutions_A','sigma_A','a_A','B_A', 'sigmaTotal_A'], mode = 'w-')
     
     ids, sol_S, sigma_S, a_S, B_S, sigmaT_S, sol_A, sigma_A, a_A, B_A, sigmaT_A = snapshots
     
              
-    paramRVEdata = myhd.loadhd5(paramRVEname, 'param')[ids_run] 
     
-    
-    for i in range(i0,nrun):
-        
-        ids[i] = ids_run[i]
+    for i in range(ns):
+
+        ids[i] = ids_param[i]
         
         print("Solving snapshot", int(ids[i]), i)
 
         if(createMesh):
             buildRVEmesh(paramRVEdata[i,:,:], meshname, 
-                         isOrdered = False, size = 'full')
+                         isOrdered = False, size = 'full', NxL = 4, NyL = 4, maxOffset = 2, lcar = 3/30)
         
         solve_snapshot(i, meshname, paramMaterial, opModel, snapshots, usol)
     
@@ -109,21 +97,8 @@ def buildSnapshots(paramMaterial, filesnames, opModel, createMesh, run, num_runs
 
 if __name__ == '__main__':
     
-    if(len(sys.argv)>1):
-        run = int(sys.argv[1])
-        num_runs = int(sys.argv[2])
-    else:
-        comm = MPI.COMM_WORLD
-        run = comm.Get_rank()
-        num_runs = comm.Get_size()
-        
-    print('run, num_runs ', run, num_runs)
-    
-    i0 = 0
-    run = comm.Get_rank()
-    num_runs = comm.Get_size()
-    
-    folder = rootDataPath + "/ellipses/dataset_postprocessing/"
+
+    folder = rootDataPath + "/review2/dataset/"
     
     suffix = ""
     opModel = 'per'
@@ -136,16 +111,51 @@ if __name__ == '__main__':
     
     bndMeshname = folder + 'boundaryMesh.xdmf'
     paramRVEname = folder +  'paramRVEdataset{0}.hd5'.format(suffix)
-    snapshotsname = folder +  'snapshots_2ndTry_{0}_{1}.hd5'.format(suffix,run)
-    meshname = folder + "meshes/mesh_temp_{0}.xdmf".format(run)
+    snapshotsname = folder +  'snapshots.hd5'
+    meshname = folder + "meshes/mesh_temp_{0}.xdmf"
     
-    filesnames = [bndMeshname, paramRVEname, snapshotsname, meshname]
+    run = int(sys.argv[1])
+    numruns = int(sys.argv[2])
     
-    # generation of the lite mesh for the internal boundary
-    # p = paramRVE_default()
-    # meshRef = degeneratedBoundaryRectangleMesh(x0 = p.x0L, y0 = p.y0L, Lx = p.LxL , Ly = p.LyL , Nb = 21)
-    # meshRef.generate()
-    # meshRef.write(bndMeshname , 'fenics')
+    if(run == -1): # preparation paramRVE (splitting)
+        
+        ns = len(myhd.loadhd5(paramRVEname, 'ids'))
+        
+        size = int(np.floor(ns/numruns)) 
     
+        labels = ['ids', 'param']
+        
+        indexesOutput = [ np.arange(i*size, (i+1)*size) for i in range(numruns)]
+        indexesOutput[-1] = np.arange((numruns-1)*size, ns) # in case the division is not exact
+        
+        myhd.split(paramRVEname, indexesOutput, labels, 'w')
+
+        os.system('mkdir ' + snapshotsname.split('.')[0] + '_split/')        
+
+        p = paramRVE_default(NxL = 4, NyL = 4, maxOffset = 4)
+        meshRef = degeneratedBoundaryRectangleMesh(x0 = p.x0L, y0 = p.y0L, Lx = p.LxL , Ly = p.LyL , Nb = 100)
+        meshRef.generate()
+        meshRef.write(bndMeshname , 'fenics')
+            
+    elif(run>numruns):
+        if(numruns>1):
+            paramRVEname = paramRVEname.split('.')[0] + '_split/part_{0}'.format(run) + '.hd5'
+            snapshotsname = snapshotsname.split('.')[0] + '_split/part_{0}'.format(run) + '.hd5'
+            
+        ns = len(myhd.loadhd5(paramRVEname, 'ids'))
     
-    buildSnapshots(paramMaterial, filesnames, opModel, createMesh, run, num_runs, i0, comm_self)
+        labels = ['id', 'param']
+
+        meshname = meshname.format(run)
+        filesnames = [bndMeshname, paramRVEname, snapshotsname, meshname]
+        
+        buildSnapshots(paramMaterial, filesnames, opModel, createMesh)
+    
+    else:
+    
+        labels =  ['id', 'solutions_S','sigma_S','a_S','B_S', 'sigmaTotal_S',
+                 'solutions_A','sigma_A','a_A','B_A', 'sigmaTotal_A']
+        
+        snapshotsname_rad = snapshotsname.split('.')[0] + '_split/part_{0}' + '.hd5'
+        
+        myhd.merge([snapshotsname_rad.format(i) for i in range(numruns)], snapshotsname, labels, labels)

@@ -17,7 +17,7 @@ class paramRVE_default:
         self.LyL = self.NyL*self.H
         self.x0L = - 0.5*self.LxL
         self.y0L = - 0.5*self.LyL
-        self.lcar = (2/30)*self.H
+        self.lcar = (2/30)*self.H # normally is 2/30
         self.Nx = (self.NxL+2*self.maxOffset)
         self.Ny = (self.NyL+2*self.maxOffset)
         self.Lxt = self.Nx*self.H
@@ -32,9 +32,10 @@ class paramRVE_default:
 
 
 def buildRVEmesh(paramRVEdata, nameMesh, isOrdered = False, size = 'reduced', 
-                 NxL = 2, NyL = 2, maxOffset = 2, Vfrac = 0.282743):
+                 NxL = 2, NyL = 2, maxOffset = 2, Vfrac = 0.282743, lcar = None):
 
     p = paramRVE_default(NxL, NyL, maxOffset, Vfrac) # load default parameters
+    p.lcar = lcar*p.H if type(lcar) is not type(None) else p.lcar
     
     
     if(isOrdered): # it is already ordered (internal, after external)
