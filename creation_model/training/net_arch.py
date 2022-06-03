@@ -102,7 +102,7 @@ class NetArch:
             
         optimizer= tf.keras.optimizers.Adam(learning_rate = self.lr)
         
-        model = self.getModel_batchNorm()
+        model = self.getModel()
         model.summary()
         model.compile(loss = lossW, optimizer=optimizer, metrics=[lossW,'mse','mae'])
     

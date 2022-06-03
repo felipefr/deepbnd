@@ -14,6 +14,8 @@ Models should be trained indepedently for axial and shear loads ('A' and 'S' lab
 
 import os, sys
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
+os.environ['HDF5_DISABLE_VERSION_CHECK']='2'
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -25,7 +27,7 @@ import deepBND.core.data_manipulation.utils as dman
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 
 
-standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
+standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 1.0e-8),
           'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8)}
 
 
@@ -36,20 +38,9 @@ standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4
 #          'big_big_400': NetArch([400, 400, 400], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8)}
 
 
-def dataAugmentation(XY):
-    XX = np.concatenate((XY[0], -XY[0]), axis = 0)
-    YY = np.concatenate((XY[1], XY[1]), axis = 0)
-    
-    ids = np.arange(0,XX.shape[0])
-    np.random.shuffle(ids)
-    
-
-    return (XX[ids,:],YY[ids,:])
-
-
 def run_training(net, Ylabel):
-    dman.exportScale(net.files['XY'], net.files['scaler'], net.nX, net.nY, Ylabel = Ylabel)
-    scalerX, scalerY = dman.importScale(net.files['scaler'], nX, Nrb)
+    dman.exportScale(net.files['XY'], net.files['scaler'], net.nX, net.nY, Ylabel = Ylabel, scalerType = 'MinMax11' )
+    scalerX, scalerY = dman.importScale(net.files['scaler'], nX, Nrb, scalerType = 'MinMax11')
 
     net.scalerX = scalerX
     net.scalerY = scalerY
@@ -59,25 +50,15 @@ def run_training(net, Ylabel):
     XY_train = dman.getDatasetsXY(nX, Nrb, net.files['XY'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
     XY_val = dman.getDatasetsXY(nX, Nrb, net.files['XY_val'], scalerX, scalerY, Ylabel = Ylabel)[0:2]
     
-    
-    X_train_original = scalerX.inverse_transform(XY_train[0])
-    X_val_original = scalerX.inverse_transform(XY_val[0])
-    
-    XY_train = (X_train_original, XY_train[1])
-    XY_val = (X_val_original, XY_val[1])
-    
-    XY_train = dataAugmentation(XY_train)
-    XY_val = dataAugmentation(XY_val)
-    
-    
-    hist = net.training(XY_train, XY_val)
+    hist = net.training(XY_train, XY_val, seed = 2)
 
     return XY_train, XY_val, scalerX, scalerY
 
+
 if __name__ == '__main__':
     
-    folderDataset = rootDataPath + "/ellipses/training/"
-    folderTrain = rootDataPath + "/ellipses/training/"
+    folderDataset = rootDataPath + "/review2/dataset_cluster/"
+    folderTrain = rootDataPath + "/review2/training/"
     
     nameXY = folderDataset +  'XY_train.hd5'
     nameXY_val = folderDataset +  'XY_val.hd5'
@@ -88,18 +69,18 @@ if __name__ == '__main__':
         archId = int(sys.argv[3])
 
     else:
-        Nrb = 80
+        Nrb = 600
         epochs = 100
-        archId = 'big_big_400'
+        archId = 'big'
         load_flag = 'S'
 
-    nX = 72
+    nX = 128
     
     print('Nrb is ', Nrb, 'epochs ', epochs)
     
     net = standardNets[archId]
     
-    suffix = "unnormalised_data_augmented_lr5em4"
+    suffix = ""
     
     net.epochs =  int(epochs)
     net.nY = Nrb

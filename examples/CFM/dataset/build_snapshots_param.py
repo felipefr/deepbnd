@@ -17,8 +17,6 @@ import deepBND.creation_model.dataset.generation_inclusions as geni
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 from deepBND.core.multiscale.mesh_RVE import paramRVE_default 
 
-
-
 def build_paramRVE_subdomains(paramRVEname, Nx, Ny, maxOffset):    
     
     paramRVE = myhd.loadhd5(paramRVEname, 'param')

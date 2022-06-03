@@ -8,16 +8,21 @@ import multiphenics as mp
 from mpi4py import MPI
 
 from deepBND.__init__ import *
+import fetricks as ft 
 import micmacsfenics.core.micro_constitutive_model as mscm
-from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh 
-from deepBND.core.elasticity.fenics_utils import getLameInclusions
-from deepBND.core.fenics_tools.misc import symgrad, Integral
-from deepBND.core.fenics_tools.wrapper_solvers import local_project
+from fetricks.fenics.material.multimaterial import getLameExpression
+from fetricks.fenics.la.wrapper_solvers import local_project
+from fetricks.fenics.mesh.mesh import Mesh 
+
 
 comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF
 rank = comm.Get_rank()
 num_ranks = comm.Get_size()
+
+
+
+
 
 class MicroModel(mscm.MicroConstitutiveModel):
     
@@ -36,7 +41,7 @@ class MicroModel(mscm.MicroConstitutiveModel):
         self.readMesh()
 
     def readMesh(self):
-        self.mesh = EnrichedMesh(self.nameMesh,comm_self)
+        self.mesh = Mesh(self.nameMesh, comm_self)
         self.coord_min = np.min(self.mesh.coordinates(), axis = 0)
         self.coord_max = np.max(self.mesh.coordinates(), axis = 0)
         self.others['x0'] = self.coord_min[0]
@@ -45,8 +50,8 @@ class MicroModel(mscm.MicroConstitutiveModel):
         self.others['y1'] = self.coord_max[1]
         self.y = df.SpatialCoordinate(self.mesh)
         self.dy = self.mesh.dx # specially for the case of enriched mesh, otherwise it does not work
-        self.lame = getLameInclusions(*self.param, self.mesh)
-        self.sigmaLaw = lambda u: self.lame[0]*nabla_div(u)*df.Identity(2) + 2*self.lame[1]*symgrad(u)
+        self.lame = getLameExpression(*self.param, self.mesh)
+        self.sigmaLaw = lambda u: self.lame[0]*nabla_div(u)*df.Identity(2) + 2*self.lame[1]*ft.symgrad(u)
 
     
     def compute(self):  # maybe should be removed
@@ -91,7 +96,7 @@ class MicroModel(mscm.MicroConstitutiveModel):
         vol = sum([df.assemble(df.Constant(1.0)*self.dy(i)) for i in regions])
         
         sig_mu = self.sigmaLaw(df.dot(Eps,self.y) + self.sol[i_voigt][0])
-        sigma_hom =  sum([Integral(sig_mu, self.dy(i), (2,2)) for i in regions])/vol
+        sigma_hom =  sum([ft.Integral(sig_mu, self.dy(i), (2,2)) for i in regions])/vol
         
 
         return sigma_hom

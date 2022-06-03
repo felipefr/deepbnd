@@ -16,6 +16,9 @@ from dolfin import *
 from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 
+
+os.environ['HDF5_DISABLE_VERSION_CHECK']='2'
+
 from deepBND.__init__ import *
 import deepBND.creation_model.RB.RB_utils as rbut
 import deepBND.core.multiscale.misc as mtsm
@@ -84,8 +87,8 @@ def createXY(nameParamRVEdataset, nameYlist, nameXYlist, id_feature = 2):
 
 if __name__ == '__main__': 
     
-    folder = rootDataPath + "/review2/dataset/"
-    folder_mesh = rootDataPath + "/review2/dataset/"
+    folder = rootDataPath + "/review2/dataset_cluster/"
+    folder_mesh = rootDataPath + "/review2/dataset_cluster/"
     
     suffix = ''
     nameSnaps = folder + 'snapshots%s.hd5'%suffix
@@ -101,10 +104,12 @@ if __name__ == '__main__':
     dxRef = Measure('dx', Mref) 
     dsRef = Measure('ds', Mref) 
     Nh = Vref.dim()
+    print(Nh)
     
-    Nmax = 10
+    Nmax = 2000
     
-    op = int(input('option (0 to 3)'))
+    # op = int(input('option (0 to 3)'))
+    op = 4
         
     if(op==0):
         translateSolution(nameSnaps, Vref)
@@ -115,11 +120,14 @@ if __name__ == '__main__':
     elif(op==3):
         createXY(nameParamRVEdataset, nameYlist, nameXYlist, id_feature = [0,1])    
     elif(op==4): # train,  validation, test splitting
-        ns = len(ids)
+        ns = len(myhd.loadhd5(nameParamRVEdataset, "id"))
         seed = 2
         np.random.seed(seed)
         shuffled_ids = np.arange(0,ns) 
-        np.random.shuffle(shuffled_ids) 
+        np.random.shuffle(shuffled_ids)
+        
+        r_val = 0.05
+        r_test = 0.0001
         
         id_val = np.arange(0, int(np.floor(r_val*ns))).astype('int')
         id_test = np.arange(id_val[-1] + 1, int(np.floor((r_val+r_test)*ns)))
@@ -129,18 +137,10 @@ if __name__ == '__main__':
         id_test = shuffled_ids[id_test]
         id_train = shuffled_ids[id_train]
         
-        new_snaps_fields_val = []
-        new_snaps_fields_test = []
-        new_snaps_fields_train = []
+        labels = ['X', 'Y_A', 'Y_S']
+        X, Y_A, Y_S = myhd.loadhd5(nameXYlist, labels )  
         
-        for f in snaps:
-            new_snaps_fields_val.append(f[id_val])
-            new_snaps_fields_test.append(f[id_test])
-            new_snaps_fields_train.append(f[id_train])
+        myhd.savehd5(nameXYlist.split('.')[0] + "_val.hd5" , [X[id_val], Y_A[id_val], Y_S[id_val]], labels , "w-")
+        myhd.savehd5(nameXYlist.split('.')[0] + "_test.hd5", [X[id_test], Y_A[id_test], Y_S[id_test]], labels , "w-")
+        myhd.savehd5(nameXYlist.split('.')[0] + "_train.hd5", [X[id_train], Y_A[id_train], Y_S[id_train]], labels , "w-")
         
-        myhd.savehd5("paramRVEdataset_val.hd5", [ids[id_val], param[id_val]], ["id", "param"] , "w-")
-        myhd.savehd5("paramRVEdataset_test.hd5", [ids[id_test], param[id_test]], ["id", "param"] , "w-")
-        myhd.savehd5("paramRVEdataset_train.hd5", [ids[id_train], param[id_train]], ["id", "param"] , "w-")
-        
-        myhd.savehd5("snapshots_val.hd5", new_snaps_fields_val, labels, "w-")
-                
