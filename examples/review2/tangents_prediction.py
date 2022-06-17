@@ -69,17 +69,9 @@ def predictTangents(modelBnd, namefiles, createMesh, meshSize):
     
         start = timer()
         
-        if(os.path.exists(meshMicroName_i)):
-            if(createMesh):
-                print("mesh exists : jumping the calculation")
-                continue
-            else:
-                pass
-        else:
-            buildRVEmesh(paramRVEdata[i,:,:], meshMicroName_i, isOrdered = False, size = meshSize, 
-                         NxL = 4, NyL = 4, maxOffset = 2, lcar = 3/30)
+        buildRVEmesh(paramRVEdata[i,:,:], meshMicroName_i, isOrdered = False, size = meshSize, 
+                     NxL = 4, NyL = 4, maxOffset = 2, lcar = 3/30)
         
-    
         end = timer()
         print("time expended in meshing ", end - start)
     
