@@ -92,7 +92,8 @@ def predictTangents(modelBnd, namefiles, createMesh, meshSize):
             
         
         Icenter[i,:] = centers[i,:]
-        Itangent[i,:,:] = microModel.getTangent()
+        # Itangent[i,:,:] = microModel.getTangent()
+        Itangent[i,:,:] = microModel.getHomogenisation()['tangentL']
         
         if(i%10 == 0):
             f.flush()    
