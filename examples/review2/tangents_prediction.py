@@ -16,7 +16,8 @@ from timeit import default_timer as timer
 from deepBND.__init__ import *
 import fetricks.data_manipulation.wrapper_h5py as myhd
 from fetricks.fenics.mesh.mesh import Mesh 
-from deepBND.core.multiscale.micro_model_dnn import MicroConstitutiveModelDNN
+from deepBND.core.multiscale.micro_model_gen import MicroConstitutiveModelGen
+# from deepBND.core.multiscale.micro_model_dnn import MicroConstitutiveModelDNN
 from deepBND.core.multiscale.mesh_RVE import buildRVEmesh
 
 # split BC prediction and paramRVEname
@@ -75,7 +76,8 @@ def predictTangents(modelBnd, namefiles, createMesh, meshSize):
         end = timer()
         print("time expended in meshing ", end - start)
     
-        microModel = MicroConstitutiveModelDNN(meshMicroName_i, param, modelBnd) 
+        # microModel = MicroConstitutiveModelDNN(meshMicroName_i, param, modelBnd) 
+        microModel = MicroConstitutiveModelGen(meshMicroName_i, param, modelBnd)
         
         if(modelBnd == 'dnn'):
             microModel.others['uD'] = df.Function(Vref) 
@@ -103,9 +105,9 @@ if __name__ == '__main__':
     
     run = 0
     
-    suffixTangent = ''
-    modelBnd = 'dnn'
-    meshSize = 'reduced'
+    suffixTangent = 'full'
+    modelBnd = 'per'
+    meshSize = 'full'
     createMesh = True
     suffixBC = ''
     suffix = ""
