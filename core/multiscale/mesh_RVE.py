@@ -1,8 +1,12 @@
 import sys, os
 import numpy as np
-from deepBND.core.mesh.ellipse2_mesh import ellipseMesh2
-from deepBND.core.mesh.ellipse_two_domains_mesh import ellipseMesh2Domains
+# from deepBND.core.mesh.ellipse2_mesh import ellipseMesh2
+# from deepBND.core.mesh.ellipse_two_domains_mesh import ellipseMesh2Domains
 import deepBND.creation_model.dataset.generation_inclusions as geni
+
+
+from fetricks.fenics.mesh.ellipsoidal_inclusions_mesh import ellipsoidalInclusionsMesh as ellipseMesh2
+from fetricks.fenics.mesh.ellipsoidal_inclusions_twodomains_mesh import ellipsoidalInclusionsTwoDomainsMesh as ellipseMesh2Domains
 
 
 class paramRVE_default:

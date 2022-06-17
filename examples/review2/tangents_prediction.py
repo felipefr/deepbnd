@@ -12,7 +12,6 @@ import dolfin as df
 import matplotlib.pyplot as plt
 from ufl import nabla_div
 from timeit import default_timer as timer
-from mpi4py import MPI
 
 from deepBND.__init__ import *
 import fetricks.data_manipulation.wrapper_h5py as myhd
