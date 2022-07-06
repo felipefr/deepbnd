@@ -51,12 +51,14 @@ def buildRVEmesh(paramRVEdata, nameMesh, isOrdered = False, size = 'reduced',
     
     if(size == 'reduced'):
         meshGMSH = ellipseMesh2(paramRVEdata[:p.NxL*p.NyL,:], p.x0L, p.y0L, p.LxL, p.LyL, p.lcar) 
+        meshGMSH.setNameMesh(nameMesh)
         meshGMSH.setTransfiniteBoundary(p.NpLxL)
         
     elif(size == 'full'):
         meshGMSH = ellipseMesh2Domains(p.x0L, p.y0L, p.LxL, p.LyL, p.NL, paramRVEdata, 
                                             p.Lxt, p.Lyt, p.lcar, x0 = p.x0, y0 = p.y0)
+        meshGMSH.setNameMesh(nameMesh)
         meshGMSH.setTransfiniteBoundary(p.NpLxt)
         meshGMSH.setTransfiniteInternalBoundary(p.NpLxL)   
-            
-    meshGMSH.write(nameMesh, opt = 'fenics')
+         
+    meshGMSH.write(opt = 'fenics') # No need of mesh name anymore

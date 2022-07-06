@@ -14,15 +14,10 @@ from fetricks.fenics.material.multimaterial import getLameExpression
 from fetricks.fenics.la.wrapper_solvers import local_project
 from fetricks.fenics.mesh.mesh import Mesh 
 
-
 comm = MPI.COMM_WORLD
 comm_self = MPI.COMM_SELF
 rank = comm.Get_rank()
 num_ranks = comm.Get_size()
-
-
-
-
 
 class MicroModel(mscm.MicroConstitutiveModel):
     
@@ -86,8 +81,7 @@ class MicroModel(mscm.MicroConstitutiveModel):
             end = timer()
             print('time in solving system', end - start) # Time in seconds
         
-        
-        
+    
     def homogenise(self, regions = [0,1], i_voigt = 0 ): # maybe should be removed
         
         Eps = df.Constant(((0.,0.),(0.,0.))) # just placeholder
