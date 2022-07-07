@@ -26,6 +26,10 @@ import fetricks.fenics.postprocessing.wrapper_io as iofe
 import fetricks.data_manipulation.wrapper_h5py as myhd
 from fetricks.fenics.mesh.degenerated_rectangle_mesh import degeneratedBoundaryRectangleMesh
 
+def crash():
+    return 0/0
+
+
 def solve_snapshot(i, meshname, paramMaterial, opModel, datasets, usol):
     ids, sol_S, sigma_S, a_S, B_S, sigmaT_S, sol_A, sigma_A, a_A, B_A, sigmaT_A = datasets
     
@@ -84,7 +88,10 @@ def buildSnapshots(paramMaterial, filesnames, opModel, createMesh):
     
         for i in indexes_to_solve:
             print("Solving snapshot", int(ids[i]), i)
-            try: 
+            try:
+                if np.random.rand() > 0.9:
+                    crash()
+                
                 ids[i] = ids_param[i]
                 
                 if(createMesh):
@@ -114,7 +121,7 @@ def buildSnapshots(paramMaterial, filesnames, opModel, createMesh):
 if __name__ == '__main__':
     
 
-    folder = rootDataPath + "/review2_smaller/dataset/"
+    folder = "dataset/"
     
     suffix = ""
     opModel = 'per'
@@ -148,11 +155,11 @@ if __name__ == '__main__':
 
         os.system('mkdir ' + snapshotsname.split('.')[0] + '_split/')        
 
-        # p = paramRVE_default(NxL = 2, NyL = 2, maxOffset = 2)
-        # meshRef = degeneratedBoundaryRectangleMesh(x0 = p.x0L, y0 = p.y0L, Lx = p.LxL , Ly = p.LyL , Nb = 30)
-        # meshRef.generate()
-        # meshRef.setNameMesh(bndMeshname )
-        # meshRef.write('fenics')
+        p = paramRVE_default(NxL = 4, NyL = 4, maxOffset = 4)
+        meshRef = degeneratedBoundaryRectangleMesh(x0 = p.x0L, y0 = p.y0L, Lx = p.LxL , Ly = p.LyL , Nb = 100)
+        meshRef.generate()
+        meshRef.setNameMesh(bndMeshname )
+        meshRef.write('fenics')
 
     elif(run<numruns):
         if(numruns>1):

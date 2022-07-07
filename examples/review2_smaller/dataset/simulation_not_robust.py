@@ -26,6 +26,7 @@ import fetricks.fenics.postprocessing.wrapper_io as iofe
 import fetricks.data_manipulation.wrapper_h5py as myhd
 from fetricks.fenics.mesh.degenerated_rectangle_mesh import degeneratedBoundaryRectangleMesh
 
+
 def solve_snapshot(i, meshname, paramMaterial, opModel, datasets, usol):
     ids, sol_S, sigma_S, a_S, B_S, sigmaT_S, sol_A, sigma_A, a_A, B_A, sigmaT_A = datasets
     
@@ -75,41 +76,24 @@ def buildSnapshots(paramMaterial, filesnames, opModel, createMesh):
     ids, sol_S, sigma_S, a_S, B_S, sigmaT_S, sol_A, sigma_A, a_A, B_A, sigmaT_A = snapshots
     
              
-    indexes_to_solve = np.arange(ns)
-    nb_tries = 8
     
-    for k in range(nb_tries):
-        print("Solving not completed simulation: {0}-th chance".format(k))
-        not_completed = []
-    
-        for i in indexes_to_solve:
-            print("Solving snapshot", int(ids[i]), i)
-            try: 
-                ids[i] = ids_param[i]
-                
-                if(createMesh):
-                    buildRVEmesh(paramRVEdata[i,:,:], meshname, 
-                                  isOrdered = False, size = 'full', NxL = 2, NyL = 2, maxOffset = 2, lcar = 2/30)
-                
-                solve_snapshot(i, meshname, paramMaterial, opModel, snapshots, usol)    
-                
-            except:
-                print("Failed solving snapshot", int(ids[i]), i)
-                ids[i] = -1
-                not_completed.append(i)
-            finally:
-                fsnaps.flush()
-            
-        indexes_to_solve = np.array(not_completed)
-        print(indexes_to_solve)
-        if(len(indexes_to_solve) == 0):
-            break
-        
-            
-    
-    fsnaps.close()
+    for i in range(ns):
 
-    return indexes_to_solve
+        ids[i] = ids_param[i]
+        
+        print("Solving snapshot", int(ids[i]), i)
+
+        if(createMesh):
+            buildRVEmesh(paramRVEdata[i,:,:], meshname, 
+                         isOrdered = False, size = 'full', NxL = 2, NyL = 2, maxOffset = 2, lcar = 2/30)
+        
+        solve_snapshot(i, meshname, paramMaterial, opModel, snapshots, usol)
+    
+        
+        fsnaps.flush()
+        
+                
+    fsnaps.close()
 
 if __name__ == '__main__':
     
@@ -148,11 +132,10 @@ if __name__ == '__main__':
 
         os.system('mkdir ' + snapshotsname.split('.')[0] + '_split/')        
 
-        # p = paramRVE_default(NxL = 2, NyL = 2, maxOffset = 2)
-        # meshRef = degeneratedBoundaryRectangleMesh(x0 = p.x0L, y0 = p.y0L, Lx = p.LxL , Ly = p.LyL , Nb = 30)
+        # p = paramRVE_default(NxL = 4, NyL = 4, maxOffset = 4)
+        # meshRef = degeneratedBoundaryRectangleMesh(x0 = p.x0L, y0 = p.y0L, Lx = p.LxL , Ly = p.LyL , Nb = 100)
         # meshRef.generate()
-        # meshRef.setNameMesh(bndMeshname )
-        # meshRef.write('fenics')
+        # meshRef.write(bndMeshname , 'fenics')
 
     elif(run<numruns):
         if(numruns>1):
@@ -166,10 +149,7 @@ if __name__ == '__main__':
         meshname = meshname.format(run)
         filesnames = [bndMeshname, paramRVEname, snapshotsname, meshname]
         
-        not_completed = buildSnapshots(paramMaterial, filesnames, opModel, createMesh)
-        
-        print("Not completed:", not_completed)
-        
+        buildSnapshots(paramMaterial, filesnames, opModel, createMesh)
     
     else:
     
