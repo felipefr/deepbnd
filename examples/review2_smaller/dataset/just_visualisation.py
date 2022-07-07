@@ -48,7 +48,7 @@ def solve_snapshot(i, meshname, paramMaterial):
 def buildSnapshots(paramMaterial, filesnames, createMesh):
     paramRVEname, meshname = filesnames
         
-    ns = len(myhd.loadhd5(paramRVEname, 'param')[0:2,0])
+    ns = len(myhd.loadhd5(paramRVEname, 'param')[2135:2139,0])
          
     paramRVEdata = myhd.loadhd5(paramRVEname, 'param') 
     
@@ -66,7 +66,7 @@ def buildSnapshots(paramMaterial, filesnames, createMesh):
 if __name__ == '__main__':
     
     folder = rootDataPath + "/review2_smaller/dataset/"
-    folder_mesh = folder + "/meshes/"
+    folder_mesh = folder + "/meshes_visualisation/"
     suffix = ""
     opModel = 'per'
     createMesh = True
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     paramMaterial = [nu,E2*contrast,nu,E2]
     
     paramRVEname = folder +  'paramRVEdataset.hd5'
-    meshname = folder_mesh + "mesh_temp.xdmf"
+    meshname = folder_mesh + "mesh_visualisation.xdmf"
     
     os.system("mkdir " + folder_mesh)
     
