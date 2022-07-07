@@ -27,12 +27,12 @@ from deepBND.__init__ import *
 from deepBND.core.multiscale.mesh_RVE import buildRVEmesh
 import deepBND.core.multiscale.micro_model as mscm
 import deepBND.core.multiscale.misc as mtsm
-from deepBND.core.mesh.degenerated_rectangle_mesh import degeneratedBoundaryRectangleMesh
 from deepBND.core.multiscale.mesh_RVE import paramRVE_default
 
 import fetricks.fenics.postprocessing.wrapper_io as iofe
 import fetricks.data_manipulation.wrapper_h5py as myhd
 from fetricks.fenics.mesh.mesh import Mesh
+from fetricks.fenics.mesh.degenerated_rectangle_mesh import degeneratedBoundaryRectangleMesh
 
 # from deepBND.creation_model.dataset.simulation_snapshots import *
 
@@ -44,14 +44,16 @@ def solve_snapshot(i, meshname, paramMaterial):
     meshname_postproc = meshname[:-5] + '_to_the_paper_{0}.xdmf'.format(i)
     microModel.visualiseMicrostructure(meshname_postproc)
     
-
-def buildSnapshots(paramMaterial, filesnames, createMesh):
+    
+def buildSnapshots(paramMaterial, filesnames, createMesh, indexes = None):
     paramRVEname, meshname = filesnames
         
-    ns = len(myhd.loadhd5(paramRVEname, 'param')[2135:2139,0])
-         
-    paramRVEdata = myhd.loadhd5(paramRVEname, 'param') 
-    
+    if(type(indexes) == type(None)):
+        ns = len(myhd.loadhd5(paramRVEname, 'param')[:,0])
+        paramRVEdata = myhd.loadhd5(paramRVEname, 'param')
+    else:
+        ns = len(indexes)
+        paramRVEdata = myhd.loadhd5(paramRVEname, 'param')[indexes,:,:]
     
     for i in range(ns):
 
@@ -83,4 +85,4 @@ if __name__ == '__main__':
     
     filesnames = [paramRVEname, meshname]
         
-    buildSnapshots(paramMaterial, filesnames, createMesh)
+    buildSnapshots(paramMaterial, filesnames, createMesh, indexes = np.arange(2135,2139))
