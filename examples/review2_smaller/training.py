@@ -27,7 +27,7 @@ import deepBND.core.data_manipulation.utils as dman
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 
 
-standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 1.0e-8),
+standardNets = {'big': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8),
           'small':NetArch([40, 40, 40], 3*['swish'] + ['linear'], 5.0e-4, 0.1, [0.0] + 3*[0.005] + [0.0], 1.0e-8)}
 
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
 
     else:
         Nrb = 600
-        epochs = 100
+        epochs = 5000
         archId = 'big'
         load_flag = 'S'
 
