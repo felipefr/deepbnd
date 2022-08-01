@@ -85,72 +85,13 @@ def buildSnapshots(paramMaterial, filesnames, opModel, createMesh):
         for i in indexes_to_solve:
             print("Solving snapshot", int(ids[i]), i)
             try: 
+                ids[i] = ids_param[i]
                 
                 if(createMesh):
                     buildRVEmesh(paramRVEdata[i,:,:], meshname, 
                                   isOrdered = False, size = 'full', NxL = 2, NyL = 2, maxOffset = 2, lcar = 2/30)
                 
                 solve_snapshot(i, meshname, paramMaterial, opModel, snapshots, usol)    
-                
-                ids[i] = ids_param[i]
-                
-            except:
-                print("Failed solving snapshot", int(ids[i]), i)
-                ids[i] = -1
-                not_completed.append(i)
-            finally:
-                fsnaps.flush()
-            
-        indexes_to_solve = np.array(not_completed)
-        print(indexes_to_solve)
-        if(len(indexes_to_solve) == 0):
-            break
-        
-            
-    
-    fsnaps.close()
-
-    return indexes_to_solve
-
-
-def buildSnapshots_restart(paramMaterial, filesnames, opModel, createMesh):
-    bndMeshname, paramRVEname, snapshotsname, meshname = filesnames
-    
-    Mref = Mesh(bndMeshname)
-    Vref = VectorFunctionSpace(Mref,"CG", 2)
-    usol = Function(Vref)
-    
-    
-    paramRVEdata = myhd.loadhd5(paramRVEname, 'param') 
-    ids_param = myhd.loadhd5(paramRVEname, 'ids')
-    ns = len(ids_param)
-
-    snapshots, fsnaps = myhd.loadhd5_openFile(filename = snapshotsname,
-                                              label = ['id', 'solutions_S','sigma_S','a_S','B_S', 'sigmaTotal_S',
-                                                     'solutions_A','sigma_A','a_A','B_A', 'sigmaTotal_A'], mode = 'a')
-    
-    ids, sol_S, sigma_S, a_S, B_S, sigmaT_S, sol_A, sigma_A, a_A, B_A, sigmaT_A = snapshots
-    
-    ids_np = np.array(ids).astype('int')
-    indexes_to_solve = list( np.where(ids_np == -1)[0] ) 
-    nb_tries = 8
-    
-    for k in range(nb_tries):
-        print("Solving not completed simulation: {0}-th chance".format(k))
-        not_completed = []
-    
-        for i in indexes_to_solve:
-            print("Solving snapshot", ids[i], i)
-            
-            try: 
-            
-                if(createMesh):
-                    buildRVEmesh(paramRVEdata[i,:,:], meshname, 
-                                  isOrdered = False, size = 'full', NxL = 2, NyL = 2, maxOffset = 2, lcar = 2/30)
-                
-                solve_snapshot(i, meshname, paramMaterial, opModel, snapshots, usol)    
-                
-                ids[i] = ids_param[i]
                 
             except:
                 print("Failed solving snapshot", int(ids[i]), i)
@@ -186,7 +127,7 @@ if __name__ == '__main__':
     
     bndMeshname = folder + 'boundaryMesh.xdmf'
     paramRVEname = folder +  'paramRVEdataset_echoues{0}.hd5'.format(suffix)
-    snapshotsname = folder +  'snapshots_stopped3.hd5'
+    snapshotsname = folder +  'snapshots_echoues.hd5'
     meshname = folder + "meshes/mesh_temp_{0}.xdmf"
     
     run = int(sys.argv[1])
@@ -225,8 +166,7 @@ if __name__ == '__main__':
         meshname = meshname.format(run)
         filesnames = [bndMeshname, paramRVEname, snapshotsname, meshname]
         
-        # not_completed = buildSnapshots(paramMaterial, filesnames, opModel, createMesh)
-        not_completed = buildSnapshots_restart(paramMaterial, filesnames, opModel, createMesh)
+        not_completed = buildSnapshots(paramMaterial, filesnames, opModel, createMesh)
         
         print("Not completed:", not_completed)
         

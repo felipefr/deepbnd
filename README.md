@@ -69,7 +69,7 @@ git clone https://github.com/felipefr/micmacsfenics.git
 ```
 
 - Make sure your PYTHONPATH variable contains the root directory in which you cloned deepBND. By default, the anaconda installation does not take into consideration the 
-OS path. You can add a .pth (any name) file listing the directories into ~/miniconda/envs/tf-fenics/lib/python3.8/site-packages. Also, you can the directories you want 
+OS path. You can add a .pth (any name) file listing the directories into ~/miniconda/envs/tf-fenics/lib/python3.8/site-packages. Also, you can add the directories you want 
 into spyder (Tools > PYTHONPATH), if you are using it.  
 
 ## Testing 
