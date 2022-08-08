@@ -104,7 +104,7 @@ class NetArch:
         
         model = self.getModel()
         model.summary()
-        model.compile(loss = lossW, optimizer=optimizer, metrics=[lossW,'mse','mae'])
+        model.compile(loss = lossW, optimizer=optimizer, metrics=[lossW])
     
         schdDecay = mytf.my_partial(mytf.scheduler ,lr = self.lr, decay = self.decay, EPOCHS = self.epochs)
         decay_lr = tf.keras.callbacks.LearningRateScheduler(schdDecay)    
