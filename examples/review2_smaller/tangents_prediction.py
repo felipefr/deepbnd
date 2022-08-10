@@ -33,20 +33,15 @@ def predictTangents(modelBnd, namefiles, createMesh, meshSize):
     dxRef = df.Measure('dx', Mref) 
     
     # defining the micro model
+    ids = myhd.loadhd5(paramRVEname, 'ids')
     paramRVEdata = myhd.loadhd5(paramRVEname, 'param')
-    ns = len(paramRVEdata) 
-    
-    # Id here have nothing to with the position of the RVE in the body. Solve it later
-    if(myhd.checkExistenceDataset(paramRVEname, 'id')):    
-        ids = myhd.loadhd5(paramRVEname, 'id')
-    else:
-        ids = -1*np.ones(ns).astype('int')
+    ns = paramRVEdata.shape[0]
         
     if(myhd.checkExistenceDataset(paramRVEname, 'center')):    
         centers = myhd.loadhd5(paramRVEname, 'center')[ids,:]
     else:
         centers = np.zeros((ns,2))
-       
+    
     os.system('rm ' + tangentName)
     Iid_tangent_center, f = myhd.zeros_openFile(tangentName, [(ns,), (ns,3,3), (ns,2)],
                                            ['id', 'tangent','center'], mode = 'w')
@@ -71,7 +66,7 @@ def predictTangents(modelBnd, namefiles, createMesh, meshSize):
         start = timer()
         
         buildRVEmesh(paramRVEdata[i,:,:], meshMicroName_i, isOrdered = False, size = meshSize, 
-                     NxL = 4, NyL = 4, maxOffset = 2, lcar = 3/30)
+                     NxL = 2, NyL = 2, maxOffset = 2, lcar = 2/30)
         
         end = timer()
         print("time expended in meshing ", end - start)
@@ -106,26 +101,25 @@ if __name__ == '__main__':
     
     run = 0
     
-    suffixTangent = 'full'
-    modelBnd = 'per'
-    meshSize = 'full'
+    suffixTangent = 'dnn_big'
+    modelBnd = 'dnn'
+    meshSize = 'reduced'
     createMesh = True
-    suffixBC = ''
-    suffix = ""
+    suffix = "translation"
 
     if(modelBnd == 'dnn'):
-        modelDNN = '' # underscore included before
+        modelDNN = 'big' # underscore included before
     else:
         modelDNN = ''
                
 
-    folder = rootDataPath + "/review2/"
+    folder = rootDataPath + "/review2_smaller/"
     folderPrediction = folder + 'prediction/'
     folderMesh = folderPrediction + 'meshes/'
-    paramRVEname = folderPrediction + 'paramRVEdataset.hd5' 
+    paramRVEname = folderPrediction + 'paramRVEdataset_test.hd5' 
     nameMeshRefBnd = folderPrediction + 'boundaryMesh.xdmf'
     tangentName = folderPrediction + 'tangents_{0}.hd5'.format(modelBnd + modelDNN + suffixTangent)
-    BCname = folderPrediction + 'bcs{0}{1}.hd5'.format(modelDNN,suffixBC) 
+    BCname = folderPrediction + 'bcs_{0}_{1}_test.hd5'.format(suffix, modelDNN) 
     meshMicroName = folderMesh + 'mesh_micro_{0}_{1}.xdmf'
 
     namefiles = [nameMeshRefBnd, paramRVEname, tangentName, BCname, meshMicroName]

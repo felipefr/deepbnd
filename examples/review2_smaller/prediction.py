@@ -20,15 +20,18 @@ import deepBND.core.data_manipulation.utils as dman
 import deepBND.core.data_manipulation.wrapper_h5py as myhd
 
 from fetricks.fenics.mesh.mesh import Mesh 
-from deepBND.creation_model.prediction.NN_elast_positions import NNElast_positions
+from deepBND.creation_model.prediction.NN_elast_positions_6x6 import NNElast_positions_6x6
 
 import dolfin as df # apparently this import should be after the tensorflow stuff
 
 
 standardNets = {'big_A': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 1.0e-8),
-                'big_S': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 1.0e-8)}
+                'big_S': NetArch([300, 300, 300], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 5*[0.0], 1.0e-8),            
+                'big_tri_A': NetArch([150, 300, 500], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 2*[0.0] + [0.005] + 2*[0.0], 1.0e-8),
+                'big_tri_S': NetArch([150, 300, 500], 3*['swish'] + ['linear'], 5.0e-4, 0.1, 2*[0.0] + [0.005] + 2*[0.0], 1.0e-8)}
+
         
-def predictBCs(namefiles, net, ns_max = None):
+def predictBCs(namefiles, net, param_subset = None):
     
     labels = net.keys()
     
@@ -38,38 +41,42 @@ def predictBCs(namefiles, net, ns_max = None):
     Mref = Mesh(nameMeshRefBnd)
     Vref = df.VectorFunctionSpace(Mref,"CG", 2)
     
-    # loading the DNN model
-    if(type(ns_max) == type(None)):
-        paramRVEdata = myhd.loadhd5(paramRVEname, 'param')
-    else:
-        paramRVEdata = myhd.loadhd5(paramRVEname, 'param')[:ns_max]
+    ids = myhd.loadhd5(paramRVEname, 'ids')
+    paramRVEdata = myhd.loadhd5(paramRVEname, 'param')
     
-    model = NNElast_positions(nameWbasis, net, net['A'].nY)
+    # loading the DNN model
+    if(type(param_subset) is not type(None)):
+        ids_subset = myhd.loadhd5(param_subset, 'ids').flatten().astype('int')
+        ids = ids[ids_subset]
+        paramRVEdata = paramRVEdata[ids_subset, : , :]            
+    
+    model = NNElast_positions_6x6(nameWbasis, net, net['A'].nY)
     
     S_p = model.predict(paramRVEdata[:,:,0:2].reshape((len(paramRVEdata),-1)), Vref)
     
-    myhd.savehd5(bcs_namefile, S_p, ['u0','u1','u2'], mode = 'w')
+    myhd.savehd5(bcs_namefile, [ids] + S_p , ['ids', 'u0','u1','u2'], mode = 'w')
 
 
 if __name__ == '__main__':
   
     labels = ['A', 'S']
   
-    archId = 'big'
+    archId = 'big_tri'
     Nrb = 200
-    nX = 128
+    nX = 72
     
-    suffixBC = ''
+    suffix = 'translation'
     
     
-    folder = rootDataPath + "/review2/"
-    folderTrain = folder + 'training_cluster/'
-    folderBasis = folder + 'dataset_cluster/'
+    folder = rootDataPath + "/review2_smaller/"
+    folderTrain = folder + 'training/'
+    folderBasis = folder + 'dataset/'
     folderPrediction = folder + "prediction/"
     nameMeshRefBnd = folderBasis + 'boundaryMesh.xdmf'
-    nameWbasis = folderBasis +  'Wbasis.hd5'
-    paramRVEname = folderPrediction + 'paramRVEdataset.hd5'
-    bcs_namefile = folderPrediction + 'bcs{0}.hd5'.format(suffixBC)
+    nameWbasis = folderBasis +  'Wbasis_%s.hd5'%suffix
+    paramRVEname = folderBasis + 'paramRVEdataset.hd5'
+    bcs_namefile = folderPrediction + 'bcs_%s_bigtri_200_test.hd5'%suffix
+    param_subset_file = folderTrain + 'XY_%s_test.hd5'%suffix
     nameScaleXY = {}
     
     net = {}
@@ -78,10 +85,10 @@ if __name__ == '__main__':
         net[l] = standardNets[archId + '_' +  l] 
         net[l].nY = Nrb
         net[l].nX = nX
-        net[l].files['weights'] = folderTrain + 'models/weights_%s_%s_%d.hdf5'%(archId, l, Nrb)
-        net[l].files['scaler'] = folderTrain + 'scalers/scaler_%s_%d.txt'%(l, Nrb)
+        net[l].files['weights'] = folderTrain + 'models_weights_%s_%s_%d_%s.hdf5'%(archId, l, Nrb, suffix)
+        net[l].files['scaler'] = folderTrain + 'scaler_%s_%s.txt'%(suffix, l)
 
     namefiles = [nameMeshRefBnd, nameWbasis, paramRVEname, bcs_namefile]
     
-    predictBCs(namefiles, net)
+    predictBCs(namefiles, net, param_subset = param_subset_file)
 

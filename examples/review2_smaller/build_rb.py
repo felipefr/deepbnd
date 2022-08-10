@@ -89,12 +89,44 @@ def createXY(nameParamRVEdataset, nameYlist, nameXYlist, id_feature = 2):
     
 
 
+def split_train_validation_test(nameXYlist):
+    ns = len(myhd.loadhd5(nameXYlist, "ids"))
+    seed = 2
+    np.random.seed(seed)
+    shuffled_ids = np.arange(0,ns) 
+    np.random.shuffle(shuffled_ids)
+    
+    r_val = 0.05
+    r_test = 0.025
+    
+    id_val = np.arange(0, int(np.floor(r_val*ns))).astype('int')
+    id_test = np.arange(id_val[-1] + 1, int(np.floor((r_val+r_test)*ns)))
+    id_train = np.arange(id_test[-1], ns)
+    
+    id_val = shuffled_ids[id_val]
+    id_test = shuffled_ids[id_test]
+    id_train = shuffled_ids[id_train]
+    
+    labels = ['ids', 'X', 'Y_A', 'Y_S']
+    dummy, X, Y_A, Y_S = myhd.loadhd5(nameXYlist, labels )  
+    
+    myhd.savehd5(nameXYlist.split('.')[0] + "_val.hd5" , [id_val, X[id_val], Y_A[id_val], Y_S[id_val]], labels , "w-")
+    myhd.savehd5(nameXYlist.split('.')[0] + "_test.hd5", [id_test, X[id_test], Y_A[id_test], Y_S[id_test]], labels , "w-")
+    myhd.savehd5(nameXYlist.split('.')[0] + "_train.hd5", [id_train, X[id_train], Y_A[id_train], Y_S[id_train]], labels , "w-")
+    
+    
+    dman.exportScale(nameXYlist, nameScaler.format('A'), 72, Nmax, Ylabel = 'Y_A', scalerType = 'MinMax11' )
+    dman.exportScale(nameXYlist, nameScaler.format('S'), 72, Nmax, Ylabel = 'Y_S', scalerType = 'MinMax11' )
+    
+    
+    
+    
 if __name__ == '__main__': 
     
     folder = rootDataPath + "/review2_smaller/dataset/"
     folder_mesh = rootDataPath + "/review2_smaller/dataset/"
     
-    suffix = '_translation'
+    suffix = '_fluctuations'
     nameSnaps = folder + 'snapshots.hd5'
     nameMeshRefBnd = folder_mesh + 'boundaryMesh.xdmf'
     nameWbasis = folder + 'Wbasis%s.hd5'%suffix
@@ -125,33 +157,6 @@ if __name__ == '__main__':
     elif(op==3):
         createXY(nameParamRVEdataset, nameYlist, nameXYlist, id_feature = [0,1])    
     elif(op==4): # train,  validation, test splitting
-            
+        split_train_validation_test(nameXYlist)    
     
-        ns = len(myhd.loadhd5(nameXYlist, "ids"))
-        seed = 2
-        np.random.seed(seed)
-        shuffled_ids = np.arange(0,ns) 
-        np.random.shuffle(shuffled_ids)
-        
-        r_val = 0.05
-        r_test = 0.025
-        
-        id_val = np.arange(0, int(np.floor(r_val*ns))).astype('int')
-        id_test = np.arange(id_val[-1] + 1, int(np.floor((r_val+r_test)*ns)))
-        id_train = np.arange(id_test[-1], ns)
-        
-        id_val = shuffled_ids[id_val]
-        id_test = shuffled_ids[id_test]
-        id_train = shuffled_ids[id_train]
-        
-        labels = ['X', 'Y_A', 'Y_S']
-        X, Y_A, Y_S = myhd.loadhd5(nameXYlist, labels )  
-        
-        myhd.savehd5(nameXYlist.split('.')[0] + "_val.hd5" , [X[id_val], Y_A[id_val], Y_S[id_val]], labels , "w-")
-        myhd.savehd5(nameXYlist.split('.')[0] + "_test.hd5", [X[id_test], Y_A[id_test], Y_S[id_test]], labels , "w-")
-        myhd.savehd5(nameXYlist.split('.')[0] + "_train.hd5", [X[id_train], Y_A[id_train], Y_S[id_train]], labels , "w-")
-        
-        
-        dman.exportScale(nameXYlist, nameScaler.format('A'), 72, Nmax, Ylabel = 'Y_A', scalerType = 'MinMax11' )
-        dman.exportScale(nameXYlist, nameScaler.format('S'), 72, Nmax, Ylabel = 'Y_S', scalerType = 'MinMax11' )
         
