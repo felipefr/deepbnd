@@ -43,10 +43,10 @@ def predictTangents(modelBnd, namefiles, createMesh, meshSize):
         centers = np.zeros((ns,2))
     
     os.system('rm ' + tangentName)
-    Iid_tangent_center, f = myhd.zeros_openFile(tangentName, [(ns,), (ns,3,3), (ns,3,3), (ns,2)],
-                                           ['id', 'tangent', 'tangentT', 'center'], mode = 'w')
+    Iid_tangent_eps_center, f = myhd.zeros_openFile(tangentName, [(ns,), (ns,3,3), (ns,3,3), (ns,3,3), (ns,3,3), (ns,2)],
+                                           ['id', 'tangent', 'tangentT', 'eps', 'epsT', 'center'], mode = 'w')
     
-    Iid, Itangent, ItangentT, Icenter = Iid_tangent_center
+    Iid, Itangent, ItangentT, Ieps, IepsT, Icenter = Iid_tangent_eps_center
     
     if(modelBnd == 'dnn'):
         u0_p = myhd.loadhd5(BCname, 'u0')
@@ -65,8 +65,8 @@ def predictTangents(modelBnd, namefiles, createMesh, meshSize):
     
         start = timer()
         
-        #buildRVEmesh(paramRVEdata[i,:,:], meshMicroName_i, isOrdered = False, size = meshSize, 
-        #             NxL = 2, NyL = 2, maxOffset = 2, lcar = 2/30)
+        buildRVEmesh(paramRVEdata[i,:,:], meshMicroName_i, isOrdered = False, size = meshSize, 
+                     NxL = 2, NyL = 2, maxOffset = 2, lcar = 2/30)
         
         end = timer()
         print("time expended in meshing ", end - start)
@@ -90,6 +90,8 @@ def predictTangents(modelBnd, namefiles, createMesh, meshSize):
         Hom = microModel.getHomogenisation()
         Itangent[i,:,:] = Hom['tangentL']
         ItangentT[i,:,:] = Hom['tangent']
+        Ieps[i,:,:] = Hom['epsL']
+        IepsT[i,:,:] = Hom['eps']
         
         if(i%10 == 0):
             f.flush()    
@@ -102,11 +104,11 @@ if __name__ == '__main__':
     
     run = 0
     
-    suffixTangent = 'dnn_big'
-    modelBnd = 'dnn'
-    meshSize = 'reduced'
-    createMesh = False
-    suffix = "translation"
+    suffixTangent = 'full'
+    modelBnd = 'per'
+    meshSize = 'full'
+    createMesh = True
+    suffix = "full"
 
     if(modelBnd == 'dnn'):
         modelDNN = 'big' # underscore included before
@@ -115,7 +117,8 @@ if __name__ == '__main__':
 
     folder = rootDataPath + "/review2_smaller/"
     folderPrediction = folder + 'prediction_coarser/'
-    folderMesh = folder + '/prediction/meshes/' # reusing meshes of the other case
+    # folderMesh = folder + '/prediction/meshes/' # reusing meshes of the other case
+    folderMesh = folder + 'prediction_coarser/meshes/' 
     paramRVEname = folderPrediction + 'paramRVEdataset_test.hd5' 
     nameMeshRefBnd = folderPrediction + 'boundaryMesh.xdmf'
     tangentName = folderPrediction + 'tangents_{0}.hd5'.format(modelBnd + modelDNN + suffixTangent)
