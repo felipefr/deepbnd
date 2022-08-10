@@ -115,7 +115,7 @@ if __name__ == '__main__':
     else:
         modelDNN = ''
 
-    folder = rootDataPath + "/review2_smaller/"
+    folder = rootDataPath + "/review2_smaller/"  
     folderPrediction = folder + 'prediction_coarser/'
     # folderMesh = folder + '/prediction/meshes/' # reusing meshes of the other case
     folderMesh = folder + 'prediction_coarser/meshes/' 
