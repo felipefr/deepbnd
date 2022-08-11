@@ -40,7 +40,7 @@ def convertParam(param,foo):
 
       
 def tensor2voigt_sym(A):
-    return np.array([A[0,0],A[1,1],A[0,1] + A[1,0]])
+    return np.array([A[0,0],A[1,1], A[0,1] + A[1,0]])
 
 
 def stress2voigt(s):

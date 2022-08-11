@@ -29,9 +29,9 @@ def vonMises(sig):
 
 def getLameInclusions(nu1,E1,nu2,E2,M, op='cpp'):
     mu1 = eng2mu(nu1,E1)
-    lamb1 = eng2lambPlane(nu1,E1)
+    lamb1 = eng2lambPlane(nu1,E1) # should be without plane ??
     mu2 = eng2mu(nu2,E2)
-    lamb2 = eng2lambPlane(nu2,E2)
+    lamb2 = eng2lambPlane(nu2,E2) # should be without plane ??
     param = np.array([[lamb1, mu1], [lamb2,mu2],[lamb1,mu1], [lamb2,mu2]])
     
     materials = M.subdomains.array().astype('int32')

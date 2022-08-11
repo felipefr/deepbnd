@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jun 17 08:56:10 2022
+Created on Thu Aug 11 14:01:51 2022
 
-@author: felipe
+@author: felipefr
 """
 
 import os, sys
@@ -18,22 +18,19 @@ import fetricks.data_manipulation.wrapper_h5py as myhd
 problemType = ''
 
 folder = rootDataPath + '/review2_smaller/'
-folderTangent = folder + '/tangents/'
+folderTangent = folder + '/prediction_test/'
 
-cases = ['full', 'lin', 'per',
-        'dnn_bigcoarse_fluctuations', 'dnn_bigcoarse_translation', 
-         'dnn_big_fluctuations', 'dnn_big_translation', 
-         'dnn_bigtri200_fluctuations', 'dnn_bigtri200_translation']
+cases = ['old', 'new']
 
 # loading cases
-ns = 1001
+ns = 10
 tangentName = folderTangent + 'tangents_{0}.hd5'
 tangents = {}
 for case in cases:
     tangents[case] = myhd.loadhd5(tangentName.format(case), 'tangent')[:ns]
 
 
-refCase = 'full'
+refCase = 'old'
 errors = {}
 
 for case in cases[1:]:

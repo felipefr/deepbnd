@@ -148,7 +148,7 @@ if __name__ == '__main__':
     folder = rootDataPath + "/review2_smaller/dataset_coarser/"
     folder_mesh = rootDataPath + "/review2_smaller/dataset_coarser/"
     
-    suffix = '_translation'
+    suffix = '_'
     nameSnaps = folder + 'snapshots.hd5'
     nameMeshRefBnd = folder_mesh + 'boundaryMesh.xdmf'
     nameWbasis = folder + 'Wbasis%s.hd5'%suffix

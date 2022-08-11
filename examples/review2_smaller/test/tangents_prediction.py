@@ -16,7 +16,8 @@ from timeit import default_timer as timer
 from deepBND.__init__ import *
 import fetricks.data_manipulation.wrapper_h5py as myhd
 from fetricks.fenics.mesh.mesh import Mesh 
-from deepBND.core.multiscale.micro_model_gen import MicroConstitutiveModelGen
+# from deepBND.core.multiscale.micro_model_gen import MicroConstitutiveModelGen
+from deepBND.core.multiscale.micro_model_gen_new import MicroConstitutiveModelGen
 # from deepBND.core.multiscale.micro_model_dnn import MicroConstitutiveModelDNN
 from deepBND.core.multiscale.mesh_RVE import buildRVEmesh
 
@@ -28,7 +29,7 @@ def predictTangents(modelBnd, namefiles, createMesh, meshSize):
     
     # loading boundary reference mesh
     Mref = Mesh(nameMeshRefBnd)
-    Vref = df.VectorFunctionSpace(Mref,"CG", 1)
+    Vref = df.VectorFunctionSpace(Mref,"CG", 2)
     
     dxRef = df.Measure('dx', Mref) 
     
@@ -52,8 +53,11 @@ def predictTangents(modelBnd, namefiles, createMesh, meshSize):
         u0_p = myhd.loadhd5(BCname, 'u0')
         u1_p = myhd.loadhd5(BCname, 'u1')
         u2_p = myhd.loadhd5(BCname, 'u2')
-        
-    for i in range(ns):
+    
+    
+    for i in range(10):
+    # for i in range(ns):
+    
         Iid[i] = ids[i]
         
         contrast = 10.0
@@ -65,8 +69,8 @@ def predictTangents(modelBnd, namefiles, createMesh, meshSize):
     
         start = timer()
         
-        buildRVEmesh(paramRVEdata[i,:,:], meshMicroName_i, isOrdered = False, size = meshSize, 
-                     NxL = 2, NyL = 2, maxOffset = 2, lcar = 2/30)
+        # buildRVEmesh(paramRVEdata[i,:,:], meshMicroName_i, isOrdered = False, size = meshSize, 
+        #            NxL = 2, NyL = 2, maxOffset = 2, lcar = 2/30)
         
         end = timer()
         print("time expended in meshing ", end - start)
@@ -104,11 +108,11 @@ if __name__ == '__main__':
     
     run = 0
     
-    suffixTangent = 'full'
-    modelBnd = 'per'
-    meshSize = 'full'
-    createMesh = True
-    suffix = "full"
+    suffixTangent = 'new'
+    modelBnd = 'dnn'
+    meshSize = 'reduced'
+    createMesh = False
+    suffix = "translation"
 
     if(modelBnd == 'dnn'):
         modelDNN = 'big' # underscore included before
@@ -116,12 +120,12 @@ if __name__ == '__main__':
         modelDNN = ''
 
     folder = rootDataPath + "/review2_smaller/"  
-    folderPrediction = folder + 'prediction_coarser/'
+    folderPrediction = folder + 'prediction_test/'
     # folderMesh = folder + '/prediction/meshes/' # reusing meshes of the other case
-    folderMesh = folder + 'prediction_coarser/meshes/' 
+    folderMesh = folder + 'prediction_test/meshes/' 
     paramRVEname = folderPrediction + 'paramRVEdataset_test.hd5' 
     nameMeshRefBnd = folderPrediction + 'boundaryMesh.xdmf'
-    tangentName = folderPrediction + 'tangents_{0}.hd5'.format(modelBnd + modelDNN + suffixTangent)
+    tangentName = folderPrediction + 'tangents_{0}.hd5'.format(suffixTangent)
     BCname = folderPrediction + 'bcs_{0}_{1}_test.hd5'.format(suffix, modelDNN) 
     meshMicroName = folderMesh + 'mesh_micro_{0}_{1}.xdmf'
 
