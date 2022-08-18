@@ -70,7 +70,7 @@ def predictTangents(modelBnd, namefiles, createMesh, meshSize):
         start = timer()
         
         # buildRVEmesh(paramRVEdata[i,:,:], meshMicroName_i, isOrdered = False, size = meshSize, 
-        #            NxL = 2, NyL = 2, maxOffset = 2, lcar = 2/30)
+        #             NxL = 2, NyL = 2, maxOffset = 2, lcar = 2/30)
         
         end = timer()
         print("time expended in meshing ", end - start)
@@ -108,7 +108,7 @@ if __name__ == '__main__':
     
     run = 0
     
-    suffixTangent = 'new'
+    suffixTangent = 'dnn_trans_Basym'
     modelBnd = 'dnn'
     meshSize = 'reduced'
     createMesh = False

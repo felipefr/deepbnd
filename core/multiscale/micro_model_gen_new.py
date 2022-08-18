@@ -49,7 +49,7 @@ class MicroConstitutiveModelGen(mscm.MicroConstitutiveModel):
         
     def readMesh(self):
         self.mesh = Mesh(self.nameMesh,comm_self)
-        self.lame = getLameExpression(*self.param, self.mesh, plane_stress = True)
+        self.lame = getLameExpression(*self.param, self.mesh)
         self.coord_min = np.min(self.mesh.coordinates(), axis = 0)
         self.coord_max = np.max(self.mesh.coordinates(), axis = 0)
         self.others['x0'] = self.coord_min[0]
@@ -106,8 +106,10 @@ class MicroConstitutiveModelGen(mscm.MicroConstitutiveModel):
             if(self.model == 'dnn'):
                 self.others['uD'].vector().set_local(self.others['uD{0}_'.format(i)])
             
-                B = -ft.Integral(df.outer(self.others['uD'],normal), Mref.ds, (2,2))/volL
-                B = 0.5*(B + B.T)
+                B = - ft.Integral(df.outer(self.others['uD'],normal), Mref.ds, (2,2))/volL
+                print("B = ", B)
+                B.fill(0.0)
+                # B = 0.5*(B + B.T)
                 
                 T = affineTransformationExpression(np.zeros(2),B, Mref) # ignore a, since the basis is already translated
                 self.others['uD'].vector().set_local(self.others['uD'].vector().get_local()[:] + 

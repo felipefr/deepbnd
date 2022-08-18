@@ -197,7 +197,7 @@ def getErrors(Ylist,Wbasis, Isol, Vref, dxRef, dotProduct):
     return errors
 
 # Compute MSE error in the L2 norm : (POD or total error)
-def getMSE(NbasisList,Ylist,Wbasis, Isol, Vref, dxRef, dotProduct):
+def getMSE(NbasisList, Ylist,Wbasis, Isol, Vref, dxRef, dotProduct):
     MSE = []
     ns = len(Ylist)
     for N in NbasisList:
