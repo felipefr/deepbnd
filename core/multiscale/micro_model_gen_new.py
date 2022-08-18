@@ -107,8 +107,8 @@ class MicroConstitutiveModelGen(mscm.MicroConstitutiveModel):
                 self.others['uD'].vector().set_local(self.others['uD{0}_'.format(i)])
             
                 B = - ft.Integral(df.outer(self.others['uD'],normal), Mref.ds, (2,2))/volL
-                print("B = ", B)
-                B.fill(0.0)
+                # print("B = ", B)
+                # B.fill(0.0)
                 # B = 0.5*(B + B.T)
                 
                 T = affineTransformationExpression(np.zeros(2),B, Mref) # ignore a, since the basis is already translated
