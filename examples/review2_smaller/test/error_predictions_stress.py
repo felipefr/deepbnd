@@ -25,7 +25,7 @@ from fetricks.fenics.mesh.mesh import Mesh
 import deepBND.core.multiscale.micro_model as mscm
 from deepBND.core.multiscale.mesh_RVE import buildRVEmesh
 # from deepBND.core.multiscale.micro_model_gen import MicroConstitutiveModelGen # or _new
-from deepBND.core.multiscale.micro_model_gen_new import MicroConstitutiveModelGen # or _new
+from deepBND.core.multiscale.micro_model_gen_debug import MicroConstitutiveModelGen # or _new
 
 import dolfin as df # apparently this import should be after the tensorflow stuff
 
@@ -44,17 +44,17 @@ def getScaledXY(net, Ylabel):
     
     return Xbar, Ybar, scalerX, scalerY
     
-def loadYlist(net, Ylabel):
+def loadYlist(net, Ylabel, ids):
     dummy1, Ybar, dummy2, scalerY = getScaledXY(net, Ylabel)
-    Y = scalerY.inverse_transform(Ybar)
+    Y = scalerY.inverse_transform(Ybar[ids])
     return Y 
 
-def predictYlist(net, Ylabel):
+def predictYlist(net, Ylabel, ids):
     model = net.getModel()   
     model.load_weights(net.files['weights'])
     
     Xbar, dummy1, dummy2, scalerY = getScaledXY(net, Ylabel)
-    Yp = scalerY.inverse_transform(model.predict(Xbar)) 
+    Yp = scalerY.inverse_transform(model.predict(Xbar[ids])) 
 
     return Yp
 
@@ -166,15 +166,8 @@ def getTangentTrue(snapshotsname, ids):
     
     return tangentTrue
 
-def compute_total_error_tan(ns, net, suffix, bndMeshname, snapshotsname, paramRVEname):
-    
-    Yp_A = predictYlist(net, "Y_A")
-    Yp_S = predictYlist(net, "Y_S")
-    # Yp = predictYlist(net, Ylabel)
-    # Yp_A = loadYlist(net, "Y_A")
-    # Yp_S = loadYlist(net, "Y_S")
-    
-    
+def compute_total_error_tan(op, ns, nets, suffix, bndMeshname, snapshotsname, paramRVEname):
+        
     Mref = Mesh(bndMeshname)
     Vref = df.VectorFunctionSpace(Mref,"CG", 2)
     uD = df.Function(Vref)
@@ -186,15 +179,49 @@ def compute_total_error_tan(ns, net, suffix, bndMeshname, snapshotsname, paramRV
 
     opModel = 'dnn'
     
-    Wbasis_A = myhd.loadhd5( net.files['Wbasis'], 'Wbasis_A')
-    Wbasis_S = myhd.loadhd5( net.files['Wbasis'], 'Wbasis_S')
+
 
     # ids = myhd.loadhd5(paramRVEname, "param")[:ns]
     ids = np.arange(ns, dtype = 'int')
     paramRVEdata = myhd.loadhd5(paramRVEname, "param")[ids] 
     tangentTrue = getTangentTrue( snapshotsname, ids) 
-    
     meshname = "temp.xdmf"
+    
+    if(op == 'ref'):
+        sol_p_A = myhd.loadhd5( snapshotsname, 'solutions_%s_%s'%(suffix, 'A'))[ids, :] 
+        sol_p_S = myhd.loadhd5( snapshotsname, 'solutions_%s_%s'%(suffix, 'S'))[ids, :] 
+    
+    else: 
+        Wbasis_A = myhd.loadhd5( nets['A'].files['Wbasis'], 'Wbasis_A')
+        Wbasis_S = myhd.loadhd5( nets['S'].files['Wbasis'], 'Wbasis_S')
+    
+        if(op == 'pred' ): 
+            Yp_A = predictYlist(nets['A'], "Y_A", ids)
+            Yp_S = predictYlist(nets['S'], "Y_S", ids)
+
+            Yp_A_ = loadYlist(nets['A'], "Y_A", ids)
+            Yp_S_ = loadYlist(nets['S'], "Y_S", ids)
+
+            error_A = np.sum((Yp_A - Yp_A_)**2, axis = 1) # all modes along each snapshot
+            error_S = np.sum((Yp_S - Yp_S_)**2, axis = 1) # all modes along each snapshot
+            print(error_A, error_S)
+            
+        elif(op == 'pod'): 
+            Yp_A = loadYlist(nets['A'], "Y_A")
+            Yp_S = loadYlist(nets['S'], "Y_S")
+            
+            
+            
+        sol_p_A = [ Wbasis_A[:net.nY,:].T@Yp_A[i,:net.nY]  for i in range(ns)]
+        sol_p_S = [ Wbasis_S[:net.nY,:].T@Yp_S[i,:net.nY]  for i in range(ns)]
+        
+    
+    # print("op", op)
+    # print(sol_p_A)
+    # print(sol_p_S)
+    
+    # input()
+    
     
     # Mesh 
     tangentP = np.zeros((ns,3,3))
@@ -206,17 +233,64 @@ def compute_total_error_tan(ns, net, suffix, bndMeshname, snapshotsname, paramRV
         microModel = MicroConstitutiveModelGen(meshname, paramMaterial, opModel)
         
         microModel.others['uD'] = uD
-        microModel.others['uD0_'] = Wbasis_A[:net.nY,:].T@Yp_A[i,:net.nY] # it was already picked correctly
+        # microModel.others['uD0_'] = Wbasis_A[:net.nY,:].T@Yp_A[i,:net.nY] # it was already picked correctly
+        # microModel.others['uD1_'] = np.zeros(Vref.dim()) 
+        # microModel.others['uD2_'] = Wbasis_S[:net.nY,:].T@Yp_S[i,:net.nY]
+
+        microModel.others['uD0_'] = sol_p_A[i] 
         microModel.others['uD1_'] = np.zeros(Vref.dim()) 
-        microModel.others['uD2_'] = Wbasis_S[:net.nY,:].T@Yp_S[i,:net.nY]
+        microModel.others['uD2_'] = sol_p_S[i] 
         
         Hom = microModel.getHomogenisation()
-        tangentP[i,:, : ] = Hom['tangent']    
+        tangentP[i,:, : ] = Hom['sigmaL']    
         
     dtan = tangentP - tangentTrue
-    error = np.mean(np.linalg.norm(dtan.reshape((-1,9)), axis = 1))
+    error = np.mean(np.linalg.norm(dtan[:,[0,2]].reshape((-1,6)), axis = 1))
     
     return error, tangentTrue, tangentP
+
+
+def export_vtk_predictions(nets, ns, bndMeshname):
+    
+    Mref = Mesh(bndMeshname)
+    Vref = df.VectorFunctionSpace(Mref,"CG", 2)
+    uD = df.Function(Vref)
+
+    ids = np.arange(ns, dtype = 'int')
+    
+    Yp_A = predictYlist(nets['A'], "Y_A",  ids)
+    Yt_A = loadYlist(nets['A'], "Y_A", ids)
+    
+    Yp_S = predictYlist(nets['S'], "Y_S",  ids)
+    Yt_S = loadYlist(nets['S'], "Y_S", ids)
+    
+    
+    Wbasis_A = myhd.loadhd5( nets['A'].files['Wbasis'], 'Wbasis_A')
+    Wbasis_S = myhd.loadhd5( nets['S'].files['Wbasis'], 'Wbasis_S')
+    
+    M = myhd.loadhd5( nets['S'].files['Wbasis'], 'massMat')
+    mask = np.sum(np.abs(M), axis = 1).flatten()
+    mask[mask.nonzero()] = 1.0
+    
+    sol_p_A = [ Wbasis_A[:net.nY,:].T@Yp_A[i,:net.nY]  for i in range(ns)]
+    sol_p_S = [ Wbasis_S[:net.nY,:].T@Yp_S[i,:net.nY]  for i in range(ns)]
+    
+    sol_t_A = [ Wbasis_A[:net.nY,:].T@Yt_A[i,:net.nY]  for i in range(ns)]
+    sol_t_S = [ Wbasis_S[:net.nY,:].T@Yt_S[i,:net.nY]  for i in range(ns)]
+    
+    sol_A = myhd.loadhd5( snapshotsname, 'solutions_%s_%s'%(suffix, 'A'))[ids, :] 
+    sol_S = myhd.loadhd5( snapshotsname, 'solutions_%s_%s'%(suffix, 'S'))[ids, :] 
+    
+    
+    for i in range(ns):
+        for sol, name in zip([sol_p_A, sol_p_S, sol_t_A, sol_t_S, sol_A, sol_S],
+                       ['sol_p_A', 'sol_p_S', 'sol_t_A', 'sol_t_S', 'sol_A', 'sol_S']):
+            
+            uD.vector().set_local(mask*sol[i])
+            with df.XDMFFile("%s_%d.xdmf"%(name,i)) as f:
+                f.write(uD)
+        
+   
 
 folder = rootDataPath + '/review2_smaller/'
 folderDataset = folder + 'dataset/'
@@ -229,25 +303,40 @@ snapshotsname = folderDataset + 'snapshots.hd5'
 paramRVEname = folderDataset + 'paramRVEdataset.hd5'
 suffix = 'translation'
 label = 'A' 
-ns = 2
+ns = 1
 
 archId = 'big'
 Nrb = 600
 nX = 72
 
+nets = {}
 
-net = standardNets[archId + '_' +  label] 
-net.nY = Nrb
-net.nX = nX
-net.files['XY'] = folderDataset + 'XY_%s.hd5'%suffix 
-net.files['Wbasis'] = folderDataset + 'Wbasis_%s.hd5'%suffix
-net.files['weights'] = folderTrain + 'models_weights_%s_%s_%d_%s.hdf5'%(archId, label, Nrb, suffix)
-net.files['scaler'] = folderTrain + 'scaler_%s_%s.txt'%(suffix, label)
-net.files['hist'] = folderTrain + 'models_weights_%s_%s_%d_%s_plot_history_val.txt'%(archId, label, Nrb, suffix) 
+for label in ['A', 'S']: 
+    nets[label] = standardNets[archId + '_' +  label] 
+    net = nets[label]
+    net.nY = Nrb
+    net.nX = nX
+    net.files['XY'] = folderDataset + 'XY_%s.hd5'%suffix 
+    net.files['Wbasis'] = folderDataset + 'Wbasis_%s.hd5'%suffix
+    net.files['weights'] = folderTrain + 'models_weights_%s_%s_%d_%s.hdf5'%(archId, label, Nrb, suffix)
+    net.files['scaler'] = folderTrain + 'scaler_%s_%s.txt'%(suffix, label)
+    net.files['hist'] = folderTrain + 'models_weights_%s_%s_%d_%s_plot_history_val.txt'%(archId, label, Nrb, suffix) 
     
-error = compute_total_error_ref(ns, label, suffix, nameMeshRefBnd, snapshotsname, paramRVEname)
-error_pred = compute_total_error_pred(ns, net, label, suffix, nameMeshRefBnd, snapshotsname, paramRVEname)
-error_tan = compute_total_error_tan(ns, net, suffix, nameMeshRefBnd, snapshotsname, paramRVEname)
-print(error[0])
-print(error_pred[0])
-print(error_tan[0])
+# error = compute_total_error_ref(ns, label, suffix, nameMeshRefBnd, snapshotsname, paramRVEname)
+# error_pred = compute_total_error_pred(ns, net, label, suffix, nameMeshRefBnd, snapshotsname, paramRVEname)
+
+# error_tan_ref = compute_total_error_tan('ref', ns, nets, suffix, nameMeshRefBnd, snapshotsname, paramRVEname)
+# error_tan_pod = compute_total_error_tan('pod', ns, nets, suffix, nameMeshRefBnd, snapshotsname, paramRVEname)
+# error_tan_pred = compute_total_error_tan('pred', ns, nets, suffix, nameMeshRefBnd, snapshotsname, paramRVEname)
+
+# print(error[0])
+# print(error_pred[0])
+# print(error_tan_ref[0], error_tan_pod[0], error_tan_pred[0])
+
+# print(np.mean(np.linalg.norm((error_tan_pod[2] - error_tan_ref[2])[:,[0,2]].reshape((-1,6)), axis = 1)))
+# print(np.mean(np.linalg.norm((error_tan_pred[2] - error_tan_ref[2])[:,[0,2]].reshape((-1,6)), axis = 1)))
+
+
+# export_vtk_predictions(nets, ns, nameMeshRefBnd)
+
+W0, W, M = rbut.test_zerofiedBasis(folderDataset + 'Wbasis_%s_zerofied.hd5'%suffix, folderDataset + 'Wbasis_%s.hd5'%suffix)

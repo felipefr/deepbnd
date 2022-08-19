@@ -113,6 +113,24 @@ def compute_total_error_bruteForce_fast(net, loadtype, suffix, snapshotsname, pa
     return error
 
 
+def compute_DNN_error_bruteForce_fast(net, loadtype, suffix, snapshotsname, paramRVEname):
+    
+    Ylabel = "Y_%s"%loadtype
+    
+    Yp = predictYlist(net, Ylabel)
+    Yt = loadYlist(net, Ylabel)
+    
+    Wbasis_M = myhd.loadhd5( net.files['Wbasis'], ['Wbasis_%s'%loadtype, 'massMat'])
+    ids = myhd.loadhd5(paramRVEname, "ids").astype('int')
+    
+    error = rbut.getMSE_DNN_fast([net.nY], Yp, Yt, Wbasis_M)
+    
+    return error
+
+
+
+
+
 folder = rootDataPath + '/review2_smaller/'
 folderDataset = folder + 'dataset/'
 folderPrediction = folder + 'prediction/'
@@ -127,9 +145,9 @@ archId = 'big'
 Nrb = 600
 nX = 72
 
-suffix = 'fluctuations'
+suffix = 'translation'
 
-label = 'A' 
+label = 'S' 
 
 net = standardNets[archId + '_' +  label] 
 net.nY = Nrb
@@ -140,7 +158,7 @@ net.files['weights'] = folderTrain + 'models_weights_%s_%s_%d_%s.hdf5'%(archId, 
 net.files['scaler'] = folderTrain + 'scaler_%s_%s.txt'%(suffix, label)
 net.files['hist'] = folderTrain + 'models_weights_%s_%s_%d_%s_plot_history_val.txt'%(archId, label, Nrb, suffix) 
     
-error_DNN = compute_DNN_error(net, 'Y_%s'%label)[0]
+error_DNN, errors = compute_DNN_error(net, 'Y_%s'%label)
 error_POD = compute_POD_error(net, label, 60000)
 error_tot = error_POD + error_DNN
 print(error_DNN)
@@ -159,4 +177,8 @@ print(error_tot_brute)
 # snapshotsname = folderDataset +  'snapshots.hd5'
 # BCname = folderPrediction + 'bcs_fluctuations_big_test.hd5'
 # bcs_namefile = folderPrediction + 'bcs_%s_bigtri_200_test.hd5'%suffix
+
+
+print( compute_DNN_error_bruteForce_fast(net, label, suffix, snapshotsname, paramRVEname) )
+
 

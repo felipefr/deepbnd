@@ -122,7 +122,7 @@ def getMassMatrix(Vref,dxRef,dotProduct):
     
     return A.array()
 
-def computingBasis_svd(Wbasis,M,Isol,Nmax, Vref,dxRef,dotProduct):
+def computingBasis_svd(Wbasis, M, Isol, Nmax, Vref, dxRef, dotProduct):
     M[:,:] = getMassMatrix(Vref,dxRef,dotProduct)
     print("Mass matrix built")
     UM,SM,VMT = np.linalg.svd(M)  
@@ -147,6 +147,32 @@ def computingBasis_svd(Wbasis,M,Isol,Nmax, Vref,dxRef,dotProduct):
         
     return sig**2, U    
 
+
+def zerofyDummyDofsBasis(Wbasis, M):
+    mask = np.sum(np.abs(M), axis = 1).flatten()
+    mask[mask.nonzero()[0]] = 1.0
+    
+    for i in range(Wbasis.shape[0]):
+        Wbasis[i,:] = mask*Wbasis[i,:] 
+        
+
+def test_zerofiedBasis(Wbasis0_name, Wbasis_name):
+    
+    Wbasis_S = myhd.loadhd5( Wbasis_name, 'Wbasis_S')
+    Wbasis_A = myhd.loadhd5( Wbasis_name, 'Wbasis_A')
+    
+    Wbasis0_S = myhd.loadhd5( Wbasis0_name, 'Wbasis_S')
+    Wbasis0_A = myhd.loadhd5( Wbasis0_name, 'Wbasis_A')
+    
+    M = myhd.loadhd5( Wbasis_name, 'massMat')
+    
+    mask = np.sum(np.abs(M), axis = 1).flatten()
+    i_nz = mask.nonzero()[0]
+    
+    assert np.allclose(Wbasis_S[:,i_nz], Wbasis0_S[:,i_nz] )
+    assert np.allclose(Wbasis_A[:,i_nz], Wbasis0_A[:,i_nz] )
+    
+    return Wbasis_S[:,i_nz], Wbasis0_S[:,i_nz], M
 
 def reinterpolateWbasis(Wbasis, Vref, Wbasis0 , Vref0):
     
@@ -218,6 +244,20 @@ def getMSE_fast(NbasisList,Ylist,Wbasis_M, Isol):
         MSE[k] = np.sum(error/ns)
         
     return MSE
+
+
+def getMSE_DNN_fast(NbasisList,Ylist1, Ylist2,Wbasis_M):
+    MSE = np.zeros(len(NbasisList))
+    Wbasis, M = Wbasis_M
+    ns = len(Ylist1)
+    for k, N in enumerate(NbasisList):
+        print("computing mse error for N=", N)
+        E = Ylist1[:,:N] @ Wbasis[:N,:] - Ylist2[:,:N] @ Wbasis[:N,:]
+        error = np.array([np.dot(E[i,:],M@E[i,:]) for i in range(len(E))])
+        MSE[k] = np.sum(error/ns)
+        
+    return MSE
+
 
 
 # Compute the error in the projections simply

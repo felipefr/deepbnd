@@ -57,7 +57,9 @@ def computingBasis(nameSnaps, nameWbasis, Nmax, Nh, Vref, dsRef, solution_label)
     for load_flag, Wbasis, sig in zip(['A', 'S'],[Wbasis_A , Wbasis_S], [sig_A,sig_S]):
         Isol = myhd.loadhd5(nameSnaps,'%s_%s'%(solution_label, load_flag) )
         sig[:] = rbut.computingBasis_svd(Wbasis, Mmat, Isol,Nmax,Vref, dsRef, dotProduct)[0][:Nmax] # Mmat equal to both
-    
+        
+        rbut.zerofyDummyDofsBasis(Wbasis, Mmat)
+        
     f.close()
 
 
@@ -129,7 +131,7 @@ if __name__ == '__main__':
     suffix = '_fluctuations'
     nameSnaps = folder + 'snapshots.hd5'
     nameMeshRefBnd = folder_mesh + 'boundaryMesh.xdmf'
-    nameWbasis = folder + 'Wbasis%s.hd5'%suffix
+    nameWbasis = folder + 'Wbasis%s_zerofied.hd5'%suffix
     nameYlist = folder + 'Y%s.hd5'%suffix
     nameXYlist = folder + 'XY%s.hd5'%suffix
     nameScaler = folder + 'scaler%s_{0}.hd5'%suffix
