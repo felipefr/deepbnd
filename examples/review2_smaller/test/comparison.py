@@ -20,14 +20,15 @@ problemType = ''
 folder = rootDataPath + '/review2_smaller/'
 folderTangent = folder + '/prediction_test/'
 
-cases = ['full', 'per', 'dnn_fluc', 'dnn_fluc_Basym', 'dnn_trans_Basym', 'old', 'new', 'dnn']
+cases = ['full', 'per', 'dnn_fluc', 'dnn_fluc_Basym', 'dnn_trans_Basym', 'old', 'new', 'dnn', 'dnn_corrected']
 
 # loading cases
 ns = 10
 tangentName = folderTangent + 'tangents_{0}.hd5'
 tangents = {}
 for case in cases:
-    tangents[case] = myhd.loadhd5(tangentName.format(case), 'tangent')[:ns]
+    print("loading case",  case)
+    tangents[case] = myhd.loadhd5(tangentName.format(case), 'tangentL')[:ns]
 
 
 refCase = 'full'

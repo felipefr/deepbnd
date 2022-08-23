@@ -11,7 +11,7 @@ import deepBND.core.elasticity.fenics_utils as feut
 
 class NNElast:
     
-    def __init__(self, nameWbasis, net, Nrb):
+    def __init__(self, nameWbasis, net, Nrb, scalertype = 'MinMax'):
         
         self.Nrb = Nrb
         self.labels = net.keys()
@@ -22,7 +22,7 @@ class NNElast:
 
         for l in self.labels:
             self.Wbasis[l] = myhd.loadhd5(nameWbasis, 'Wbasis_%s'%l)
-            self.scalerX[l], self.scalerY[l]  = dman.importScale(net[l].files['scaler'], net[l].nX, net[l].nY)
+            self.scalerX[l], self.scalerY[l]  = dman.importScale(net[l].files['scaler'], net[l].nX, net[l].nY, scalertype)
             self.model[l] = net[l].getModel()
             self.model[l].load_weights(net[l].files['weights'])
 

@@ -63,8 +63,8 @@ def predictTangents(ns, modelBnd, namefiles, createMesh, meshSize):
     
         start = timer()
         
-        # buildRVEmesh(paramRVEdata[i,:,:], meshMicroName_i, isOrdered = False, size = meshSize, 
-        #             NxL = 2, NyL = 2, maxOffset = 2, lcar = 2/30)
+        buildRVEmesh(paramRVEdata[i,:,:], meshMicroName_i, isOrdered = False, size = meshSize, 
+                     NxL = 2, NyL = 2, maxOffset = 2, lcar = 2/30)
         
         end = timer()
         print("time expended in meshing ", end - start)
@@ -101,12 +101,12 @@ if __name__ == '__main__':
     
     run = 0
     
-    suffixTangent = 'dnn_corrected'
-    modelBnd = 'dnn'
-    meshSize = 'reduced'
+    suffixTangent = 'full'
+    modelBnd = 'per'
+    meshSize = 'full'
     createMesh = True
     suffix = "translation"
-    ns = 10
+    ns = 1500
 
     if(modelBnd == 'dnn'):
         modelDNN = 'big' # underscore included before
@@ -114,13 +114,13 @@ if __name__ == '__main__':
         modelDNN = ''
 
     folder = rootDataPath + "/review2_smaller/"  
-    folderPrediction = folder + 'prediction_test/'
+    folderPrediction = folder + 'prediction_test2/'
     # folderMesh = folder + '/prediction/meshes/' # reusing meshes of the other case
-    folderMesh = folder + 'prediction_test/meshes/' 
+    folderMesh = folder + 'prediction_test2/meshes/' 
     paramRVEname = folderPrediction + 'paramRVEdataset_test.hd5' 
     nameMeshRefBnd = folderPrediction + 'boundaryMesh.xdmf'
     tangentName = folderPrediction + 'tangents_{0}.hd5'.format(suffixTangent)
-    BCname = folderPrediction + 'bcs_{0}_big_600_test_corrected.hd5'.format(suffix) 
+    BCname = folderPrediction + 'bcs_{0}_big_600_test_deltaChanged.hd5'.format(suffix) 
     meshMicroName = folderMesh + 'mesh_micro_{0}_{1}.xdmf'
 
     namefiles = [nameMeshRefBnd, paramRVEname, tangentName, BCname, meshMicroName]

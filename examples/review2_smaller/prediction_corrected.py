@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Mar 17 18:40:49 2022
+Created on Tue Aug 23 15:11:26 2022
 
-@author: felipe
+@author: felipefr
 """
-
 
 import os, sys
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
@@ -35,27 +34,29 @@ def predictBCs(namefiles, net, param_subset = None):
     
     labels = net.keys()
     
-    nameMeshRefBnd, nameWbasis, paramRVEname, bcs_namefile = namefiles
+    nameMeshRefBnd, nameWbasis, paramRVEname, bcs_namefile, snapshotsname = namefiles
   
     # loading boundary reference mesh
     Mref = Mesh(nameMeshRefBnd)
     Vref = df.VectorFunctionSpace(Mref,"CG", 2)
     
-    ids = myhd.loadhd5(paramRVEname, 'ids')
+    ids = myhd.loadhd5(paramRVEname, 'ids').flatten().astype('int')
     paramRVEdata = myhd.loadhd5(paramRVEname, 'param')
-    
-    # loading the DNN model
-    if(type(param_subset) is not type(None)):
-        ids_subset = myhd.loadhd5(param_subset, 'ids').flatten().astype('int')
-        ids = ids[ids_subset]
-        paramRVEdata = paramRVEdata[ids_subset, : , :]            
-    
+
     model = NNElast_positions_6x6(nameWbasis, net, net['A'].nY, "MinMax11")
     
-    S_p = model.predict(paramRVEdata[:,:,0:2].reshape((len(paramRVEdata),-1)), Vref)
+    Bten_ref = getBten_ref(snapshotsname, ids)
+    S_p = model.predict_correctedbyBten(paramRVEdata[:,:,0:2].reshape((len(paramRVEdata),-1)), Vref, Bten_ref)
+    # S_p = model.predict(paramRVEdata[:,:,0:2].reshape((len(paramRVEdata),-1)), Vref)
+    
     
     myhd.savehd5(bcs_namefile, [ids] + S_p , ['ids', 'u0','u1','u2'], mode = 'w')
 
+def getBten_ref(snapshotsname, ids):
+    Bten_ref_A = myhd.loadhd5(snapshotsname, "B_A")[ids]
+    Bten_ref_S = myhd.loadhd5(snapshotsname, "B_S")[ids]
+     
+    return {'A': Bten_ref_A, 'S': Bten_ref_S}
 
 if __name__ == '__main__':
   
@@ -70,12 +71,12 @@ if __name__ == '__main__':
     folder = rootDataPath + "/review2_smaller/"
     folderTrain = folder + 'training/'
     folderBasis = folder + 'dataset/'
-    folderPrediction = folder + "prediction/"
+    folderPrediction = folder + "prediction_test2/"
     nameMeshRefBnd = folderBasis + 'boundaryMesh.xdmf'
-    nameWbasis = folderBasis +  'Wbasis_%s.hd5'%suffix
-    paramRVEname = folderBasis + 'paramRVEdataset.hd5'
-    bcs_namefile = folderPrediction + 'bcs_%s_bigtri_200_test.hd5'%suffix
-    param_subset_file = folderTrain + 'XY_%s_test.hd5'%suffix
+    nameSnapshots = folderBasis + 'snapshots.hd5'
+    nameWbasis = folderBasis +  'Wbasis_%s_zerofied.hd5'%suffix
+    paramRVEname = folderPrediction + 'paramRVEdataset_test.hd5'
+    bcs_namefile = folderPrediction + 'bcs_%s_big_600_test_deltaChanged.hd5'%suffix
     nameScaleXY = {}
     
     net = {}
@@ -87,7 +88,7 @@ if __name__ == '__main__':
         net[l].files['weights'] = folderTrain + 'models_weights_%s_%s_%d_%s.hdf5'%(archId, l, Nrb, suffix)
         net[l].files['scaler'] = folderTrain + 'scaler_%s_%s.txt'%(suffix, l)
 
-    namefiles = [nameMeshRefBnd, nameWbasis, paramRVEname, bcs_namefile]
+    namefiles = [nameMeshRefBnd, nameWbasis, paramRVEname, bcs_namefile, nameSnapshots]
     
-    predictBCs(namefiles, net, param_subset = param_subset_file)
+    predictBCs(namefiles, net)
 
