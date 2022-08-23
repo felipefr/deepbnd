@@ -49,8 +49,7 @@ def predictTangents(ns, modelBnd, namefiles, createMesh, meshSize):
         u2_p = myhd.loadhd5(BCname, 'u2')
     
     
-    for i in range(10):
-    # for i in range(ns):
+    for i in range(ns):
     
         Iid[i] = ids[i]
         
