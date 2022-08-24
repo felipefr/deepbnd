@@ -46,8 +46,8 @@ def predictBCs(namefiles, net, param_subset = None):
     model = NNElast_positions_6x6(nameWbasis, net, net['A'].nY, "MinMax11")
     
     Bten_ref = getBten_ref(snapshotsname, ids)
-    S_p = model.predict_correctedbyBten(paramRVEdata[:,:,0:2].reshape((len(paramRVEdata),-1)), Vref, Bten_ref)
-    # S_p = model.predict(paramRVEdata[:,:,0:2].reshape((len(paramRVEdata),-1)), Vref)
+    # S_p = model.predict_correctedbyBten(paramRVEdata[:,:,0:2].reshape((len(paramRVEdata),-1)), Vref, Bten_ref)
+    S_p = model.predict(paramRVEdata[:,:,0:2].reshape((len(paramRVEdata),-1)), Vref)
     
     
     myhd.savehd5(bcs_namefile, [ids] + S_p , ['ids', 'u0','u1','u2'], mode = 'w')
@@ -62,11 +62,11 @@ if __name__ == '__main__':
   
     labels = ['A', 'S']
   
-    archId = 'big'
-    Nrb = 600
+    archId = 'big_tri'
+    Nrb = 200
     nX = 72
     
-    suffix = 'translation'
+    suffix = 'fluctuations'
     
     folder = rootDataPath + "/review2_smaller/"
     folderTrain = folder + 'training/'
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     nameSnapshots = folderBasis + 'snapshots.hd5'
     nameWbasis = folderBasis +  'Wbasis_%s_zerofied.hd5'%suffix
     paramRVEname = folderPrediction + 'paramRVEdataset_test.hd5'
-    bcs_namefile = folderPrediction + 'bcs_%s_big_600_test_deltaChanged.hd5'%suffix
+    bcs_namefile = folderPrediction + 'bcs_%s_bigtri_200_test_deltaChanged.hd5'%suffix
     nameScaleXY = {}
     
     net = {}

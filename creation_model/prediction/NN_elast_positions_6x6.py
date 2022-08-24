@@ -84,8 +84,8 @@ class NNElast_positions_6x6(NNElast):
         normal = df.FacetNormal(Vref.mesh())
         volL = 4.0 
         
-        Bten_ref_Ay = np.array( [ np.array([[Bten_ref['A'][i, 1,1], Bten_ref['A'][i,1,0]], 
-                                            [Bten_ref['A'][i,0,1], Bten_ref['A'][i,0,0]]]) for i in range(ns)])
+        Bten_ref_Ay = np.array( [ np.array([[Bten_ref['A'][i, 1,1], -Bten_ref['A'][i,1,0]], 
+                                            [-Bten_ref['A'][i,0,1], Bten_ref['A'][i,0,0]]]) for i in range(ns)])
 
         Bten_ref_list = [ Bten_ref['A'], Bten_ref_Ay, Bten_ref['S']]
         
