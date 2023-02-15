@@ -1,7 +1,20 @@
 # DeepBND
 A Deep Learning-based method to enhance boundary conditions. 
 # Citing
-This code implements the deepbnd method, as described in "DeepBND: a Machine Learning approach to enhance Multiscale Solid Mechanics" (to appear at JCP). Please cite to it (old preprint at arXiv:2110.11141) and the following zenodo DOI if this code has been useful for your
+This code implements the deepbnd method, as described in "DeepBND: a Machine Learning approach to enhance Multiscale Solid Mechanics" (to appear at JCP). Please cite as below 
+
+@article{Rocha2023,
+title = {DeepBND: A machine learning approach to enhance multiscale solid mechanics},
+journal = {Journal of Computational Physics},
+pages = {111996},
+year = {2023},
+issn = {0021-9991},
+doi = {https://doi.org/10.1016/j.jcp.2023.111996},
+url = {https://www.sciencedirect.com/science/article/pii/S0021999123000918},
+author = {Felipe Rocha and Simone Deparis and Pablo Antolin and Annalisa Buffa}
+}
+
+and the following zenodo DOI if this code has been useful for your
 [![DOI](https://zenodo.org/badge/341954015.svg)](https://zenodo.org/badge/latestdoi/341954015)
 
 ## Installation 
