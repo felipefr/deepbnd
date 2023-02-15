@@ -1,4 +1,13 @@
 """
+This file is part of deepBND, a data-driven enhanced boundary condition implementaion for 
+computational homogenization problems, using RB-ROM and Neural Networks.
+Copyright (c) 2020-2023, Felipe Rocha.
+See file LICENSE.txt for license information. 
+Please cite this work according to README.md.
+Please report all bugs and problems to <felipe.figueredo-rocha@ec-nantes.fr>, or <felipe.f.rocha@gmail.com>
+"""
+
+"""
 build snapshots.hd5: simulation results for each snapshot. 
 Here we only collect the degrees of freedom on the internal boundary. 
 For each snapshot axial and shear loads are simulated together (label 'A' and 'S', respectively). 

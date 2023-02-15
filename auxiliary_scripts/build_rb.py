@@ -1,4 +1,13 @@
 """
+This file is part of deepBND, a data-driven enhanced boundary condition implementaion for 
+computational homogenization problems, using RB-ROM and Neural Networks.
+Copyright (c) 2020-2023, Felipe Rocha.
+See file LICENSE.txt for license information. 
+Please cite this work according to README.md.
+Please report all bugs and problems to <felipe.figueredo-rocha@ec-nantes.fr>, or <felipe.f.rocha@gmail.com>
+"""
+
+"""
 Inputs = paramRVEdataset.hd5, snapshots.hd5 (described before) 
 Outputs: 
 - Wbasis.hd5: Reduced-Basis matrices and singular values. Same comment for labels 'A' and 'S' (above) applies.  

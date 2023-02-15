@@ -6,6 +6,15 @@ Created on Fri Mar 18 14:25:42 2022
 @author: felipe
 """
 
+"""
+This file is part of deepBND, a data-driven enhanced boundary condition implementaion for 
+computational homogenization problems, using RB-ROM and Neural Networks.
+Copyright (c) 2020-2023, Felipe Rocha.
+See file LICENSE.txt for license information. 
+Please cite this work according to README.md.
+Please report all bugs and problems to <felipe.figueredo-rocha@ec-nantes.fr>, or <felipe.f.rocha@gmail.com>
+"""
+
 import sys, os
 import numpy as np
 import dolfin as df 

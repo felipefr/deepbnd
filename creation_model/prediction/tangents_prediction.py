@@ -12,6 +12,16 @@ from deepBND.core.fenics_tools.enriched_mesh import EnrichedMesh
 from deepBND.core.multiscale.micro_model_dnn import MicroConstitutiveModelDNN
 from deepBND.core.multiscale.mesh_RVE import buildRVEmesh
 
+"""
+This file is part of deepBND, a data-driven enhanced boundary condition implementaion for 
+computational homogenization problems, using RB-ROM and Neural Networks.
+Copyright (c) 2020-2023, Felipe Rocha.
+See file LICENSE.txt for license information. 
+Please cite this work according to README.md.
+Please report all bugs and problems to <felipe.figueredo-rocha@ec-nantes.fr>, or <felipe.f.rocha@gmail.com>
+"""
+
+
 # for i in {0..19}; do nohup python computeTangents_serial.py 24 $i 20 > log_ny24_full_per_run$i.py & done
 
 comm = MPI.COMM_WORLD
