@@ -15,7 +15,7 @@ author = {Felipe Rocha and Simone Deparis and Pablo Antolin and Annalisa Buffa}
 }
 
 and the following zenodo DOI if this code has been useful for your
-[![DOI](https://zenodo.org/badge/341954015.svg)](https://zenodo.org/badge/latestdoi/341954015)
+[![DOI](https://zenodo.org/badge/296098609.svg)](https://zenodo.org/badge/latestdoi/296098609)
 
 ## Installation 
 
