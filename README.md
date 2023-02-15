@@ -1,5 +1,8 @@
 # DeepBND
-A Deep Learning-based method to enhance boundary conditions. This code has been used to simulate the numerical examples of the article "DeepBND: a Machine Learning approach to enhance Multiscale Solid Mechanics" (https://arxiv.org/abs/2110.11141).
+A Deep Learning-based method to enhance boundary conditions. 
+# Citing
+This code implements the deepbnd method, as described in "DeepBND: a Machine Learning approach to enhance Multiscale Solid Mechanics" (to appear at JCP). Please cite to it (old preprint at arXiv:2110.11141) and the following zenodo DOI if this code has been useful for your
+[![DOI](https://zenodo.org/badge/341954015.svg)](https://zenodo.org/badge/latestdoi/341954015)
 
 ## Installation 
 
@@ -154,6 +157,5 @@ Obs: You can run runall.py to automatically run several cases, this has not been
 - compatibilise micmacsfenics version of MicroconstitutiveModelDNN, in other of not repeating code (as today).
 - add more tests.
 - update plots and comparison scripts.
-
 
 
